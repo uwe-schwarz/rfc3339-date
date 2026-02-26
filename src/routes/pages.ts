@@ -2,6 +2,7 @@ import type { Hono } from "hono";
 import { OPENAPI_YAML } from "../lib/constants";
 import { formatRfc3339Utc } from "../lib/date";
 import { addCommonHeaders } from "../lib/http";
+import { TAILWIND_CSS } from "../lib/tailwind.generated";
 import { renderDocs, renderImprint, renderLanding } from "../lib/html";
 
 export function registerPageRoutes(app: Hono<{ Bindings: Env }>) {
@@ -29,6 +30,15 @@ export function registerPageRoutes(app: Hono<{ Bindings: Env }>) {
     return new Response(renderImprint(), {
       headers: addCommonHeaders({
         "content-type": "text/html; charset=utf-8",
+        "cache-control": "public, max-age=3600",
+      }),
+    });
+  });
+
+  app.get("/styles.css", () => {
+    return new Response(TAILWIND_CSS, {
+      headers: addCommonHeaders({
+        "content-type": "text/css; charset=utf-8",
         "cache-control": "public, max-age=3600",
       }),
     });

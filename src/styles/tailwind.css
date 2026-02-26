@@ -1,0 +1,83 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@source "../lib/html.ts";
+
+@theme {
+  --color-brand-500: oklch(0.64 0.13 183);
+  --color-brand-600: oklch(0.56 0.12 183);
+  --color-accent-500: oklch(0.78 0.16 106);
+  --color-accent-600: oklch(0.69 0.15 106);
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+    }
+  }
+
+  body {
+    background:
+      radial-gradient(circle at 15% 18%, color-mix(in oklab, var(--color-brand-500) 14%, transparent) 0%, transparent 48%),
+      radial-gradient(circle at 84% 3%, color-mix(in oklab, var(--color-accent-500) 12%, transparent) 0%, transparent 52%),
+      linear-gradient(180deg, oklch(0.99 0.01 220), oklch(0.97 0.01 215));
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body {
+      background:
+        radial-gradient(circle at 18% 18%, color-mix(in oklab, var(--color-brand-500) 22%, transparent) 0%, transparent 42%),
+        radial-gradient(circle at 86% 4%, color-mix(in oklab, var(--color-accent-500) 17%, transparent) 0%, transparent 46%),
+        linear-gradient(180deg, oklch(0.22 0.02 240), oklch(0.18 0.01 245));
+    }
+  }
+}
+
+@layer utilities {
+  .surface {
+    @apply border border-zinc-200/80 bg-white/90 shadow-sm backdrop-blur-[2px] dark:border-zinc-800/80 dark:bg-zinc-950/85;
+  }
+
+  .panel-in {
+    animation: panel-in 180ms ease-out both;
+  }
+
+  .pulse-hit {
+    animation: pulse-hit 180ms ease-out;
+  }
+
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse-hit {
+    from {
+      opacity: 0.5;
+      transform: scale(0.995);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .panel-in,
+    .pulse-hit {
+      animation: none !important;
+    }
+  }
+}
