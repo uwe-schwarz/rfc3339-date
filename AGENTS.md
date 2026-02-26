@@ -16,8 +16,22 @@ For all limits and quotas, retrieve from the product's `/platform/limits/` page.
 | `npx wrangler dev` | Local development |
 | `npx wrangler deploy` | Deploy to Cloudflare |
 | `npx wrangler types` | Generate TypeScript types |
+| `pnpm run checks` | Run all quality gates (`lint`, `typecheck`, `test`, `build`) |
 
 Run `wrangler types` after changing bindings in wrangler.jsonc.
+
+## Required Checks Workflow
+
+- Run `pnpm run checks` after every change.
+- Run `pnpm run checks` again immediately before every commit.
+- Run `pnpm run checks` again immediately before every push.
+- Do not commit or push if `pnpm run checks` fails.
+
+## Test Requirements
+
+- Every new feature must include automated test coverage when behavior is not fully validated by existing automated checks.
+- If a feature is not automatically covered by lint/typecheck or another existing script, add or extend tests (for example `vitest`) in the same change.
+- Do not rely on manual-only verification for new feature behavior.
 
 ## Node.js Compatibility
 

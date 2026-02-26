@@ -55,7 +55,6 @@ export function renderLanding(nowIso: string): string {
   <a class="rounded-md border border-zinc-300 px-3 py-2 hover:border-brand-500 hover:text-brand-600 dark:border-zinc-700 dark:hover:border-brand-500" href="/imprint">Imprint</a>
 </nav>
 <footer class="mt-12 border-t border-zinc-200 pt-6 text-sm text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
-  <p>Imprint: Uwe. Contact: contact@rfc3339.date</p>
 </footer>
 <script>
   const target = document.getElementById("live-now");
@@ -69,8 +68,8 @@ export function renderImprint(): string {
 <h1 class="mb-4 text-3xl font-semibold">Imprint</h1>
 <div class="space-y-3 rounded-xl border border-zinc-200 bg-zinc-50 p-6 text-sm dark:border-zinc-800 dark:bg-zinc-900">
   <p>rfc3339.date</p>
-  <p>Owner: Uwe</p>
-  <p>Email: contact@rfc3339.date</p>
+  <p>Owner: Uwe Schwarz, Uhlandstr. 20, 67069 Ludwigshafen, Germany</p>
+  <p>Email: mail@uweschwarz.eu</p>
   <p>This service is provided for development and testing use. No user tracking and no authentication.</p>
 </div>
 <p class="mt-6 text-sm"><a class="text-brand-600 hover:underline dark:text-brand-500" href="/">Back to landing page</a></p>`;

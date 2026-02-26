@@ -7,8 +7,9 @@
     "start": "wrangler dev",
     "deploy": "wrangler deploy",
     "build": "wrangler deploy --dry-run",
+    "checks": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
     "cf-typegen": "wrangler types",
-    "format": "oxfmt src tests package.json tsconfig.json wrangler.toml",
+    "format": "oxfmt src tests package.json tsconfig.json wrangler.jsonc",
     "lint": "oxlint .",
     "typecheck": "tsgo --noEmit",
     "test": "vitest run"

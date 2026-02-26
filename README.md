@@ -12,12 +12,10 @@ pnpm dev
 ## Quality Checks
 
 ```bash
-pnpm format
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm build
+pnpm run checks
 ```
+
+`pnpm run checks` runs all quality gates in sequence: `lint`, `typecheck`, `test`, and `build`.
 
 ## Deploy
 
