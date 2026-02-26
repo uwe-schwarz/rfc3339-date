@@ -7,6 +7,17 @@ export function addCommonHeaders(headers?: HeadersInit): Headers {
   return merged;
 }
 
+export function setHeaderSafely(response: Response, key: string, value: string): Response {
+  try {
+    response.headers.set(key, value);
+    return response;
+  } catch {
+    const cloned = new Response(response.body, response);
+    cloned.headers.set(key, value);
+    return cloned;
+  }
+}
+
 export function shouldReturnJson(request: Request, forced = false): boolean {
   if (forced) return true;
   const accept = request.headers.get("accept") ?? "";

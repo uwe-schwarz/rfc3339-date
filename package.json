@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "build:fonts": "node scripts/build-fonts.mjs",
-    "build:styles": "pnpm run build:fonts && node scripts/build-tailwind.mjs",
+    "build:openapi": "node scripts/build-openapi.mjs",
+    "build:scalar": "node scripts/build-scalar.mjs",
+    "build:styles": "pnpm run build:fonts && pnpm run build:openapi && pnpm run build:scalar && node scripts/build-tailwind.mjs",
     "check:component-lines": "node scripts/check-component-lines.mjs",
     "dev": "pnpm run build:styles && wrangler dev",
     "start": "pnpm run build:styles && wrangler dev",
@@ -19,7 +21,8 @@
   },
   "dependencies": {
     "geist": "^1.7.0",
-    "hono": "^4.12.3"
+    "hono": "^4.12.3",
+    "rapidoc": "^9.3.8"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.2.1",

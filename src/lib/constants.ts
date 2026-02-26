@@ -45,30 +45,3 @@ export const GPS_EPOCH_MS = Date.parse("1980-01-06T00:00:00Z");
 export const EXCEL_1900_BASE_MS = Date.UTC(1899, 11, 31, 0, 0, 0, 0);
 export const EXCEL_1904_BASE_MS = Date.UTC(1904, 0, 1, 0, 0, 0, 0);
 export const DAY_MS = 86_400_000;
-
-export const OPENAPI_YAML = `openapi: 3.1.0
-info:
-  title: rfc3339.date — Time API
-  version: 1.0.0
-  summary: Strict RFC3339 time endpoints + validation + conversions
-servers:
-  - url: https://rfc3339.date
-  - url: http://localhost:8787
-paths:
-  /: { get: { summary: Landing page } }
-  /docs: { get: { summary: Interactive docs page } }
-  /imprint: { get: { summary: Imprint page } }
-  /openapi.yaml: { get: { summary: OpenAPI YAML } }
-  /now: { get: { summary: Current UTC RFC3339 } }
-  /now/{tz}: { get: { summary: Current time in IANA zone } }
-  /validate:
-    get: { summary: Validate timestamp }
-    post: { summary: Batch validation }
-  /canonical: { get: { summary: Canonicalize timestamp } }
-  /convert: { get: { summary: Convert time encodings } }
-  /round: { get: { summary: Round timestamps } }
-  /tz: { get: { summary: Zone listing/search } }
-  /tz/{zone}/offset: { get: { summary: Offset and DST at instant } }
-  /tz/{zone}/transitions: { get: { summary: Offset transitions in range } }
-  /leapseconds: { get: { summary: Leap second dataset } }
-`;
