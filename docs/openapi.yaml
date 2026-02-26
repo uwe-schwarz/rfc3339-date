@@ -1,0 +1,717 @@
+openapi: 3.1.0
+info:
+  title: rfc3339.date — Time API
+  version: 1.0.0
+  summary: "Strict RFC3339 time endpoints + validation + conversions (incl. exotic time standards)"
+  description: >
+    A precise, developer-centric time API.
+    Defaults to canonical RFC3339 UTC for /now, supports IANA time zones, strict RFC3339 validation,
+    ISO8601 validation, and conversions across common + exotic representations (NTP, GPS, TAI, JD/MJD, Excel, HTTP-date, RFC5322).
+    Plain text is first-class; JSON is optional via Accept header or ?json=1.
+
+servers:
+  - url: https://rfc3339.date
+    description: Production
+  - url: http://localhost:8787
+    description: Local dev (wrangler)
+
+tags:
+  - name: Time
+  - name: Validation
+  - name: Conversion
+  - name: Timezones
+  - name: Datasets
+
+x-runtime:
+  target: cloudflare-worker
+  notes:
+    - "Use platform Intl.DateTimeFormat(timeZone=IANA) for offsets."
+    - "DST transitions can be computed by scanning offsets over a range, then refining boundaries."
+
+paths:
+  /now:
+    get:
+      tags: [Time]
+      summary: Current time as RFC3339 (UTC)
+      description: >
+        Returns the current instant serialized as RFC3339 in UTC (canonical Z).
+        Default response is text/plain.
+      parameters:
+        - $ref: "#/components/parameters/precision"
+        - $ref: "#/components/parameters/format"
+        - $ref: "#/components/parameters/json"
+      responses:
+        "200":
+          description: RFC3339 timestamp
+          headers:
+            Cache-Control:
+              schema: { type: string }
+              example: "no-store"
+          content:
+            text/plain:
+              schema: { type: string }
+              examples:
+                utc:
+                  value: "2026-02-25T19:17:03.482Z"
+            application/json:
+              schema: { $ref: "#/components/schemas/NowResponse" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /now/{tz}:
+    get:
+      tags: [Time, Timezones]
+      summary: Current time rendered in an IANA time zone
+      description: >
+        Returns the current instant rendered in the requested IANA time zone, including numeric offset.
+        Same instant as /now, different representation.
+      parameters:
+        - $ref: "#/components/parameters/tzPath"
+        - $ref: "#/components/parameters/precision"
+        - $ref: "#/components/parameters/format"
+        - $ref: "#/components/parameters/json"
+      responses:
+        "200":
+          description: RFC3339 timestamp in requested zone (includes offset)
+          headers:
+            Cache-Control:
+              schema: { type: string }
+              example: "no-store"
+          content:
+            text/plain:
+              schema: { type: string }
+              examples:
+                berlin:
+                  value: "2026-02-25T20:17:03.482+01:00"
+            application/json:
+              schema: { $ref: "#/components/schemas/NowResponse" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /validate:
+    get:
+      tags: [Validation]
+      summary: Validate a timestamp string
+      description: >
+        Validates the given value against a specified profile.
+        In strict mode, rejects non-canonical/grammar-violating inputs.
+        In lenient mode, may accept parseable inputs with warnings and provide canonical output when possible.
+      parameters:
+        - name: value
+          in: query
+          required: true
+          schema: { type: string }
+          description: Input timestamp string to validate.
+        - $ref: "#/components/parameters/profile"
+        - $ref: "#/components/parameters/mode"
+        - $ref: "#/components/parameters/json"
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ValidateResponse" }
+            text/plain:
+              schema: { type: string }
+              description: >
+                If Accept=text/plain (or ?json=0), returns either "VALID" or "INVALID" plus optional single-line reason.
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+    post:
+      tags: [Validation]
+      summary: Batch validate timestamp strings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ValidateBatchRequest" }
+      responses:
+        "200":
+          description: Batch validation result
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ValidateBatchResponse" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /canonical:
+    get:
+      tags: [Conversion, Validation]
+      summary: Canonicalize a timestamp representation
+      description: >
+        Parses the given value under the selected profile and returns canonical RFC3339 UTC by default.
+        If out is set, returns canonical output for that target format.
+      parameters:
+        - name: value
+          in: query
+          required: true
+          schema: { type: string }
+        - $ref: "#/components/parameters/profile"
+        - $ref: "#/components/parameters/out"
+        - $ref: "#/components/parameters/precision"
+        - $ref: "#/components/parameters/tzQuery"
+        - $ref: "#/components/parameters/json"
+      responses:
+        "200":
+          description: Canonical output
+          content:
+            text/plain:
+              schema: { type: string }
+              examples:
+                canon:
+                  value: "2026-02-25T19:17:03Z"
+            application/json:
+              schema: { $ref: "#/components/schemas/ConvertResponse" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /convert:
+    get:
+      tags: [Conversion]
+      summary: Convert between time encodings
+      description: >
+        Converts an input value from an input encoding to an output encoding.
+        If in=auto, ambiguity results in 400 with candidates.
+        For timezone-dependent output formats, supply tz=IANA.
+        For standards requiring leap-second tables (TAI/GPS), supply leapdata=latest or a known version.
+      parameters:
+        - name: value
+          in: query
+          required: true
+          schema: { type: string }
+        - $ref: "#/components/parameters/in"
+        - $ref: "#/components/parameters/out"
+        - $ref: "#/components/parameters/precision"
+        - $ref: "#/components/parameters/tzQuery"
+        - name: leapdata
+          in: query
+          required: false
+          schema: { type: string, default: "latest" }
+          description: Leap-second dataset version identifier, or "latest".
+        - $ref: "#/components/parameters/json"
+      responses:
+        "200":
+          description: Converted output
+          content:
+            text/plain:
+              schema: { type: string }
+              examples:
+                rfc3339:
+                  value: "2023-11-14T22:13:20Z"
+            application/json:
+              schema: { $ref: "#/components/schemas/ConvertResponse" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+
+  /round:
+    get:
+      tags: [Conversion]
+      summary: Round a timestamp to a unit
+      parameters:
+        - name: value
+          in: query
+          required: true
+          schema: { type: string }
+        - $ref: "#/components/parameters/in"
+        - name: unit
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [ns, us, ms, s, min, hour, day]
+        - name: mode
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [floor, ceil, nearest]
+            default: nearest
+        - $ref: "#/components/parameters/out"
+        - $ref: "#/components/parameters/precision"
+        - $ref: "#/components/parameters/tzQuery"
+        - $ref: "#/components/parameters/json"
+      responses:
+        "200":
+          description: Rounded output
+          content:
+            text/plain:
+              schema: { type: string }
+            application/json:
+              schema: { $ref: "#/components/schemas/ConvertResponse" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /tz:
+    get:
+      tags: [Timezones]
+      summary: Time zone search / listing
+      description: >
+        Returns a list of IANA time zone IDs matching q (substring match).
+        If q is omitted, returns a curated list (or an implementation-defined subset).
+      parameters:
+        - name: q
+          in: query
+          required: false
+          schema: { type: string }
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 500, default: 50 }
+      responses:
+        "200":
+          description: Zone matches
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TzSearchResponse" }
+
+  /tz/{zone}/offset:
+    get:
+      tags: [Timezones]
+      summary: Offset/DST information for a zone at a given instant
+      parameters:
+        - name: zone
+          in: path
+          required: true
+          schema: { type: string }
+          description: IANA time zone ID (URL-encoded), e.g. Europe%2FBerlin
+        - name: at
+          in: query
+          required: false
+          schema: { type: string }
+          description: RFC3339 instant to evaluate; default is now.
+        - $ref: "#/components/parameters/json"
+      responses:
+        "200":
+          description: Offset and DST status
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TzOffsetResponse" }
+            text/plain:
+              schema: { type: string }
+              description: "Single-line summary: <offset> <dstFlag>"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /tz/{zone}/transitions:
+    get:
+      tags: [Timezones]
+      summary: DST/offset transitions for a zone in a time range
+      description: >
+        Returns boundaries where the numeric offset changes within the requested range.
+        Implementation can compute transitions by scanning offsets and refining boundary instants.
+      parameters:
+        - name: zone
+          in: path
+          required: true
+          schema: { type: string }
+        - name: start
+          in: query
+          required: true
+          schema: { type: string }
+          description: RFC3339 instant (inclusive)
+        - name: end
+          in: query
+          required: true
+          schema: { type: string }
+          description: RFC3339 instant (exclusive)
+        - name: granularity
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [day, hour, minute]
+            default: hour
+          description: Scan step used to detect transitions before boundary refinement.
+        - name: refine
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [s, ms]
+            default: s
+          description: Refinement resolution for transition instant.
+      responses:
+        "200":
+          description: Transition list
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TzTransitionsResponse" }
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /leapseconds:
+    get:
+      tags: [Datasets]
+      summary: Leap second dataset + current TAI-UTC offset
+      description: >
+        Provides leap second table used for UTC<->TAI and GPS conversions.
+        Versioning allows reproducible results.
+      parameters:
+        - name: version
+          in: query
+          required: false
+          schema: { type: string, default: "latest" }
+      responses:
+        "200":
+          description: Leap second dataset
+          headers:
+            Cache-Control:
+              schema: { type: string }
+              example: "public, max-age=86400"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LeapSecondsResponse" }
+
+components:
+  parameters:
+    tzPath:
+      name: tz
+      in: path
+      required: true
+      schema: { type: string }
+      description: IANA time zone ID (URL-encoded), e.g. Europe%2FBerlin
+    tzQuery:
+      name: tz
+      in: query
+      required: false
+      schema: { type: string }
+      description: IANA time zone for rendering outputs that are zone-dependent.
+    precision:
+      name: precision
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 9
+        default: 3
+      description: Fractional second digits to emit (0..9).
+    format:
+      name: format
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [rfc3339, rfc3339sec, rfc3339nano]
+        default: rfc3339
+      description: Convenience output format alias.
+    json:
+      name: json
+      in: query
+      required: false
+      schema:
+        type: integer
+        enum: [0, 1]
+        default: 0
+      description: If 1, forces JSON output regardless of Accept header.
+    profile:
+      name: profile
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+          - rfc3339
+          - iso8601
+          - iso8601:strict
+          - iso8601:extended
+          - iso8601:basic
+        default: rfc3339
+      description: Validation profile.
+    mode:
+      name: mode
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [strict, lenient]
+        default: strict
+      description: Strict rejects non-compliant inputs; lenient may accept with warnings.
+    in:
+      name: in
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+          - auto
+          - rfc3339
+          - iso8601
+          - unix
+          - unixms
+          - ntp
+          - httpdate
+          - emaildate
+          - gps
+          - tai
+          - jd
+          - mjd
+          - excel1900
+          - excel1904
+          - weekdate
+          - ordinal
+          - doy
+        default: auto
+      description: Input encoding.
+    out:
+      name: out
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+          - rfc3339
+          - iso8601
+          - unix
+          - unixms
+          - ntp
+          - httpdate
+          - emaildate
+          - gps
+          - tai
+          - jd
+          - mjd
+          - excel1900
+          - excel1904
+          - weekdate
+          - ordinal
+          - doy
+        default: rfc3339
+      description: Output encoding.
+
+  responses:
+    BadRequest:
+      description: Bad request (invalid input, ambiguity, or unsupported combination)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    NotFound:
+      description: Not found (unknown time zone or resource)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    UnsupportedMediaType:
+      description: Unsupported profile/format/encoding
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  schemas:
+    NowResponse:
+      type: object
+      required: [now, tz, offset, precision]
+      properties:
+        now:
+          type: string
+          description: Timestamp string in selected representation (RFC3339)
+        tz:
+          type: string
+          description: Rendering time zone (UTC or requested IANA)
+        offset:
+          type: string
+          description: Numeric offset at that instant (e.g. Z, +01:00)
+        precision:
+          type: integer
+        unix:
+          type: integer
+          description: Unix seconds
+        unixms:
+          type: integer
+          description: Unix milliseconds
+
+    ValidateResponse:
+      type: object
+      required: [valid, profile, mode, errors, warnings]
+      properties:
+        valid: { type: boolean }
+        profile: { type: string }
+        mode: { type: string }
+        canonical:
+          type: string
+          nullable: true
+          description: Canonical RFC3339 UTC if derivable.
+        parsed:
+          $ref: "#/components/schemas/ParsedParts"
+        errors:
+          type: array
+          items: { $ref: "#/components/schemas/Diagnostic" }
+        warnings:
+          type: array
+          items: { $ref: "#/components/schemas/Diagnostic" }
+
+    ValidateBatchRequest:
+      type: object
+      required: [items]
+      properties:
+        profile:
+          type: string
+          nullable: true
+        mode:
+          type: string
+          nullable: true
+        items:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [value]
+            properties:
+              value: { type: string }
+              profile: { type: string, nullable: true }
+              mode: { type: string, nullable: true }
+
+    ValidateBatchResponse:
+      type: object
+      required: [results]
+      properties:
+        results:
+          type: array
+          items: { $ref: "#/components/schemas/ValidateResponse" }
+
+    ConvertResponse:
+      type: object
+      required: [in, out, value_in, value_out]
+      properties:
+        in: { type: string }
+        out: { type: string }
+        value_in: { type: string }
+        value_out: { type: string }
+        tz:
+          type: string
+          nullable: true
+        precision:
+          type: integer
+          nullable: true
+        instant:
+          type: object
+          description: Canonical internal instant representation.
+          properties:
+            rfc3339z: { type: string }
+            unix: { type: integer }
+            unixms: { type: integer }
+        notes:
+          type: array
+          items: { type: string }
+        candidates:
+          type: array
+          description: Present when in=auto is ambiguous.
+          items: { type: string }
+
+    ParsedParts:
+      type: object
+      properties:
+        year: { type: integer }
+        month: { type: integer }
+        day: { type: integer }
+        hour: { type: integer }
+        minute: { type: integer }
+        second: { type: integer }
+        fraction:
+          type: string
+          nullable: true
+          description: Fractional seconds as digits (no dot), up to 9.
+        offset:
+          type: string
+          description: Z or ±HH:MM
+
+    Diagnostic:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message: { type: string }
+        at:
+          type: integer
+          nullable: true
+          description: Character index (if applicable)
+
+    TzSearchResponse:
+      type: object
+      required: [zones]
+      properties:
+        zones:
+          type: array
+          items:
+            type: object
+            required: [id]
+            properties:
+              id: { type: string }
+              exampleCity: { type: string, nullable: true }
+
+    TzOffsetResponse:
+      type: object
+      required: [zone, at, offset, dst]
+      properties:
+        zone: { type: string }
+        at: { type: string }
+        offset: { type: string }
+        dst: { type: boolean }
+        abbreviation:
+          type: string
+          nullable: true
+          description: Best-effort (may be null; abbreviations are not stable/portable).
+
+    TzTransitionsResponse:
+      type: object
+      required: [zone, start, end, transitions]
+      properties:
+        zone: { type: string }
+        start: { type: string }
+        end: { type: string }
+        transitions:
+          type: array
+          items:
+            type: object
+            required: [at, offsetBefore, offsetAfter]
+            properties:
+              at:
+                type: string
+                description: RFC3339 instant where the new offset takes effect (best-effort resolution)
+              offsetBefore: { type: string }
+              offsetAfter: { type: string }
+
+    LeapSecondsResponse:
+      type: object
+      required: [version, taiMinusUtc, entries, source]
+      properties:
+        version: { type: string }
+        taiMinusUtc:
+          type: integer
+          description: Current TAI-UTC seconds offset per dataset.
+        source:
+          type: string
+          description: Dataset provenance (e.g., IERS bulletin identifier and publication date).
+        entries:
+          type: array
+          items:
+            type: object
+            required: [effective, taiMinusUtc]
+            properties:
+              effective:
+                type: string
+                description: RFC3339 date-time at which the offset becomes effective (UTC).
+              taiMinusUtc:
+                type: integer
+
+    ErrorResponse:
+      type: object
+      required: [error, message]
+      properties:
+        error: { type: string }
+        message: { type: string }
+        details:
+          type: array
+          items: { $ref: "#/components/schemas/Diagnostic" }

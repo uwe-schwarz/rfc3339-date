@@ -1,26 +1,21 @@
-import { fromHono } from "chanfana";
 import { Hono } from "hono";
-import { TaskCreate } from "./endpoints/taskCreate";
-import { TaskDelete } from "./endpoints/taskDelete";
-import { TaskFetch } from "./endpoints/taskFetch";
-import { TaskList } from "./endpoints/taskList";
+import { registerConvertRoutes } from "./routes/convert";
+import { registerDatasetRoutes } from "./routes/datasets";
+import { registerPageRoutes } from "./routes/pages";
+import { registerTimeRoutes } from "./routes/time";
+import { registerTimezoneRoutes } from "./routes/timezones";
 
-// Start a Hono app
 const app = new Hono<{ Bindings: Env }>();
 
-// Setup OpenAPI registry
-const openapi = fromHono(app, {
-	docs_url: "/",
+app.use("*", async (c, next) => {
+  await next();
+  c.res.headers.set("X-Content-Type-Options", "nosniff");
 });
 
-// Register OpenAPI endpoints
-openapi.get("/api/tasks", TaskList);
-openapi.post("/api/tasks", TaskCreate);
-openapi.get("/api/tasks/:taskSlug", TaskFetch);
-openapi.delete("/api/tasks/:taskSlug", TaskDelete);
+registerPageRoutes(app);
+registerTimeRoutes(app);
+registerConvertRoutes(app);
+registerTimezoneRoutes(app);
+registerDatasetRoutes(app);
 
-// You may also register routes for non OpenAPI directly on Hono
-// app.get('/test', (c) => c.text('Hono!'))
-
-// Export the Hono app
 export default app;

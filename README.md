@@ -1,25 +1,37 @@
-# Cloudflare Workers OpenAPI 3.1
+# rfc3339.date
 
-This is a Cloudflare Worker with OpenAPI 3.1 using [chanfana](https://github.com/cloudflare/chanfana) and [Hono](https://github.com/honojs/hono).
+Cloudflare Worker API for RFC3339 validation, conversion, timezone offsets/transitions, and leap second dataset access.
 
-This is an example project made to be used as a quick start into building OpenAPI compliant Workers that generates the
-`openapi.json` schema automatically from code and validates the incoming request to the defined parameters or request body.
+## Run
 
-## Get started
+```bash
+pnpm install
+pnpm dev
+```
 
-1. Sign up for [Cloudflare Workers](https://workers.dev). The free tier is more than enough for most use cases.
-2. Clone this project and install dependencies with `npm install`
-3. Run `wrangler login` to login to your Cloudflare account in wrangler
-4. Run `wrangler deploy` to publish the API to Cloudflare Workers
+## Quality Checks
 
-## Project structure
+```bash
+pnpm format
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+```
 
-1. Your main router is defined in `src/index.ts`.
-2. Each endpoint has its own file in `src/endpoints/`.
-3. For more information read the [chanfana documentation](https://chanfana.pages.dev/) and [Hono documentation](https://hono.dev/docs).
+## Deploy
 
-## Development
+```bash
+pnpm deploy
+```
 
-1. Run `wrangler dev` to start a local instance of the API.
-2. Open `http://localhost:8787/` in your browser to see the Swagger interface where you can try the endpoints.
-3. Changes made in the `src/` folder will automatically trigger the server to reload, you only need to refresh the Swagger interface.
+## Example Calls
+
+```bash
+curl https://rfc3339.date/now
+curl "https://rfc3339.date/now/Europe%2FBerlin?precision=3"
+curl "https://rfc3339.date/validate?value=2026-02-25T19:17:03Z&profile=rfc3339&mode=strict&json=1"
+curl "https://rfc3339.date/convert?value=1700000000&in=unix&out=rfc3339"
+curl "https://rfc3339.date/tz/Europe%2FBerlin/transitions?start=2026-01-01T00:00:00Z&end=2027-01-01T00:00:00Z"
+curl "https://rfc3339.date/leapseconds"
+```
