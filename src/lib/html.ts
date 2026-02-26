@@ -65,7 +65,6 @@ export function renderLanding(nowIso: string): string {
   <a class="surface rounded-md px-3 py-2 transition-transform duration-150 hover:-translate-y-0.5 hover:border-brand-500 hover:text-brand-700 dark:hover:text-brand-400 ${focusRing}" href="/imprint">Imprint</a>
 </nav>
 <footer class="mt-8 text-sm text-zinc-700 dark:text-zinc-300">
-  <p>Imprint: Uwe Schwarz, Uhlandstr. 20, 67069 Ludwigshafen, Germany</p>
 </footer>
 <script>
   const target = document.getElementById("live-now");
