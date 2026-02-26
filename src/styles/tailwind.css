@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+
+  body {
+    font-family: "Instrument Sans", "Avenir Next", "Segoe UI", sans-serif;
+    background:
+      radial-gradient(
+        90rem 52rem at 8% -30%,
+        color-mix(in oklab, #14b8a6 22%, transparent),
+        transparent 45%
+      ),
+      radial-gradient(
+        84rem 42rem at 90% -20%,
+        color-mix(in oklab, #84cc16 24%, transparent),
+        transparent 54%
+      ),
+      #f8fafc;
+  }
+
+  h1,
+  h2 {
+    font-family: "Fraunces", Georgia, serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer components {
+  .page-shell {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .surface-card {
+    box-shadow:
+      0 1px 1px color-mix(in oklab, #0f172a 10%, transparent),
+      0 12px 38px color-mix(in oklab, #0f172a 6%, transparent);
+  }
+}
+
+@layer utilities {
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .fx-enter {
+    animation: rise 0.65s cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+
+  .fx-delay-1 {
+    animation-delay: 0.08s;
+  }
+
+  .fx-delay-2 {
+    animation-delay: 0.16s;
+  }
+
+  .fx-delay-3 {
+    animation-delay: 0.24s;
+  }
+
+  .fx-hover-lift {
+    transition:
+      transform 220ms ease,
+      box-shadow 220ms ease,
+      border-color 220ms ease;
+  }
+
+  .fx-hover-lift:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 28px color-mix(in oklab, #0f172a 12%, transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fx-enter {
+      animation: none;
+    }
+
+    .fx-hover-lift,
+    .fx-hover-lift:hover {
+      transform: none;
+      transition: none;
+      box-shadow: none;
+    }
+  }
+}

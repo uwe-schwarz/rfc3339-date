@@ -3,6 +3,7 @@ import { OPENAPI_YAML } from "../lib/constants";
 import { formatRfc3339Utc } from "../lib/date";
 import { addCommonHeaders } from "../lib/http";
 import { renderDocs, renderImprint, renderLanding } from "../lib/html";
+import { TAILWIND_CSS } from "../lib/tailwind.generated";
 
 export function registerPageRoutes(app: Hono<{ Bindings: Env }>) {
   app.get("/", () => {
@@ -39,6 +40,15 @@ export function registerPageRoutes(app: Hono<{ Bindings: Env }>) {
       headers: addCommonHeaders({
         "content-type": "application/yaml; charset=utf-8",
         "cache-control": "public, max-age=3600",
+      }),
+    });
+  });
+
+  app.get("/styles.css", () => {
+    return new Response(TAILWIND_CSS, {
+      headers: addCommonHeaders({
+        "content-type": "text/css; charset=utf-8",
+        "cache-control": "public, max-age=86400",
       }),
     });
   });

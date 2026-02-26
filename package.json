@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "wrangler dev",
-    "start": "wrangler dev",
-    "deploy": "wrangler deploy",
-    "build": "wrangler deploy --dry-run",
-    "checks": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
+    "build:styles": "node scripts/build-tailwind.mjs",
+    "check:component-lines": "node scripts/check-component-lines.mjs",
+    "dev": "pnpm run build:styles && wrangler dev",
+    "start": "pnpm run build:styles && wrangler dev",
+    "deploy": "pnpm run build:styles && wrangler deploy",
+    "build": "pnpm run build:styles && wrangler deploy --dry-run",
+    "checks": "pnpm run check:component-lines && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
     "cf-typegen": "wrangler types",
     "format": "oxfmt src tests package.json tsconfig.json wrangler.jsonc",
     "lint": "oxlint .",
@@ -18,10 +20,12 @@
     "hono": "^4.12.3"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.2.1",
     "@types/node": "^25.3.1",
     "@typescript/native-preview": "7.0.0-dev.20260226.1",
     "oxfmt": "^0.35.0",
     "oxlint": "^1.50.0",
+    "tailwindcss": "^4.2.1",
     "vitest": "^4.0.18",
     "wrangler": "^4.68.1"
   }
