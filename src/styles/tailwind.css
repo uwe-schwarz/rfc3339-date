@@ -21,18 +21,12 @@
   }
 
   body {
-    background:
-      radial-gradient(circle at 15% 18%, color-mix(in oklab, var(--color-brand-500) 14%, transparent) 0%, transparent 48%),
-      radial-gradient(circle at 84% 3%, color-mix(in oklab, var(--color-accent-500) 12%, transparent) 0%, transparent 52%),
-      linear-gradient(180deg, oklch(0.99 0.01 220), oklch(0.97 0.01 215));
+    background-color: oklch(0.96 0.015 205);
   }
 
   @media (prefers-color-scheme: dark) {
     body {
-      background:
-        radial-gradient(circle at 18% 18%, color-mix(in oklab, var(--color-brand-500) 22%, transparent) 0%, transparent 42%),
-        radial-gradient(circle at 86% 4%, color-mix(in oklab, var(--color-accent-500) 17%, transparent) 0%, transparent 46%),
-        linear-gradient(180deg, oklch(0.22 0.02 240), oklch(0.18 0.01 245));
+      background-color: oklch(0.19 0.02 235);
     }
   }
 }
