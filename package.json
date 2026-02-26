@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build:styles": "node scripts/build-tailwind.mjs",
+    "build:fonts": "node scripts/build-fonts.mjs",
+    "build:styles": "pnpm run build:fonts && node scripts/build-tailwind.mjs",
     "check:component-lines": "node scripts/check-component-lines.mjs",
     "dev": "pnpm run build:styles && wrangler dev",
     "start": "pnpm run build:styles && wrangler dev",
@@ -17,6 +18,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "geist": "^1.7.0",
     "hono": "^4.12.3"
   },
   "devDependencies": {

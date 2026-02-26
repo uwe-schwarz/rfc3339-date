@@ -5,6 +5,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "rfc3339-date",
+  "account_id": "3412b7b18e61869bba3dc055c8096f84",
   "main": "src/index.ts",
   "compatibility_date": "2025-09-27",
   "observability": {
