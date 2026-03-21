@@ -14,7 +14,11 @@ export function registerConvertRoutes(app: Hono<{ Bindings: Env }>) {
 
     const profile = (c.req.query("profile") ?? "rfc3339") as ValidationProfile;
     const out = (c.req.query("out") ?? "rfc3339") as Exclude<Encoding, "auto">;
-    const precision = getPrecision(c.req.query("precision"), c.req.query("format"));
+    const precisionResult = getPrecision(c.req.query("precision"), c.req.query("format"));
+    if ("error" in precisionResult) {
+      return errorResponse(c, 400, precisionResult.error, precisionResult.message);
+    }
+    const precision = precisionResult.precision;
     const tz = c.req.query("tz") ?? null;
     if (tz && !ensureIanaZone(tz))
       return errorResponse(c, 404, "zone_not_found", `Unknown IANA time zone '${tz}'.`);
@@ -57,7 +61,11 @@ export function registerConvertRoutes(app: Hono<{ Bindings: Env }>) {
 
     const input = (c.req.query("in") ?? "auto") as Encoding;
     const out = (c.req.query("out") ?? "rfc3339") as Exclude<Encoding, "auto">;
-    const precision = getPrecision(c.req.query("precision"), c.req.query("format"));
+    const precisionResult = getPrecision(c.req.query("precision"), c.req.query("format"));
+    if ("error" in precisionResult) {
+      return errorResponse(c, 400, precisionResult.error, precisionResult.message);
+    }
+    const precision = precisionResult.precision;
     const tz = c.req.query("tz") ?? null;
     if (tz && !ensureIanaZone(tz))
       return errorResponse(c, 404, "zone_not_found", `Unknown IANA time zone '${tz}'.`);
@@ -106,7 +114,11 @@ export function registerConvertRoutes(app: Hono<{ Bindings: Env }>) {
     const out = (c.req.query("out") ?? "rfc3339") as Exclude<Encoding, "auto">;
     const mode = c.req.query("mode") ?? "nearest";
     const unit = c.req.query("unit") ?? "ms";
-    const precision = getPrecision(c.req.query("precision"), c.req.query("format"));
+    const precisionResult = getPrecision(c.req.query("precision"), c.req.query("format"));
+    if ("error" in precisionResult) {
+      return errorResponse(c, 400, precisionResult.error, precisionResult.message);
+    }
+    const precision = precisionResult.precision;
     const tz = c.req.query("tz") ?? null;
 
     const parsed = parseInputToInstant(value, input, "latest");

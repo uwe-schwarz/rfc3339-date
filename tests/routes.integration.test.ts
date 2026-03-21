@@ -3,16 +3,8 @@ import app from "../src/index";
 
 const FIXED_ISO = "2026-02-26T12:34:56.789Z";
 
-function makeAssetEnv(body = "asset", status = 200): Env {
-  return {
-    ASSETS: {
-      fetch: async () => new Response(body, { status, headers: { "content-type": "text/plain" } }),
-    },
-  } as unknown as Env;
-}
-
-function request(path: string, init?: RequestInit, env?: Env): Promise<Response> {
-  return Promise.resolve(app.request(`http://localhost${path}`, init, env as never));
+function request(path: string, init?: RequestInit): Promise<Response> {
+  return Promise.resolve(app.request(`http://localhost${path}`, init));
 }
 
 describe("all routes", () => {
@@ -20,17 +12,57 @@ describe("all routes", () => {
     const landing = await request("/");
     expect(landing.status).toBe(200);
     expect(landing.headers.get("content-type")).toContain("text/html");
+    const landingHtml = await landing.text();
+    expect(landingHtml).toContain("This is a fun project");
+    expect(landingHtml).toContain('href="/openapi.json"');
+    expect(landingHtml).toContain('href="/openapi.scalar.json"');
 
     const docs = await request("/docs");
-    expect(docs.status).toBe(200);
-    expect(docs.headers.get("content-security-policy")).toContain("default-src 'self'");
+    expect(docs.status).toBe(404);
 
     const imprint = await request("/imprint");
     expect(imprint.status).toBe(200);
+    expect(await imprint.text()).toContain("Loading GitHub contribution stats");
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (input, init) => {
+      if (String(input).includes("github.com/users/uwe-schwarz/contributions")) {
+        return new Response(
+          '<h2 id="js-contribution-activity-description">123 contributions in the last year</h2><table><tbody><tr><td class="ContributionCalendar-day" data-level="2" onclick="alert(1)"></td><td><script>alert(1)</script></td></tr></tbody></table>',
+          { status: 200, headers: { "content-type": "text/html" } },
+        );
+      }
+      return originalFetch(input, init);
+    };
+
+    try {
+      const githubContributions = await request("/github/uwe-schwarz/contributions");
+      expect(githubContributions.status).toBe(200);
+      const githubJson = (await githubContributions.json()) as {
+        countText: string | null;
+        calendarHtml: string | null;
+      };
+      expect(githubJson.countText).toContain("123 contributions");
+      expect(githubJson.calendarHtml).toContain('data-level="2"');
+      expect(githubJson.calendarHtml).not.toContain("onclick");
+      expect(githubJson.calendarHtml).not.toContain("<script");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
 
     const openapi = await request("/openapi.yaml");
     expect(openapi.status).toBe(200);
     expect(await openapi.text()).toContain("openapi: 3.1.0");
+
+    const openapiJson = await request("/openapi.json");
+    expect(openapiJson.status).toBe(200);
+    expect(openapiJson.headers.get("content-type")).toContain("application/json");
+    expect(await openapiJson.text()).toContain('"openapi": "3.1.0"');
+
+    const openapiScalarJson = await request("/openapi.scalar.json");
+    expect(openapiScalarJson.status).toBe(200);
+    expect(openapiScalarJson.headers.get("content-type")).toContain("application/json");
+    expect(await openapiScalarJson.text()).toContain('"openapi": "3.0.3"');
 
     const styles = await request("/styles.css");
     expect(styles.status).toBe(200);
@@ -46,12 +78,8 @@ describe("all routes", () => {
     expect((await fontSquare.arrayBuffer()).byteLength).toBeGreaterThan(100);
     expect((await fontMono.arrayBuffer()).byteLength).toBeGreaterThan(100);
 
-    const rapidocAsset = await request("/rapidoc/rapidoc-min.js", undefined, makeAssetEnv("js"));
-    expect(rapidocAsset.status).toBe(200);
-    expect(await rapidocAsset.text()).toBe("js");
-
-    const rapidocMissing = await request("/rapidoc/missing.js", undefined, makeAssetEnv("", 404));
-    expect(rapidocMissing.status).toBe(404);
+    const rapidocAsset = await request("/rapidoc/rapidoc-min.js");
+    expect(rapidocAsset.status).toBe(404);
   });
 
   it("serves time and validation routes", async () => {
@@ -64,6 +92,9 @@ describe("all routes", () => {
     const nowZone = await request(`/now/Europe%2FBerlin?fixed=${encodeURIComponent(FIXED_ISO)}`);
     expect(nowZone.status).toBe(200);
     expect(await nowZone.text()).toContain("2026-02-26T");
+
+    const nowBadPrecision = await request("/now?precision=10");
+    expect(nowBadPrecision.status).toBe(400);
 
     const validateOk = await request(`/validate?value=${encodeURIComponent(FIXED_ISO)}&json=1`);
     expect(validateOk.status).toBe(200);
@@ -82,7 +113,9 @@ describe("all routes", () => {
       }),
     });
     expect(validateBatch.status).toBe(200);
-    const validateBatchJson = (await validateBatch.json()) as { results: Array<{ valid: boolean }> };
+    const validateBatchJson = (await validateBatch.json()) as {
+      results: Array<{ valid: boolean }>;
+    };
     expect(validateBatchJson.results).toHaveLength(2);
 
     const validateBadBody = await request("/validate", {
@@ -131,6 +164,9 @@ describe("all routes", () => {
     expect(tzList.status).toBe(200);
     const tzListJson = (await tzList.json()) as { zones: Array<{ id: string }> };
     expect(Array.isArray(tzListJson.zones)).toBe(true);
+
+    const tzListBadLimit = await request("/tz?limit=0");
+    expect(tzListBadLimit.status).toBe(400);
 
     const tzOffset = await request(
       `/tz/Europe%2FBerlin/offset?at=${encodeURIComponent(FIXED_ISO)}&json=1`,

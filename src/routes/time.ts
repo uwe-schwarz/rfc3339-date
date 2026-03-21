@@ -16,7 +16,11 @@ function resolvedNowMs(c: Context): number {
 export function registerTimeRoutes(app: Hono<{ Bindings: Env }>) {
   app.get("/now", (c) => {
     const unixMs = resolvedNowMs(c);
-    const precision = getPrecision(c.req.query("precision"), c.req.query("format"));
+    const precisionResult = getPrecision(c.req.query("precision"), c.req.query("format"));
+    if ("error" in precisionResult) {
+      return errorResponse(c, 400, precisionResult.error, precisionResult.message);
+    }
+    const precision = precisionResult.precision;
     const now = formatRfc3339Utc({ unixMs, nsRemainder: 0 }, precision);
     return textOrJson(
       c,
@@ -32,7 +36,11 @@ export function registerTimeRoutes(app: Hono<{ Bindings: Env }>) {
     if (!ensureIanaZone(tz))
       return errorResponse(c, 404, "zone_not_found", `Unknown IANA time zone '${tz}'.`);
     const unixMs = resolvedNowMs(c);
-    const precision = getPrecision(c.req.query("precision"), c.req.query("format"));
+    const precisionResult = getPrecision(c.req.query("precision"), c.req.query("format"));
+    if ("error" in precisionResult) {
+      return errorResponse(c, 400, precisionResult.error, precisionResult.message);
+    }
+    const precision = precisionResult.precision;
     const now = toOutput({ unixMs, nsRemainder: 0 }, "rfc3339", tz, precision);
     const offset = now.endsWith("Z") ? "Z" : now.slice(-6);
     return textOrJson(

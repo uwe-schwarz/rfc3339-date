@@ -25,7 +25,16 @@ function findTransitionBoundary(
 export function registerTimezoneRoutes(app: Hono<{ Bindings: Env }>) {
   app.get("/tz", (c) => {
     const q = (c.req.query("q") ?? "").toLowerCase();
-    const limit = Math.min(500, Math.max(1, Number(c.req.query("limit") ?? "50")));
+    const limitRaw = c.req.query("limit");
+    const limit = limitRaw ? Number(limitRaw) : 50;
+    if (!Number.isInteger(limit) || limit < 1 || limit > 500) {
+      return errorResponse(
+        c,
+        400,
+        "invalid_limit",
+        "Query parameter `limit` must be an integer between 1 and 500.",
+      );
+    }
     const all = (
       Intl as unknown as { supportedValuesOf?: (key: string) => string[] }
     ).supportedValuesOf?.("timeZone") ?? ["UTC", "Europe/Berlin", "America/New_York"];
