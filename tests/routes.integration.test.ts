@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import app from "../src/index";
+import { SCALAR_REGISTRY_URL } from "../src/lib/html";
 
 const FIXED_ISO = "2026-02-26T12:34:56.789Z";
 
@@ -14,17 +15,40 @@ describe("all routes", () => {
     expect(landing.headers.get("content-type")).toContain("text/html");
     const landingHtml = await landing.text();
     expect(landingHtml).toContain("This is a fun project");
-    expect(landingHtml).toContain("https://registry.scalar.com/@iq42/apis/rfc3339date-time-api@latest");
+    expect(landingHtml).toContain('href="/openapi.json"');
+    expect(landingHtml).toContain('href="/openapi.scalar.json"');
 
     const docs = await request("/docs");
-    expect(docs.status).toBe(200);
-    expect(docs.headers.get("content-security-policy")).toContain("default-src 'self'");
-    const docsHtml = await docs.text();
-    expect(docsHtml).not.toContain("<rapi-doc");
-    expect(docsHtml).toContain("https://registry.scalar.com/@iq42/apis/rfc3339date-time-api@latest");
+    expect(docs.status).toBe(302);
+    expect(docs.headers.get("location")).toBe(SCALAR_REGISTRY_URL);
 
     const imprint = await request("/imprint");
     expect(imprint.status).toBe(200);
+    expect(await imprint.text()).toContain("Loading GitHub contribution stats");
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (input, init) => {
+      if (String(input).includes("github.com/users/uwe-schwarz/contributions")) {
+        return new Response(
+          '<h2 id="js-contribution-activity-description">123 contributions in the last year</h2><table><tbody><tr><td class="ContributionCalendar-day" data-level="2"></td></tr></tbody></table>',
+          { status: 200, headers: { "content-type": "text/html" } },
+        );
+      }
+      return originalFetch(input, init);
+    };
+
+    try {
+      const githubContributions = await request("/github/uwe-schwarz/contributions");
+      expect(githubContributions.status).toBe(200);
+      const githubJson = (await githubContributions.json()) as {
+        countText: string | null;
+        calendarHtml: string | null;
+      };
+      expect(githubJson.countText).toContain("123 contributions");
+      expect(githubJson.calendarHtml).toContain('data-level="2"');
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
 
     const openapi = await request("/openapi.yaml");
     expect(openapi.status).toBe(200);

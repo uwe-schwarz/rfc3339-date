@@ -6,7 +6,7 @@ import {
   GEIST_PIXEL_SQUARE_WOFF2_BASE64,
 } from "../lib/fonts.generated";
 import { addCommonHeaders } from "../lib/http";
-import { renderDocs, renderImprint, renderLanding } from "../lib/html";
+import { renderImprint, renderLanding, SCALAR_REGISTRY_URL } from "../lib/html";
 import {
   OPENAPI_JSON,
   OPENAPI_SCALAR_COMPAT_JSON,
@@ -16,6 +16,28 @@ import { TAILWIND_CSS } from "../lib/tailwind.generated";
 
 function decodeBase64(base64: string): Uint8Array {
   return Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+}
+
+function stripTags(value: string): string {
+  return value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function extractGitHubContributionData(html: string) {
+  const headingMatch = html.match(/<h2[^>]*id="js-contribution-activity-description"[^>]*>([\s\S]*?)<\/h2>/);
+  const tableMatch = html.match(/<table[\s\S]*?<\/table>/);
+  const countText = headingMatch ? stripTags(headingMatch[1]) : null;
+  if (!countText || !tableMatch) {
+    return null;
+  }
+
+  const calendarHtml = tableMatch[0]
+    .replace(/<tool-tip[\s\S]*?<\/tool-tip>/g, "")
+    .replace(/\sdata-hydro-click="[^"]*"/g, "")
+    .replace(/\sdata-hydro-click-hmac="[^"]*"/g, "")
+    .replace(/\sdata-view-component="[^"]*"/g, "")
+    .replace(/\stabindex="0"/g, "");
+
+  return { countText, calendarHtml };
 }
 
 export function registerPageRoutes(app: Hono<{ Bindings: Env }>) {
@@ -30,15 +52,7 @@ export function registerPageRoutes(app: Hono<{ Bindings: Env }>) {
   });
 
   app.get("/docs", () => {
-    const now = formatRfc3339Utc({ unixMs: Date.now(), nsRemainder: 0 }, 3);
-    return new Response(renderDocs(now), {
-      headers: addCommonHeaders({
-        "content-type": "text/html; charset=utf-8",
-        "content-security-policy":
-          "default-src 'self'; connect-src 'self'; font-src 'self' data:; img-src 'self' data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; base-uri 'self'",
-        "cache-control": "public, max-age=60",
-      }),
-    });
+    return Response.redirect(SCALAR_REGISTRY_URL, 302);
   });
 
   app.get("/imprint", () => {
@@ -48,6 +62,53 @@ export function registerPageRoutes(app: Hono<{ Bindings: Env }>) {
         "cache-control": "public, max-age=3600",
       }),
     });
+  });
+
+  app.get("/github/uwe-schwarz/contributions", async () => {
+    try {
+      const response = await fetch("https://github.com/users/uwe-schwarz/contributions", {
+        headers: {
+          "user-agent": "rfc3339.date",
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`GitHub returned ${response.status}`);
+      }
+
+      const html = await response.text();
+      const data = extractGitHubContributionData(html);
+      if (!data) {
+        throw new Error("Could not parse GitHub contributions markup");
+      }
+
+      return new Response(
+        JSON.stringify({
+          profileUrl: "https://github.com/uwe-schwarz",
+          countText: data.countText,
+          calendarHtml: data.calendarHtml,
+        }),
+        {
+          headers: addCommonHeaders({
+            "content-type": "application/json; charset=utf-8",
+            "cache-control": "public, max-age=21600",
+          }),
+        },
+      );
+    } catch {
+      return new Response(
+        JSON.stringify({
+          profileUrl: "https://github.com/uwe-schwarz",
+          countText: null,
+          calendarHtml: null,
+        }),
+        {
+          headers: addCommonHeaders({
+            "content-type": "application/json; charset=utf-8",
+            "cache-control": "public, max-age=300",
+          }),
+        },
+      );
+    }
   });
 
   app.get("/openapi.yaml", () => {

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://cdn.scalar.com/schema/scalar-config-next.json",
+  "scalar": "2.0.0",
+  "info": {
+    "title": "rfc3339.date",
+    "description": "Strict RFC3339 API docs for validation, conversion, timezone transitions, and leap second data.",
+    "version": "0.1.0"
+  },
+  "assetsDir": "scalar/assets",
+  "siteConfig": {
+    "subdomain": "rfc3339date",
+    "theme": "deepSpace",
+    "layout": {
+      "toc": true,
+      "header": true,
+      "pageTitle": true,
+      "pageActions": true
+    },
+    "head": {
+      "title": "rfc3339.date Docs",
+      "meta": {
+        "description": "Scalar docs for rfc3339.date, a strict RFC3339 API with validation, conversion, timezone transitions, and leap second data."
+      },
+      "styles": [
+        {
+          "path": "scalar/assets/scalar-theme.css"
+        }
+      ]
+    },
+    "footer": {
+      "belowSidebar": true,
+      "filepath": "scalar/footer.html"
+    }
+  },
+  "navigation": {
+    "header": [
+      {
+        "type": "link",
+        "title": "API",
+        "to": "/api"
+      },
+      {
+        "type": "link",
+        "title": "Registry",
+        "to": "https://registry.scalar.com/@iq42/apis/rfc3339date-time-api@latest",
+        "newTab": true
+      },
+      {
+        "type": "link",
+        "title": "Website",
+        "to": "https://rfc3339.date",
+        "newTab": true
+      }
+    ],
+    "sidebar": [
+      {
+        "title": "Overview",
+        "path": "/"
+      },
+      {
+        "title": "API Reference",
+        "path": "/api"
+      }
+    ],
+    "routes": {
+      "/": {
+        "type": "page",
+        "filepath": "scalar/index.md"
+      },
+      "/api": {
+        "type": "openapi",
+        "title": "API Reference",
+        "description": "OpenAPI reference for rfc3339.date.",
+        "filepath": "docs/openapi.scalar.json",
+        "config": {
+          "theme": "deepSpace",
+          "showOperationId": true,
+          "documentDownloadType": "both",
+          "hideTestRequestButton": false,
+          "hideDownloadButton": false,
+          "defaultOpenAllTags": false
+        }
+      }
+    }
+  }
+}
