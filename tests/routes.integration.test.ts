@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import app from "../src/index";
-import { SCALAR_REGISTRY_URL } from "../src/lib/html";
 
 const FIXED_ISO = "2026-02-26T12:34:56.789Z";
 
@@ -19,8 +18,7 @@ describe("all routes", () => {
     expect(landingHtml).toContain('href="/openapi.scalar.json"');
 
     const docs = await request("/docs");
-    expect(docs.status).toBe(302);
-    expect(docs.headers.get("location")).toBe(SCALAR_REGISTRY_URL);
+    expect(docs.status).toBe(404);
 
     const imprint = await request("/imprint");
     expect(imprint.status).toBe(200);

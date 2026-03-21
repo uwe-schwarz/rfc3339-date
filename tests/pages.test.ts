@@ -11,7 +11,6 @@ describe("renderLanding", () => {
 
     expect(html).toContain("This is a fun project");
     expect(html).toContain("not a reliable source of correct date or time");
-    expect(html).toContain('href="/docs"');
     expect(html).toContain(SCALAR_REGISTRY_URL);
     expect(html).toContain('href="/openapi.yaml"');
     expect(html).toContain('href="/openapi.json"');

@@ -6,7 +6,7 @@ import {
   GEIST_PIXEL_SQUARE_WOFF2_BASE64,
 } from "../lib/fonts.generated";
 import { addCommonHeaders } from "../lib/http";
-import { renderImprint, renderLanding, SCALAR_REGISTRY_URL } from "../lib/html";
+import { renderImprint, renderLanding } from "../lib/html";
 import {
   OPENAPI_JSON,
   OPENAPI_SCALAR_COMPAT_JSON,
@@ -49,10 +49,6 @@ export function registerPageRoutes(app: Hono<{ Bindings: Env }>) {
         "cache-control": "public, max-age=60",
       }),
     });
-  });
-
-  app.get("/docs", () => {
-    return Response.redirect(SCALAR_REGISTRY_URL, 302);
   });
 
   app.get("/imprint", () => {
