@@ -12,11 +12,16 @@ describe("all routes", () => {
     const landing = await request("/");
     expect(landing.status).toBe(200);
     expect(landing.headers.get("content-type")).toContain("text/html");
+    const landingHtml = await landing.text();
+    expect(landingHtml).toContain("This is a fun project");
+    expect(landingHtml).toContain("https://registry.scalar.com/@iq42/apis/rfc3339date-time-api@latest");
 
     const docs = await request("/docs");
     expect(docs.status).toBe(200);
     expect(docs.headers.get("content-security-policy")).toContain("default-src 'self'");
-    expect(await docs.text()).not.toContain("<rapi-doc");
+    const docsHtml = await docs.text();
+    expect(docsHtml).not.toContain("<rapi-doc");
+    expect(docsHtml).toContain("https://registry.scalar.com/@iq42/apis/rfc3339date-time-api@latest");
 
     const imprint = await request("/imprint");
     expect(imprint.status).toBe(200);

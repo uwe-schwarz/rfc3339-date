@@ -29,6 +29,9 @@ export function renderLanding(nowIso: string): string {
     <p class="rounded-md border border-lime-500/40 bg-lime-500/10 px-3 py-1 text-sm font-medium text-lime-400">Live now: <span id="live-now" class="code-result">${nowIso}</span></p>
   </div>
   <p class="mt-3 max-w-3xl text-lime-300">Strict RFC3339 API with validation, conversion, timezone transitions, and leap second dataset endpoints.</p>
+  <p class="mt-3 max-w-3xl rounded-lg border border-amber-500/30 bg-amber-500/8 px-4 py-3 text-sm text-amber-200">
+    This is a fun project, not a reliable source of correct date or time. It only reports this server's current clock and is not backed by any serious timekeeping hardware or authority.
+  </p>
 </header>
 <section class="fx-enter fx-delay-1 mb-8 grid gap-3 sm:grid-cols-3">
   <div class="surface-card fx-hover-lift rounded-lg border border-lime-500/35 bg-zinc-950/40 px-4 py-3 text-center text-sm text-lime-300">FREE</div>
@@ -46,6 +49,7 @@ export function renderLanding(nowIso: string): string {
 <nav class="fx-enter fx-delay-3 flex flex-wrap gap-3 text-sm">
   <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="/docs">Docs</a>
   <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="/openapi.yaml">OpenAPI YAML</a>
+  <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="https://registry.scalar.com/@iq42/apis/rfc3339date-time-api@latest">Scalar Registry</a>
   <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="/imprint">Imprint</a>
 </nav>
 <footer class="mt-12 border-t border-lime-500/25 pt-6 text-sm text-lime-400">
@@ -100,6 +104,7 @@ export function renderDocs(nowIso: string): string {
     <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="/openapi.yaml">OpenAPI YAML</a>
     <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="/openapi.json">OpenAPI JSON</a>
     <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="/openapi.scalar.json">Scalar-compatible JSON</a>
+    <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="https://registry.scalar.com/@iq42/apis/rfc3339date-time-api@latest">Scalar Registry</a>
     <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="/">Back to landing page</a>
   </div>
   <div class="grid gap-3 text-sm md:grid-cols-2">
