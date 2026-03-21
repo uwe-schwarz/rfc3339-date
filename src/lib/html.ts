@@ -4,7 +4,8 @@ export function baseLayout(
   options?: { head?: string; mainClassName?: string },
 ): string {
   const head = options?.head ?? "";
-  const mainClassName = options?.mainClassName ?? "mx-auto w-full max-w-5xl px-4 py-8 md:px-8 md:py-12";
+  const mainClassName =
+    options?.mainClassName ?? "mx-auto w-full max-w-5xl px-4 py-8 md:px-8 md:py-12";
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -86,43 +87,43 @@ export function renderDocs(nowIso: string): string {
     <pre id="ex-convert" class="overflow-x-auto"></pre>
   </div>
 </section>
-<section class="surface-card fx-enter fx-delay-2 rounded-xl border border-lime-500/35 bg-zinc-950/45 p-1">
-  <rapi-doc
-    id="api-reference"
-    spec-url="/openapi.yaml"
-    style="display:block; min-height: 60vh; height: 78vh;"
-    layout="column"
-    render-style="view"
-    show-header="false"
-    show-info="true"
-    allow-spec-url-load="false"
-    allow-spec-file-load="false"
-    allow-spec-file-download="false"
-    allow-search="true"
-    allow-advanced-search="true"
-    allow-authentication="true"
-    allow-try="true"
-    allow-server-selection="true"
-    fill-request-fields-with-example="true"
-    schema-style="table"
-    load-fonts="false"
-    regular-font="Geist Pixel Square"
-    mono-font="Geist Mono"
-    nav-bg-color="#13261a"
-    nav-text-color="#90bfa0"
-    nav-hover-bg-color="#1d3828"
-    nav-hover-text-color="#d7f5dd"
-    nav-accent-color="#8fd086"
-    nav-accent-text-color="#112015"
-    text-color="#d4f1d9"
-    primary-color="#9ae68c"
-    header-color="#112015"
-    bg-color="#0b120d"
-    theme="dark"
-    font-size="default"
-  ></rapi-doc>
+<section class="surface-card fx-enter fx-delay-2 space-y-4 rounded-xl border border-lime-500/35 bg-zinc-950/45 p-5 text-lime-200">
+  <div class="space-y-2">
+    <h2 class="text-lg">Reference</h2>
+    <p class="text-sm text-lime-300">
+      The embedded API explorer has been removed while the docs UI is migrating to Scalar.
+      The source of truth remains the verified OpenAPI document. If Scalar rejects the YAML import,
+      try the Scalar-compatible JSON artifact first.
+    </p>
+  </div>
+  <div class="flex flex-wrap gap-3 text-sm">
+    <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="/openapi.yaml">OpenAPI YAML</a>
+    <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="/openapi.json">OpenAPI JSON</a>
+    <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="/openapi.scalar.json">Scalar-compatible JSON</a>
+    <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="/">Back to landing page</a>
+  </div>
+  <div class="grid gap-3 text-sm md:grid-cols-2">
+    <div class="rounded-lg border border-lime-500/25 bg-black/20 p-4">
+      <h3 class="mb-2 text-base text-lime-100">Core endpoints</h3>
+      <ul class="space-y-1 text-lime-300">
+        <li><code>GET /now</code></li>
+        <li><code>GET /now/{tz}</code></li>
+        <li><code>GET /validate</code> and <code>POST /validate</code></li>
+        <li><code>GET /canonical</code>, <code>/convert</code>, <code>/round</code></li>
+        <li><code>GET /tz</code>, <code>/tz/{zone}/offset</code>, <code>/tz/{zone}/transitions</code></li>
+        <li><code>GET /leapseconds</code></li>
+      </ul>
+    </div>
+    <div class="rounded-lg border border-lime-500/25 bg-black/20 p-4">
+      <h3 class="mb-2 text-base text-lime-100">Output rules</h3>
+      <ul class="space-y-1 text-lime-300">
+        <li>Default responses prefer <code>text/plain</code>.</li>
+        <li>Use <code>Accept: application/json</code> or <code>?json=1</code> for JSON.</li>
+        <li>Examples on this page stay pinned to the live timestamp above.</li>
+      </ul>
+    </div>
+  </div>
 </section>
-<script type="module" src="/rapidoc/rapidoc-min.js"></script>
 <script>
   let frozen = false; let frozenNow = null;
   const nowEl = document.getElementById("live-now");
@@ -130,30 +131,6 @@ export function renderDocs(nowIso: string): string {
   const exValidate = document.getElementById("ex-validate");
   const exConvert = document.getElementById("ex-convert");
   const button = document.getElementById("toggle-freeze");
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)");
-  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const docsEl = document.getElementById("api-reference");
-
-  const applyTheme = () => {
-    if (!docsEl) return;
-    const dark = prefersDark.matches;
-    docsEl.setAttribute("theme", dark ? "dark" : "light");
-    docsEl.setAttribute("bg-color", dark ? "#0b120d" : "#edf6e8");
-    docsEl.setAttribute("text-color", dark ? "#d4f1d9" : "#153322");
-    docsEl.setAttribute("header-color", dark ? "#112015" : "#d6ead4");
-    docsEl.setAttribute("nav-bg-color", dark ? "#13261a" : "#d9edd4");
-    docsEl.setAttribute("nav-text-color", dark ? "#90bfa0" : "#28523b");
-    docsEl.setAttribute("nav-hover-bg-color", dark ? "#1d3828" : "#c8e2c4");
-    docsEl.setAttribute("nav-hover-text-color", dark ? "#d7f5dd" : "#153322");
-    docsEl.setAttribute("primary-color", dark ? "#9ae68c" : "#2f7d4d");
-  };
-
-  const applyMotion = () => {
-    if (!docsEl) return;
-    docsEl.setAttribute("scroll-behavior", prefersReducedMotion.matches ? "auto" : "smooth");
-  };
-  applyTheme();
-  applyMotion();
 
   const currentIso = () => (frozen ? frozenNow : new Date())?.toISOString();
   const update = () => {
@@ -164,8 +141,6 @@ export function renderDocs(nowIso: string): string {
     if (exConvert) exConvert.textContent = 'curl "' + location.origin + '/convert?value=' + encodeURIComponent(iso) + '&in=rfc3339&out=unixms"';
   };
   button?.addEventListener("click", () => { frozen = !frozen; frozenNow = frozen ? new Date() : null; button.textContent = frozen ? "Resume time" : "Stop time"; update(); });
-  prefersDark.addEventListener("change", applyTheme);
-  prefersReducedMotion.addEventListener("change", applyMotion);
   update(); setInterval(() => { if (!frozen) update(); }, 1000);
 </script>`;
   return baseLayout(content, "rfc3339.date docs", {

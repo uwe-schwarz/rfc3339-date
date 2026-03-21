@@ -55,10 +55,26 @@ export function errorResponse(
   return c.json({ error, message, details: details ?? [] }, status as never, mergedHeaders);
 }
 
-export function getPrecision(query: string | undefined, format: string | undefined): number {
-  if (format === "rfc3339sec") return 0;
-  if (format === "rfc3339nano") return 9;
-  const p = query ? Number(query) : 3;
-  if (!Number.isInteger(p) || p < 0 || p > 9) return 3;
-  return p;
+export function getPrecision(
+  query: string | undefined,
+  format: string | undefined,
+): { precision: number } | { error: string; message: string } {
+  if (format && !["rfc3339", "rfc3339sec", "rfc3339nano"].includes(format)) {
+    return {
+      error: "invalid_format",
+      message: "Query parameter `format` must be rfc3339, rfc3339sec, or rfc3339nano.",
+    };
+  }
+  if (format === "rfc3339sec") return { precision: 0 };
+  if (format === "rfc3339nano") return { precision: 9 };
+  if (!query) return { precision: 3 };
+
+  const p = Number(query);
+  if (!Number.isInteger(p) || p < 0 || p > 9) {
+    return {
+      error: "invalid_precision",
+      message: "Query parameter `precision` must be an integer between 0 and 9.",
+    };
+  }
+  return { precision: p };
 }

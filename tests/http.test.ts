@@ -12,7 +12,10 @@ describe("setHeaderSafely", () => {
   });
 
   it("clones response when headers are immutable", () => {
-    const response = new Response("ok", { status: 200, headers: { "cache-control": "max-age=10" } });
+    const response = new Response("ok", {
+      status: 200,
+      headers: { "cache-control": "max-age=10" },
+    });
     const originalSet = response.headers.set.bind(response.headers);
     response.headers.set = () => {
       throw new TypeError("Can't modify immutable headers.");

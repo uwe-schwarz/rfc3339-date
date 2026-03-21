@@ -7,7 +7,11 @@ import {
 } from "../lib/fonts.generated";
 import { addCommonHeaders } from "../lib/http";
 import { renderDocs, renderImprint, renderLanding } from "../lib/html";
-import { OPENAPI_YAML } from "../lib/openapi.generated";
+import {
+  OPENAPI_JSON,
+  OPENAPI_SCALAR_COMPAT_JSON,
+  OPENAPI_YAML,
+} from "../lib/openapi.generated";
 import { TAILWIND_CSS } from "../lib/tailwind.generated";
 
 function decodeBase64(base64: string): Uint8Array {
@@ -15,15 +19,6 @@ function decodeBase64(base64: string): Uint8Array {
 }
 
 export function registerPageRoutes(app: Hono<{ Bindings: Env }>) {
-  app.get("/rapidoc/*", async (c) => {
-    const assetResponse = await c.env.ASSETS.fetch(c.req.raw);
-    if (assetResponse.status === 404) {
-      return c.notFound();
-    }
-
-    return assetResponse;
-  });
-
   app.get("/", () => {
     const now = formatRfc3339Utc({ unixMs: Date.now(), nsRemainder: 0 }, 3);
     return new Response(renderLanding(now), {
@@ -59,6 +54,24 @@ export function registerPageRoutes(app: Hono<{ Bindings: Env }>) {
     return new Response(OPENAPI_YAML, {
       headers: addCommonHeaders({
         "content-type": "application/yaml; charset=utf-8",
+        "cache-control": "public, max-age=3600",
+      }),
+    });
+  });
+
+  app.get("/openapi.json", () => {
+    return new Response(OPENAPI_JSON, {
+      headers: addCommonHeaders({
+        "content-type": "application/json; charset=utf-8",
+        "cache-control": "public, max-age=3600",
+      }),
+    });
+  });
+
+  app.get("/openapi.scalar.json", () => {
+    return new Response(OPENAPI_SCALAR_COMPAT_JSON, {
+      headers: addCommonHeaders({
+        "content-type": "application/json; charset=utf-8",
         "cache-control": "public, max-age=3600",
       }),
     });

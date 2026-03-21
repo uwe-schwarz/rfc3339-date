@@ -5,26 +5,28 @@
   "scripts": {
     "build:fonts": "node scripts/build-fonts.mjs",
     "build:openapi": "node scripts/build-openapi.mjs",
-    "build:scalar": "node scripts/build-scalar.mjs",
-    "build:styles": "pnpm run build:fonts && pnpm run build:openapi && pnpm run build:scalar && node scripts/build-tailwind.mjs",
+    "build:styles": "pnpm run build:fonts && pnpm run build:openapi && node scripts/build-tailwind.mjs",
     "check:component-lines": "node scripts/check-component-lines.mjs",
     "dev": "pnpm run build:styles && wrangler dev",
     "start": "pnpm run build:styles && wrangler dev",
     "deploy": "pnpm run build:styles && wrangler deploy",
     "build": "pnpm run build:styles && wrangler deploy --dry-run",
-    "checks": "pnpm run check:component-lines && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
+    "checks": "pnpm run check:component-lines && pnpm run lint && pnpm run lint:openapi && pnpm run lint:openapi:scalar && pnpm run typecheck && pnpm run test && pnpm run build",
     "cf-typegen": "wrangler types",
     "format": "oxfmt src tests package.json tsconfig.json wrangler.jsonc",
     "lint": "oxlint .",
+    "lint:openapi": "redocly lint docs/openapi.yaml",
+    "lint:openapi:scalar": "node scripts/validate-openapi-scalar.mjs",
     "typecheck": "tsgo --noEmit",
     "test": "vitest run"
   },
   "dependencies": {
     "geist": "^1.7.0",
-    "hono": "^4.12.3",
-    "rapidoc": "^9.3.8"
+    "hono": "^4.12.3"
   },
   "devDependencies": {
+    "@redocly/cli": "^2.24.1",
+    "@scalar/openapi-parser": "^0.25.6",
     "@tailwindcss/cli": "^4.2.1",
     "@types/node": "^25.3.1",
     "@typescript/native-preview": "7.0.0-dev.20260226.1",
