@@ -28,7 +28,7 @@ describe("all routes", () => {
     globalThis.fetch = async (input, init) => {
       if (String(input).includes("github.com/users/uwe-schwarz/contributions")) {
         return new Response(
-          '<h2 id="js-contribution-activity-description">123 contributions in the last year</h2><table><tbody><tr><td class="ContributionCalendar-day" data-level="2"></td></tr></tbody></table>',
+          '<h2 id="js-contribution-activity-description">123 contributions in the last year</h2><table><tbody><tr><td class="ContributionCalendar-day" data-level="2" onclick="alert(1)"></td><td><script>alert(1)</script></td></tr></tbody></table>',
           { status: 200, headers: { "content-type": "text/html" } },
         );
       }
@@ -44,6 +44,8 @@ describe("all routes", () => {
       };
       expect(githubJson.countText).toContain("123 contributions");
       expect(githubJson.calendarHtml).toContain('data-level="2"');
+      expect(githubJson.calendarHtml).not.toContain("onclick");
+      expect(githubJson.calendarHtml).not.toContain("<script");
     } finally {
       globalThis.fetch = originalFetch;
     }

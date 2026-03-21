@@ -22,6 +22,27 @@ function stripTags(value: string): string {
   return value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 
+function buildSafeContributionCalendar(tableHtml: string): string | null {
+  const rows = [...tableHtml.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/g)]
+    .map(([, rowHtml]) => {
+      const cells = [...rowHtml.matchAll(/<td\b([^>]*)>/g)]
+        .map(([, attrs]) => {
+          const level = attrs.match(/\bdata-level="([0-4])"/)?.[1];
+          if (level) {
+            return `<td class="ContributionCalendar-day" data-level="${level}"></td>`;
+          }
+          return "";
+        })
+        .filter(Boolean)
+        .join("");
+
+      return cells ? `<tr>${cells}</tr>` : "";
+    })
+    .filter(Boolean);
+
+  return rows.length > 0 ? `<table><tbody>${rows.join("")}</tbody></table>` : null;
+}
+
 function extractGitHubContributionData(html: string) {
   const headingMatch = html.match(/<h2[^>]*id="js-contribution-activity-description"[^>]*>([\s\S]*?)<\/h2>/);
   const tableMatch = html.match(/<table[\s\S]*?<\/table>/);
@@ -30,12 +51,10 @@ function extractGitHubContributionData(html: string) {
     return null;
   }
 
-  const calendarHtml = tableMatch[0]
-    .replace(/<tool-tip[\s\S]*?<\/tool-tip>/g, "")
-    .replace(/\sdata-hydro-click="[^"]*"/g, "")
-    .replace(/\sdata-hydro-click-hmac="[^"]*"/g, "")
-    .replace(/\sdata-view-component="[^"]*"/g, "")
-    .replace(/\stabindex="0"/g, "");
+  const calendarHtml = buildSafeContributionCalendar(tableMatch[0]);
+  if (!calendarHtml) {
+    return null;
+  }
 
   return { countText, calendarHtml };
 }
