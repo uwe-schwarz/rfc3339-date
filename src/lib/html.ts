@@ -1,12 +1,56 @@
 import { renderLandingBody, renderLandingHead } from "./landing-page";
-import { SCALAR_REGISTRY_URL } from "./page-constants";
+import { SCALAR_REGISTRY_URL, SITE_URL } from "./page-constants";
 
 export { SCALAR_REGISTRY_URL };
+
+type MetadataOptions = {
+  description: string;
+  path: string;
+  type?: "website" | "article";
+};
+
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function renderMetadataHead(title: string, options: MetadataOptions): string {
+  const canonicalUrl = `${SITE_URL}${options.path}`;
+  const imageUrl = `${SITE_URL}/fav.png`;
+  const escapedTitle = escapeHtml(title);
+  const escapedDescription = escapeHtml(options.description);
+  const escapedCanonicalUrl = escapeHtml(canonicalUrl);
+  const escapedImageUrl = escapeHtml(imageUrl);
+
+  return `
+    <meta name="description" content="${escapedDescription}" />
+    <link rel="canonical" href="${escapedCanonicalUrl}" />
+    <meta name="theme-color" content="#000000" />
+    <meta property="og:site_name" content="rfc3339.date" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="${options.type ?? "website"}" />
+    <meta property="og:title" content="${escapedTitle}" />
+    <meta property="og:description" content="${escapedDescription}" />
+    <meta property="og:url" content="${escapedCanonicalUrl}" />
+    <meta property="og:image" content="${escapedImageUrl}" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="760" />
+    <meta property="og:image:height" content="760" />
+    <meta property="og:image:alt" content="rfc3339.date clock emblem" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${escapedTitle}" />
+    <meta name="twitter:description" content="${escapedDescription}" />
+    <meta name="twitter:image" content="${escapedImageUrl}" />
+    <meta name="twitter:image:alt" content="rfc3339.date clock emblem" />`;
+}
 
 function baseLayout(
   content: string,
   title: string,
-  options?: { head?: string; mainClassName?: string },
+  options: { metadata: MetadataOptions; head?: string; mainClassName?: string },
 ): string {
   const head = options?.head ?? "";
   const mainClassName =
@@ -17,6 +61,7 @@ function baseLayout(
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${title}</title>
+    ${renderMetadataHead(title, options.metadata)}
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
@@ -33,6 +78,11 @@ function baseLayout(
 
 export function renderLanding(nowIso: string): string {
   return baseLayout(renderLandingBody(nowIso), "rfc3339.date", {
+    metadata: {
+      description:
+        "Strict RFC3339 time API for current time, validation, conversion, timezone lookup, transitions, and human event-time parsing.",
+      path: "/",
+    },
     head: renderLandingHead(),
   });
 }
@@ -62,6 +112,11 @@ export function renderImprint(): string {
 </section>
 <p class="fx-enter fx-delay-2 mt-6 text-sm"><a class="text-lime-300 hover:underline" href="/">Back to landing page</a></p>`;
   return baseLayout(content, "rfc3339.date imprint", {
+    metadata: {
+      description:
+        "Imprint and project contact details for rfc3339.date, including the GitHub profile and Scalar registry link.",
+      path: "/imprint",
+    },
     head: `<style>
       .gh-calendar-shell { overflow-x: auto; }
       .gh-calendar-shell table { border-collapse: separate; border-spacing: 4px; width: max-content; }
