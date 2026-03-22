@@ -21,6 +21,9 @@ describe("renderLanding", () => {
     expect(html).toContain('id="helper-code"');
     expect(html).toContain("eventlocal() {");
     expect(html).toContain('data-field="value"');
+    expect(html).toContain('<select data-field="in"');
+    expect(html).toContain('<option value="excel1900">excel1900</option>');
+    expect(html).toContain('<option value="emaildate">emaildate</option>');
     expect(html).toContain(SCALAR_REGISTRY_URL);
     expect(html).toContain('href="/openapi.yaml"');
     expect(html).toContain('href="/openapi.json"');

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: rfc3339.date — Time API
-  version: 1.0.0
+  version: 1.1.0
   summary: "Strict RFC3339 time endpoints + validation + conversions (incl. exotic time standards)"
   description: >
     A precise, developer-centric time API.

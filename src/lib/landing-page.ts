@@ -37,6 +37,25 @@ const EVENT_EXAMPLES: EventExample[] = [
   },
 ];
 
+const CONVERSION_FORMATS = [
+  "rfc3339",
+  "iso8601",
+  "unix",
+  "unixms",
+  "ntp",
+  "httpdate",
+  "emaildate",
+  "gps",
+  "tai",
+  "jd",
+  "mjd",
+  "excel1900",
+  "excel1904",
+  "weekdate",
+  "ordinal",
+  "doy",
+] as const;
+
 const API_EXAMPLES: ApiExample[] = [
   {
     id: "now-zone",
@@ -74,6 +93,24 @@ function renderInput(
   return `<label class="space-y-2 text-xs text-lime-200">
     <span class="block font-medium uppercase tracking-[0.18em] text-lime-500">${label}</span>
     <input data-field="${name}"${zoneAttr} value="${escapeHtml(value)}" placeholder="${escapeHtml(placeholder)}" class="w-full rounded-lg border border-lime-500/25 bg-black/35 px-3 py-2 font-mono text-sm text-lime-100 outline-none transition focus:border-lime-300" />
+  </label>`;
+}
+
+function renderSelect(
+  name: string,
+  label: string,
+  value: string,
+  options: readonly string[],
+): string {
+  const optionMarkup = options
+    .map((option) => {
+      const selected = option === value ? " selected" : "";
+      return `<option value="${escapeHtml(option)}"${selected}>${escapeHtml(option)}</option>`;
+    })
+    .join("");
+  return `<label class="space-y-2 text-xs text-lime-200">
+    <span class="block font-medium uppercase tracking-[0.18em] text-lime-500">${label}</span>
+    <select data-field="${name}" class="w-full rounded-lg border border-lime-500/25 bg-black/35 px-3 py-2 font-mono text-sm text-lime-100 outline-none transition focus:border-lime-300">${optionMarkup}</select>
   </label>`;
 }
 
@@ -127,8 +164,8 @@ function renderApiCard(example: ApiExample): string {
       ? renderInput("tz", "tz", "", "my timezone", true)
       : [
           renderInput("value", "value", example.value ?? "", "1700000000"),
-          renderInput("in", "in", example.in ?? "", "unix"),
-          renderInput("out", "out", example.out ?? "", "rfc3339"),
+          renderSelect("in", "in", example.in ?? "unix", CONVERSION_FORMATS),
+          renderSelect("out", "out", example.out ?? "rfc3339", CONVERSION_FORMATS),
         ].join("");
   return `<article class="surface-card fx-enter example-card rounded-2xl border border-lime-500/35 p-4 md:p-5" data-card="${example.kind}" data-example="${example.id}">
     <div class="mb-4 flex items-start justify-between gap-4">

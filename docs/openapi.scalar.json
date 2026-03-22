@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "rfc3339.date — Time API",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "A precise, developer-centric time API. Defaults to canonical RFC3339 UTC for /now, supports IANA time zones, strict RFC3339 validation, ISO8601 validation, and conversions across common + exotic representations (NTP, GPS, TAI, JD/MJD, Excel, HTTP-date, RFC5322). Plain text is first-class; JSON is optional via Accept header or ?json=1.\n",
     "license": {
       "name": "NOASSERTION",
