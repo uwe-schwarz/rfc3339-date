@@ -16,6 +16,16 @@ describe("renderLanding", () => {
     expect(html).toContain('href="/openapi.json"');
     expect(html).toContain('href="/openapi.scalar.json"');
   });
+
+  it("includes standard favicon metadata", () => {
+    const html = renderLanding("2026-01-01T00:00:00.000Z");
+
+    expect(html).toContain('href="/favicon.ico"');
+    expect(html).toContain('href="/favicon-32x32.png"');
+    expect(html).toContain('href="/favicon-16x16.png"');
+    expect(html).toContain('href="/apple-touch-icon.png"');
+    expect(html).toContain('href="/site.webmanifest"');
+  });
 });
 
 describe("renderImprint", () => {
