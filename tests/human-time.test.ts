@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { parseHumanTime } from "../src/lib/human-time";
+import { parseHumanTime, resolveZoneSpec } from "../src/lib/human-time";
 
 describe("human time parsing", () => {
   test("parses explicit local time with abbreviation as fixed offset", () => {
@@ -53,5 +53,19 @@ describe("human time parsing", () => {
     if ("error" in parsed) {
       expect(parsed.error).toBe("invalid_zone_hint");
     }
+  });
+
+  test("accepts hours-only numeric offset tokens", () => {
+    const resolved = resolveZoneSpec("+05");
+    expect("spec" in resolved).toBe(true);
+    if ("spec" in resolved) {
+      expect(resolved.spec.kind).toBe("offset");
+      if (resolved.spec.kind === "offset") expect(resolved.spec.offsetMinutes).toBe(300);
+    }
+  });
+
+  test("rejects invalid slash-style zones", () => {
+    const resolved = resolveZoneSpec("Bad/Zone");
+    expect("error" in resolved).toBe(true);
   });
 });

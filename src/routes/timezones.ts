@@ -68,13 +68,24 @@ export function registerTimezoneRoutes(app: Hono<{ Bindings: Env }>) {
     if ("error" in targetResolved)
       return errorResponse(c, 404, "zone_not_found", `Unknown time zone '${to}'.`);
 
-    const from = c.req.query("from") ?? null;
+    const fromQuery = c.req.query("from");
+    if (fromQuery === "")
+      return errorResponse(c, 404, "zone_not_found", "Unknown IANA time zone ''.");
+    const from = fromQuery ?? null;
     if (from && from !== "UTC" && !ensureIanaZone(from))
       return errorResponse(c, 404, "zone_not_found", `Unknown IANA time zone '${from}'.`);
 
     const baseRaw = c.req.query("base");
-    const baseParsed = baseRaw ? parseInputToInstant(baseRaw, "rfc3339", "latest") : null;
-    if (baseRaw && !(baseParsed && "instant" in baseParsed))
+    if (baseRaw === "")
+      return errorResponse(
+        c,
+        400,
+        "invalid_base",
+        "Query parameter `base` must be RFC3339.",
+      );
+    const baseParsed =
+      typeof baseRaw === "string" ? parseInputToInstant(baseRaw, "rfc3339", "latest") : null;
+    if (baseRaw !== undefined && !(baseParsed && "instant" in baseParsed))
       return errorResponse(
         c,
         400,
@@ -83,10 +94,20 @@ export function registerTimezoneRoutes(app: Hono<{ Bindings: Env }>) {
       );
 
     const precisionQuery = c.req.query("precision");
+    if (precisionQuery === "") {
+      return errorResponse(
+        c,
+        400,
+        "invalid_precision",
+        "Query parameter `precision` must be an integer between 0 and 9.",
+      );
+    }
     const precision =
       precisionQuery === undefined
         ? 0
-        : Number.isInteger(Number(precisionQuery)) && Number(precisionQuery) >= 0 && Number(precisionQuery) <= 9
+        : /^[0-9]+$/.test(precisionQuery) &&
+            Number(precisionQuery) >= 0 &&
+            Number(precisionQuery) <= 9
           ? Number(precisionQuery)
           : null;
     if (precision === null) {

@@ -1813,8 +1813,8 @@
           "Timezones",
           "Conversion"
         ],
-        "summary": "Convert a human-style local time into another IANA time zone",
-        "description": "Parses human-oriented local times such as `5pm DST`, `tomorrow 3am CET`, or `2026-05-22 17:35 CEST`, resolves them to an instant, and renders that instant in the target IANA time zone. Supported source/target zone tokens include IANA zones, `UTC`, numeric offsets, and a curated abbreviation set (for example CET/CEST/EST/EDT/PST/PDT). `DST` and `STD` require `from=<IANA zone>` so the worker can resolve the regional rules. Plain text returns the target local RFC3339 value; JSON adds parsed source/target details.\n",
+        "summary": "Convert a human-style local time into another time-zone token",
+        "description": "Parses human-oriented local times such as `5pm DST`, `tomorrow 3am CET`, or `2026-05-22 17:35 CEST`, resolves them to an instant, and renders that instant in the target zone token. Supported source/target zone tokens include IANA zones, `UTC`, numeric offsets, and a curated abbreviation set (for example CET/CEST/EST/EDT/PST/PDT). `DST` and `STD` require `from=<IANA zone>` so the worker can resolve the regional rules. Plain text returns the target local RFC3339 value; JSON adds parsed source/target details.\n",
         "parameters": [
           {
             "name": "value",

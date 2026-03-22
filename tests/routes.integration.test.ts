@@ -212,6 +212,26 @@ describe("all routes", () => {
     );
     expect(tzConvertBadBase.status).toBe(400);
 
+    const tzConvertEmptyBase = await request(
+      "/tz/convert?value=5pm%20DST&from=Europe%2FBerlin&to=America%2FNew_York&base=",
+    );
+    expect(tzConvertEmptyBase.status).toBe(400);
+
+    const tzConvertEmptyPrecision = await request(
+      "/tz/convert?value=2026-05-22%2017:35%20CEST&to=UTC&precision=",
+    );
+    expect(tzConvertEmptyPrecision.status).toBe(400);
+
+    const tzConvertEmptyFrom = await request(
+      "/tz/convert?value=2026-05-22%2017:35%20CEST&from=&to=UTC",
+    );
+    expect(tzConvertEmptyFrom.status).toBe(404);
+
+    const tzConvertBadSlashZone = await request(
+      "/tz/convert?value=2026-05-22%2017:35%20Bad%2FZone&to=UTC",
+    );
+    expect(tzConvertBadSlashZone.status).toBe(400);
+
     const tzOffset = await request(
       `/tz/Europe%2FBerlin/offset?at=${encodeURIComponent(FIXED_ISO)}&json=1`,
     );

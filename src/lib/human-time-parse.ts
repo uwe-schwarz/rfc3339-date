@@ -1,4 +1,5 @@
 import { daysInMonth } from "./date";
+import { ensureIanaZone } from "./zone";
 import type {
   ErrorResult,
   ParsedLocalInput,
@@ -148,10 +149,10 @@ export function parseDateAndTime(
 
 function parseOffsetToken(value: string): number | null {
   if (value === "Z") return 0;
-  const match = value.match(/^([+-])(\d{2})(?::?(\d{2}))$/);
+  const match = value.match(/^([+-])(\d{2})(?::?(\d{2}))?$/);
   if (!match) return null;
   const hour = Number(match[2]);
-  const minute = Number(match[3]);
+  const minute = match[3] ? Number(match[3]) : 0;
   if (hour > 23 || minute > 59) return null;
   const sign = match[1] === "-" ? -1 : 1;
   return sign * (hour * 60 + minute);
@@ -159,7 +160,7 @@ function parseOffsetToken(value: string): number | null {
 
 function parseZoneToken(value: string) {
   const normalized = value.toUpperCase();
-  if (value.includes("/")) return { kind: "iana" as const, zone: value };
+  if (value.includes("/")) return ensureIanaZone(value) ? { kind: "iana" as const, zone: value } : null;
   if (normalized === "DST" || normalized === "STD")
     return { kind: "hint" as const, expectedDst: normalized === "DST" };
   const offsetMinutes = parseOffsetToken(normalized);
