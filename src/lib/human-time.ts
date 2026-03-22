@@ -127,7 +127,22 @@ export function convertInstantToZoneDetails(instant: Instant, zone: string, prec
 
 export function resolveZoneSpec(value: string): { spec: SourceSpec } | ErrorResult {
   const resolved = resolveSourceSpec(null, value);
-  if ("error" in resolved) return resolved;
+  if ("error" in resolved) {
+    if (value.includes("/")) {
+      return {
+        error: "zone_not_found",
+        message: `Unknown IANA time zone '${value}'.`,
+      };
+    }
+    if (value.toUpperCase() === "DST" || value.toUpperCase() === "STD") {
+      return {
+        error: "invalid_zone",
+        message:
+          "Target zone token must be an IANA zone, UTC, numeric offset, or supported abbreviation.",
+      };
+    }
+    return resolved;
+  }
   return { spec: resolved.source };
 }
 

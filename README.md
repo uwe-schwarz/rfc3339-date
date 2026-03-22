@@ -38,7 +38,7 @@ curl "https://rfc3339.date/leapseconds"
 
 ## Local Event-Time Helper
 
-For interactive local use, a shell function is more useful than a plain alias because it can accept the event time as an argument. This helper tries to discover your current IANA timezone on macOS and Linux, then calls the local worker with it.
+For interactive local use, a shell function is more useful than a plain alias because it can accept the event time as an argument. This helper tries to discover your current IANA timezone on macOS and Linux, then calls the local worker with it. Pass an optional second argument when the source time needs an explicit `from` zone.
 
 ```bash
 rfc3339_local_tz() {
@@ -80,12 +80,20 @@ rfc3339_local_tz() {
 }
 
 rfc3339_event_local() {
-  local api="${RFC3339_DATE_API:-https://rfc3339.date}"
+  local api="${RFC3339_DATE_API:-http://127.0.0.1:8787}"
   local tz
   tz="$(rfc3339_local_tz)"
 
+  if [ -n "${2:-}" ]; then
+    curl --get "$api/tz/convert" \
+      --data-urlencode "value=$1" \
+      --data-urlencode "to=$tz" \
+      --data-urlencode "from=$2"
+    return
+  fi
+
   curl --get "$api/tz/convert" \
-    --data-urlencode "value=$*" \
+    --data-urlencode "value=$1" \
     --data-urlencode "to=$tz"
 }
 
@@ -97,7 +105,7 @@ Examples:
 ```bash
 eventlocal "tomorrow 7:30pm CET"
 eventlocal "2026-05-22 17:35 CEST"
-eventlocal "5pm DST"
+eventlocal "5pm DST" Europe/Berlin
 ```
 
 If the input needs a specific source region for DST/STD disambiguation, call `curl` directly and add `from=...` plus an optional `base=...`.

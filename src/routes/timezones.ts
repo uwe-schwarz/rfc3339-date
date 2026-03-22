@@ -65,8 +65,10 @@ export function registerTimezoneRoutes(app: Hono<{ Bindings: Env }>) {
     if (!to)
       return errorResponse(c, 400, "missing_to", "Query parameter `to` is required.");
     const targetResolved = resolveZoneSpec(to);
-    if ("error" in targetResolved)
-      return errorResponse(c, 404, "zone_not_found", `Unknown time zone '${to}'.`);
+    if ("error" in targetResolved) {
+      const status = targetResolved.error === "zone_not_found" ? 404 : 400;
+      return errorResponse(c, status, targetResolved.error, targetResolved.message);
+    }
 
     const fromQuery = c.req.query("from");
     if (fromQuery === "")
@@ -155,7 +157,7 @@ export function registerTimezoneRoutes(app: Hono<{ Bindings: Env }>) {
       },
       instant: {
         rfc3339z: formatRfc3339Utc(parsed.instant, precision),
-        unix: Math.trunc(parsed.instant.unixMs / 1000),
+        unix: Math.floor(parsed.instant.unixMs / 1000),
         unixms: parsed.instant.unixMs,
       },
       notes: parsed.notes,

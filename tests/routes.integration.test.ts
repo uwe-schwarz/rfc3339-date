@@ -212,6 +212,16 @@ describe("all routes", () => {
     );
     expect(tzConvertBadBase.status).toBe(400);
 
+    const tzConvertBadTargetToken = await request(
+      "/tz/convert?value=2026-05-22%2017:35%20CEST&to=DST",
+    );
+    expect(tzConvertBadTargetToken.status).toBe(400);
+
+    const tzConvertUnknownTargetZone = await request(
+      "/tz/convert?value=2026-05-22%2017:35%20CEST&to=Bad%2FZone",
+    );
+    expect(tzConvertUnknownTargetZone.status).toBe(404);
+
     const tzConvertEmptyBase = await request(
       "/tz/convert?value=5pm%20DST&from=Europe%2FBerlin&to=America%2FNew_York&base=",
     );
@@ -231,6 +241,16 @@ describe("all routes", () => {
       "/tz/convert?value=2026-05-22%2017:35%20Bad%2FZone&to=UTC",
     );
     expect(tzConvertBadSlashZone.status).toBe(400);
+
+    const tzConvertNegative = await request(
+      "/tz/convert?value=1969-12-31%2023:59:58.500%20UTC&to=UTC&json=1",
+    );
+    expect(tzConvertNegative.status).toBe(200);
+    const tzConvertNegativeJson = (await tzConvertNegative.json()) as {
+      instant: { unix: number; unixms: number };
+    };
+    expect(tzConvertNegativeJson.instant.unix).toBe(-2);
+    expect(tzConvertNegativeJson.instant.unixms).toBe(-1500);
 
     const tzOffset = await request(
       `/tz/Europe%2FBerlin/offset?at=${encodeURIComponent(FIXED_ISO)}&json=1`,

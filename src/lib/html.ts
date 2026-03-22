@@ -51,6 +51,7 @@ export function renderLanding(nowIso: string): string {
   <div class="surface-card space-y-2 rounded-xl border border-lime-500/35 bg-zinc-950/40 p-4 text-sm text-lime-200">
     <pre class="overflow-x-auto">curl https://rfc3339.date/now</pre>
     <pre class="overflow-x-auto">curl "https://rfc3339.date/convert?value=1700000000&in=unix&out=rfc3339"</pre>
+    <pre class="overflow-x-auto">curl --get "https://rfc3339.date/tz/convert" --data-urlencode "to=Europe/Berlin" --data-urlencode "value=tomorrow 10am PST"</pre>
     <pre class="overflow-x-auto">curl "https://rfc3339.date/tz/Europe%2FBerlin/transitions?start=2026-01-01T00:00:00Z&end=2027-01-01T00:00:00Z"</pre>
   </div>
 </section>
