@@ -189,6 +189,13 @@ describe("all routes", () => {
     const tzTransitionsJson = (await tzTransitions.json()) as { transitions: unknown[] };
     expect(Array.isArray(tzTransitionsJson.transitions)).toBe(true);
 
+    const tzTransitionsTooLarge = await request(
+      "/tz/Europe%2FBerlin/transitions?start=1900-01-01T00:00:00Z&end=2026-01-01T00:00:00Z&granularity=minute",
+    );
+    expect(tzTransitionsTooLarge.status).toBe(400);
+    const tzTransitionsTooLargeJson = (await tzTransitionsTooLarge.json()) as { error?: string };
+    expect(tzTransitionsTooLargeJson.error).toBe("range_too_large");
+
     const leapSeconds = await request("/leapseconds");
     expect(leapSeconds.status).toBe(200);
     const leapSecondsJson = (await leapSeconds.json()) as { version: string; entries: unknown[] };

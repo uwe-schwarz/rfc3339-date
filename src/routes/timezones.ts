@@ -22,6 +22,8 @@ function findTransitionBoundary(
   return hi;
 }
 
+const MAX_TRANSITION_SCAN_STEPS = 20_000;
+
 export function registerTimezoneRoutes(app: Hono<{ Bindings: Env }>) {
   app.get("/tz", (c) => {
     const q = (c.req.query("q") ?? "").toLowerCase();
@@ -119,6 +121,15 @@ export function registerTimezoneRoutes(app: Hono<{ Bindings: Env }>) {
       );
     if (!["s", "ms"].includes(refine))
       return errorResponse(c, 400, "invalid_refine", "refine must be s or ms.");
+
+    const requestedSteps = Math.ceil((endMs - startMs) / step);
+    if (requestedSteps > MAX_TRANSITION_SCAN_STEPS)
+      return errorResponse(
+        c,
+        400,
+        "range_too_large",
+        "Requested range is too large for selected granularity.",
+      );
 
     const transitions: Array<{ at: string; offsetBefore: string; offsetAfter: string }> = [];
     let cursor = startMs;
