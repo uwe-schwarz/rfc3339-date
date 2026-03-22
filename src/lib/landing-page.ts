@@ -1,6 +1,5 @@
 import { SCALAR_REGISTRY_URL } from "./page-constants";
 import { landingScript } from "./landing-page-script";
-
 type EventExample = {
   id: string;
   title: string;
@@ -213,9 +212,21 @@ export function renderLandingHead(): string {
 export function renderLandingBody(_nowIso: string): string {
   return `
 <header class="fx-enter mb-10 border-b border-lime-500/25 pb-6">
-  <h1 class="fx-flicker text-4xl leading-none tracking-tight text-lime-100">rfc3339.date</h1>
-  <p class="mt-3 max-w-4xl text-base leading-relaxed text-lime-300">Strict RFC3339 time API for current time, validation, conversion, timezone lookup, transitions, and human event-time parsing. The examples below are live requests against the public API.</p>
-  <p class="mt-3 max-w-3xl rounded-lg border border-amber-500/30 bg-amber-500/8 px-4 py-3 text-sm text-amber-200">This is a fun project, not a reliable source of correct date or time. It only reports this server's current clock and is not backed by any serious timekeeping hardware or authority.</p>
+  <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-center">
+    <div>
+      <h1 class="fx-flicker text-4xl leading-none tracking-tight text-lime-100">rfc3339.date</h1>
+      <p class="mt-3 max-w-4xl text-base leading-relaxed text-lime-300">Strict RFC3339 time API for current time, validation, conversion, timezone lookup, transitions, and human event-time parsing. The examples below are live requests against the public API.</p>
+      <p class="mt-3 max-w-3xl rounded-lg border border-amber-500/30 bg-amber-500/8 px-4 py-3 text-sm text-amber-200">This is a fun project, not a reliable source of correct date or time. It only reports this server's current clock and is not backed by any serious timekeeping hardware or authority.</p>
+    </div>
+    <div class="mx-auto w-full max-w-64 lg:max-w-none">
+      <div class="relative overflow-hidden rounded-[2rem] border border-cyan-400/20 bg-[radial-gradient(circle_at_top,_rgb(34_211_238_/_0.16),_transparent_55%),linear-gradient(180deg,_rgb(9_9_11_/_0.92),_rgb(9_9_11_/_0.75))] p-4 shadow-[0_0_60px_rgb(34_211_238_/_0.12)]">
+        <picture>
+          <source type="image/avif" srcset="/fav-380.avif 1x, /fav-760.avif 2x" /><source type="image/webp" srcset="/fav-380.webp 1x, /fav-760.webp 2x" />
+          <img src="/fav-380.png" srcset="/fav-380.png 1x, /fav-760.png 2x" alt="rfc3339.date clock emblem" width="760" height="760" fetchpriority="high" decoding="async" class="relative mx-auto block h-auto w-full drop-shadow-[0_0_36px_rgb(34_211_238_/_0.24)]" />
+        </picture>
+      </div>
+    </div>
+  </div>
 </header>
 <section class="fx-enter fx-delay-1 mb-8 grid gap-3 lg:grid-cols-4">
   <div class="surface-card fx-hover-lift rounded-lg border border-lime-500/35 px-4 py-3 text-center text-sm text-lime-300">FREE</div>

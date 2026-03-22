@@ -28,6 +28,14 @@ describe("renderLanding", () => {
     expect(html).toContain('href="/openapi.yaml"');
     expect(html).toContain('href="/openapi.json"');
     expect(html).toContain('href="/openapi.scalar.json"');
+    expect(html).toContain("<picture>");
+    expect(html).toContain('type="image/avif"');
+    expect(html).toContain('srcset="/fav-380.avif 1x, /fav-760.avif 2x"');
+    expect(html).toContain('type="image/webp"');
+    expect(html).toContain('srcset="/fav-380.webp 1x, /fav-760.webp 2x"');
+    expect(html).toContain('src="/fav-380.png"');
+    expect(html).toContain('srcset="/fav-380.png 1x, /fav-760.png 2x"');
+    expect(html).toContain('alt="rfc3339.date clock emblem"');
   });
 
   it("renders two event cards and two additional api examples", () => {
