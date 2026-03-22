@@ -1,10 +1,6 @@
 import type { Hono } from "hono";
 import { formatOffset, formatRfc3339Utc } from "../lib/date";
-import {
-  parseHumanTime,
-  convertInstantToTargetDetails,
-  resolveZoneSpec,
-} from "../lib/human-time";
+import { parseHumanTime, convertInstantToTargetDetails, resolveZoneSpec } from "../lib/human-time";
 import { errorResponse, textOrJson } from "../lib/http";
 import { ensureIanaZone, getZoneParts } from "../lib/zone";
 import { parseInputToInstant } from "../lib/convert";
@@ -64,8 +60,7 @@ export function registerTimezoneRoutes(app: Hono<{ Bindings: Env }>) {
       return errorResponse(c, 400, "missing_value", "Query parameter `value` is required.");
 
     const to = c.req.query("to");
-    if (!to)
-      return errorResponse(c, 400, "missing_to", "Query parameter `to` is required.");
+    if (!to) return errorResponse(c, 400, "missing_to", "Query parameter `to` is required.");
     const targetResolved = resolveZoneSpec(to);
     if ("error" in targetResolved) {
       const status = targetResolved.error === "zone_not_found" ? 404 : 400;
@@ -81,21 +76,11 @@ export function registerTimezoneRoutes(app: Hono<{ Bindings: Env }>) {
 
     const baseRaw = c.req.query("base");
     if (baseRaw === "")
-      return errorResponse(
-        c,
-        400,
-        "invalid_base",
-        "Query parameter `base` must be RFC3339.",
-      );
+      return errorResponse(c, 400, "invalid_base", "Query parameter `base` must be RFC3339.");
     const baseParsed =
       typeof baseRaw === "string" ? parseInputToInstant(baseRaw, "rfc3339", "latest") : null;
     if (baseRaw !== undefined && !(baseParsed && "instant" in baseParsed))
-      return errorResponse(
-        c,
-        400,
-        "invalid_base",
-        "Query parameter `base` must be RFC3339.",
-      );
+      return errorResponse(c, 400, "invalid_base", "Query parameter `base` must be RFC3339.");
 
     const precisionQuery = c.req.query("precision");
     if (precisionQuery === "") {

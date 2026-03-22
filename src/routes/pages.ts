@@ -7,11 +7,7 @@ import {
 } from "../lib/fonts.generated";
 import { addCommonHeaders } from "../lib/http";
 import { renderImprint, renderLanding } from "../lib/html";
-import {
-  OPENAPI_JSON,
-  OPENAPI_SCALAR_COMPAT_JSON,
-  OPENAPI_YAML,
-} from "../lib/openapi.generated";
+import { OPENAPI_JSON, OPENAPI_SCALAR_COMPAT_JSON, OPENAPI_YAML } from "../lib/openapi.generated";
 import { TAILWIND_CSS } from "../lib/tailwind.generated";
 
 function decodeBase64(base64: string): Uint8Array {
@@ -19,7 +15,10 @@ function decodeBase64(base64: string): Uint8Array {
 }
 
 function stripTags(value: string): string {
-  return value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  return value
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function buildSafeContributionCalendar(tableHtml: string): string | null {
@@ -44,7 +43,9 @@ function buildSafeContributionCalendar(tableHtml: string): string | null {
 }
 
 function extractGitHubContributionData(html: string) {
-  const headingMatch = html.match(/<h2[^>]*id="js-contribution-activity-description"[^>]*>([\s\S]*?)<\/h2>/);
+  const headingMatch = html.match(
+    /<h2[^>]*id="js-contribution-activity-description"[^>]*>([\s\S]*?)<\/h2>/,
+  );
   const tableMatch = html.match(/<table[\s\S]*?<\/table>/);
   const countText = headingMatch ? stripTags(headingMatch[1]) : null;
   if (!countText || !tableMatch) {

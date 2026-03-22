@@ -29,7 +29,8 @@ const EVENT_EXAMPLES: EventExample[] = [
   {
     id: "dst-hint",
     title: "STD Hint",
-    detail: "STD needs a winter base date in the source region. Switch back to DST when you move the base into summer.",
+    detail:
+      "STD needs a winter base date in the source region. Switch back to DST when you move the base into summer.",
     value: "5pm STD",
     from: "Europe/Berlin",
     base: "2026-01-15T12:00:00Z",

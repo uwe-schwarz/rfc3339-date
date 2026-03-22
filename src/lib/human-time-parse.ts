@@ -47,8 +47,7 @@ function parseTimePart(value: string): TimeParts | ErrorResult {
   if (!match) {
     return {
       error: "invalid_time",
-      message:
-        "Could not parse the time portion. Use forms like `5pm`, `17:35`, or `03:15:20`.",
+      message: "Could not parse the time portion. Use forms like `5pm`, `17:35`, or `03:15:20`.",
     };
   }
 
@@ -160,7 +159,8 @@ function parseOffsetToken(value: string): number | null {
 
 function parseZoneToken(value: string) {
   const normalized = value.toUpperCase();
-  if (value.includes("/")) return ensureIanaZone(value) ? { kind: "iana" as const, zone: value } : null;
+  if (value.includes("/"))
+    return ensureIanaZone(value) ? { kind: "iana" as const, zone: value } : null;
   if (normalized === "DST" || normalized === "STD")
     return { kind: "hint" as const, expectedDst: normalized === "DST" };
   const offsetMinutes = parseOffsetToken(normalized);

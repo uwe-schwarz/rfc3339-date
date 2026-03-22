@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  renderImprint,
-  renderLanding,
-  SCALAR_REGISTRY_URL,
-} from "../src/lib/html";
+import { renderImprint, renderLanding, SCALAR_REGISTRY_URL } from "../src/lib/html";
 
 describe("renderLanding", () => {
   it("mentions the api focus, interactive controls, and openapi links", () => {
@@ -82,13 +78,15 @@ describe("renderImprint", () => {
     const html = renderImprint();
 
     expect(html).toContain("https://github.com/uwe-schwarz");
-    expect(html).toContain('/github/uwe-schwarz/contributions');
+    expect(html).toContain("/github/uwe-schwarz/contributions");
     expect(html).toContain("Loading GitHub contribution stats");
     expect(html).not.toContain("proxy.scalar.com");
   });
 
   it("keeps the scalar registry target in one place", () => {
-    expect(SCALAR_REGISTRY_URL).toBe("https://registry.scalar.com/@iq42/apis/rfc3339date-time-api@latest");
+    expect(SCALAR_REGISTRY_URL).toBe(
+      "https://registry.scalar.com/@iq42/apis/rfc3339date-time-api@latest",
+    );
   });
 
   it("uses local styles and no rapidoc assets", () => {
