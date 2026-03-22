@@ -56,6 +56,25 @@ describe("renderLanding", () => {
     expect(html).toContain('href="/apple-touch-icon.png"');
     expect(html).toContain('href="/site.webmanifest"');
   });
+
+  it("includes canonical, open graph, and twitter metadata using the logo image", () => {
+    const html = renderLanding("2026-01-01T00:00:00.000Z");
+
+    expect(html).toContain(
+      '<meta name="description" content="Strict RFC3339 time API for current time, validation, conversion, timezone lookup, transitions, and human event-time parsing." />',
+    );
+    expect(html).toContain('<link rel="canonical" href="https://rfc3339.date/" />');
+    expect(html).toContain('<meta property="og:type" content="website" />');
+    expect(html).toContain('<meta property="og:title" content="rfc3339.date" />');
+    expect(html).toContain(
+      '<meta property="og:description" content="Strict RFC3339 time API for current time, validation, conversion, timezone lookup, transitions, and human event-time parsing." />',
+    );
+    expect(html).toContain('<meta property="og:url" content="https://rfc3339.date/" />');
+    expect(html).toContain('<meta property="og:image" content="https://rfc3339.date/fav.png" />');
+    expect(html).toContain('<meta property="og:image:alt" content="rfc3339.date clock emblem" />');
+    expect(html).toContain('<meta name="twitter:card" content="summary_large_image" />');
+    expect(html).toContain('<meta name="twitter:image" content="https://rfc3339.date/fav.png" />');
+  });
 });
 
 describe("renderImprint", () => {
@@ -77,5 +96,14 @@ describe("renderImprint", () => {
 
     expect(html).toContain('href="/styles.css"');
     expect(html).not.toContain("rapidoc-min.js");
+  });
+
+  it("includes share metadata for the imprint page", () => {
+    const html = renderImprint();
+
+    expect(html).toContain('<link rel="canonical" href="https://rfc3339.date/imprint" />');
+    expect(html).toContain('<meta property="og:title" content="rfc3339.date imprint" />');
+    expect(html).toContain('<meta property="og:url" content="https://rfc3339.date/imprint" />');
+    expect(html).toContain('<meta property="og:image" content="https://rfc3339.date/fav.png" />');
   });
 });
