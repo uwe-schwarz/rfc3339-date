@@ -6,15 +6,37 @@ import {
 } from "../src/lib/html";
 
 describe("renderLanding", () => {
-  it("mentions the project disclaimer and openapi download links", () => {
+  it("mentions the api focus, interactive controls, and openapi links", () => {
     const html = renderLanding("2026-01-01T00:00:00.000Z");
 
+    expect(html).toContain(">rfc3339.date<");
+    expect(html).toContain("Strict RFC3339 time API");
     expect(html).toContain("This is a fun project");
     expect(html).toContain("not a reliable source of correct date or time");
+    expect(html).toContain("Reset to my timezone");
+    expect(html).toContain("Plain text");
+    expect(html).toContain("JSON output");
+    expect(html).toContain("https://rfc3339.date/tz/convert");
+    expect(html).toContain("https://rfc3339.date/convert");
+    expect(html).toContain('id="helper-code"');
+    expect(html).toContain("eventlocal() {");
+    expect(html).toContain('data-field="value"');
+    expect(html).toContain('<select data-field="in"');
+    expect(html).toContain('<option value="excel1900">excel1900</option>');
+    expect(html).toContain('<option value="emaildate">emaildate</option>');
     expect(html).toContain(SCALAR_REGISTRY_URL);
     expect(html).toContain('href="/openapi.yaml"');
     expect(html).toContain('href="/openapi.json"');
     expect(html).toContain('href="/openapi.scalar.json"');
+  });
+
+  it("renders two event cards and two additional api examples", () => {
+    const html = renderLanding("2026-01-01T00:00:00.000Z");
+
+    expect(html.match(/data-example="/g)).toHaveLength(4);
+    expect(html.match(/data-card="tz-convert"/g)).toHaveLength(2);
+    expect(html).toContain('data-card="now-zone"');
+    expect(html).toContain('data-card="convert"');
   });
 
   it("includes standard favicon metadata", () => {
