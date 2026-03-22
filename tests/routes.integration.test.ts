@@ -168,6 +168,50 @@ describe("all routes", () => {
     const tzListBadLimit = await request("/tz?limit=0");
     expect(tzListBadLimit.status).toBe(400);
 
+    const tzConvert = await request(
+      "/tz/convert?value=2026-05-22%2017:35%20CEST&to=America%2FNew_York&json=1",
+    );
+    expect(tzConvert.status).toBe(200);
+    const tzConvertJson = (await tzConvert.json()) as {
+      value_out: string;
+      from: { kind: string };
+      to: { tz: string | null; kind: string };
+    };
+    expect(tzConvertJson.value_out).toBe("2026-05-22T11:35:00-04:00");
+    expect(tzConvertJson.from.kind).toBe("abbreviation");
+    expect(tzConvertJson.to.tz).toBe("America/New_York");
+    expect(tzConvertJson.to.kind).toBe("iana");
+
+    const tzConvertRelative = await request(
+      `/tz/convert?value=${encodeURIComponent("5pm DST")}&from=Europe%2FBerlin&to=America%2FNew_York&base=2026-06-01T12:00:00Z`,
+    );
+    expect(tzConvertRelative.status).toBe(200);
+    expect(await tzConvertRelative.text()).toBe("2026-06-01T11:00:00-04:00");
+
+    const tzConvertUtc = await request(
+      "/tz/convert?value=tomorrow%203am%20CET&to=UTC&base=2026-05-21T22:30:00Z",
+    );
+    expect(tzConvertUtc.status).toBe(200);
+    expect(await tzConvertUtc.text()).toBe("2026-05-22T02:00:00Z");
+
+    const tzConvertCet = await request(
+      "/tz/convert?value=tomorrow+5pm+PST&to=CET&base=2026-05-21T22:30:00Z&json=1",
+    );
+    expect(tzConvertCet.status).toBe(200);
+    const tzConvertCetJson = (await tzConvertCet.json()) as {
+      value_out: string;
+      to: { kind: string; tz: string | null; abbreviation: string | null };
+    };
+    expect(tzConvertCetJson.value_out).toBe("2026-05-23T02:00:00+01:00");
+    expect(tzConvertCetJson.to.kind).toBe("abbreviation");
+    expect(tzConvertCetJson.to.tz).toBeNull();
+    expect(tzConvertCetJson.to.abbreviation).toBe("CET");
+
+    const tzConvertBadBase = await request(
+      "/tz/convert?value=5pm%20DST&from=Europe%2FBerlin&to=America%2FNew_York&base=invalid",
+    );
+    expect(tzConvertBadBase.status).toBe(400);
+
     const tzOffset = await request(
       `/tz/Europe%2FBerlin/offset?at=${encodeURIComponent(FIXED_ISO)}&json=1`,
     );

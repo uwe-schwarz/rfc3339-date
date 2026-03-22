@@ -1,5 +1,10 @@
 import type { Hono } from "hono";
 import { formatOffset, formatRfc3339Utc } from "../lib/date";
+import {
+  parseHumanTime,
+  convertInstantToTargetDetails,
+  resolveZoneSpec,
+} from "../lib/human-time";
 import { errorResponse, textOrJson } from "../lib/http";
 import { ensureIanaZone, getZoneParts } from "../lib/zone";
 import { parseInputToInstant } from "../lib/convert";
@@ -49,6 +54,93 @@ export function registerTimezoneRoutes(app: Hono<{ Bindings: Env }>) {
       "cache-control": "public, max-age=3600",
       "X-Content-Type-Options": "nosniff",
     });
+  });
+
+  app.get("/tz/convert", (c) => {
+    const value = c.req.query("value");
+    if (!value)
+      return errorResponse(c, 400, "missing_value", "Query parameter `value` is required.");
+
+    const to = c.req.query("to");
+    if (!to)
+      return errorResponse(c, 400, "missing_to", "Query parameter `to` is required.");
+    const targetResolved = resolveZoneSpec(to);
+    if ("error" in targetResolved)
+      return errorResponse(c, 404, "zone_not_found", `Unknown time zone '${to}'.`);
+
+    const from = c.req.query("from") ?? null;
+    if (from && from !== "UTC" && !ensureIanaZone(from))
+      return errorResponse(c, 404, "zone_not_found", `Unknown IANA time zone '${from}'.`);
+
+    const baseRaw = c.req.query("base");
+    const baseParsed = baseRaw ? parseInputToInstant(baseRaw, "rfc3339", "latest") : null;
+    if (baseRaw && !(baseParsed && "instant" in baseParsed))
+      return errorResponse(
+        c,
+        400,
+        "invalid_base",
+        "Query parameter `base` must be RFC3339.",
+      );
+
+    const precisionQuery = c.req.query("precision");
+    const precision =
+      precisionQuery === undefined
+        ? 0
+        : Number.isInteger(Number(precisionQuery)) && Number(precisionQuery) >= 0 && Number(precisionQuery) <= 9
+          ? Number(precisionQuery)
+          : null;
+    if (precision === null) {
+      return errorResponse(
+        c,
+        400,
+        "invalid_precision",
+        "Query parameter `precision` must be an integer between 0 and 9.",
+      );
+    }
+
+    const parsed = parseHumanTime(value, {
+      from,
+      baseInstant:
+        baseParsed && "instant" in baseParsed
+          ? baseParsed.instant
+          : { unixMs: Date.now(), nsRemainder: 0 },
+    });
+    if (!("instant" in parsed)) return errorResponse(c, 400, parsed.error, parsed.message);
+
+    const target = convertInstantToTargetDetails(parsed.instant, targetResolved.spec, precision);
+    const payload = {
+      value_in: value,
+      value_out: target.local,
+      from: parsed.source.zone,
+      to: {
+        raw: target.raw,
+        kind: target.kind,
+        tz: target.tz,
+        offset: target.offset,
+        abbreviation: target.abbreviation,
+        dst: target.dst,
+      },
+      source: {
+        local: parsed.source.local,
+        date: parsed.source.localDate,
+        time: parsed.source.localTime,
+        date_source: parsed.source.dateSource,
+        base: parsed.source.base,
+      },
+      target: {
+        local: target.local,
+        date: target.date,
+        time: target.time,
+      },
+      instant: {
+        rfc3339z: formatRfc3339Utc(parsed.instant, precision),
+        unix: Math.trunc(parsed.instant.unixMs / 1000),
+        unixms: parsed.instant.unixMs,
+      },
+      notes: parsed.notes,
+    };
+
+    return textOrJson(c, payload, target.local, 200, { "cache-control": "no-store" });
   });
 
   app.get("/tz/:zone/offset", (c) => {

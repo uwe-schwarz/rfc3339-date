@@ -26,7 +26,7 @@ tags:
   - name: Conversion
     description: Canonicalization, conversion, and rounding operations across supported encodings.
   - name: Timezones
-    description: IANA zone discovery, offset inspection, and transition lookup.
+    description: IANA zone discovery, offset inspection, transition lookup, and human-time conversion.
   - name: Datasets
     description: Versioned supporting datasets used by conversion endpoints.
 
@@ -290,6 +290,72 @@ paths:
               schema: { $ref: "#/components/schemas/TzSearchResponse" }
         "400":
           $ref: "#/components/responses/BadRequest"
+
+  /tz/convert:
+    get:
+      operationId: convertHumanTimeBetweenZones
+      tags: [Timezones, Conversion]
+      summary: Convert a human-style local time into another IANA time zone
+      description: >
+        Parses human-oriented local times such as `5pm DST`, `tomorrow 3am CET`, or
+        `2026-05-22 17:35 CEST`, resolves them to an instant, and renders that instant in the
+        target IANA time zone.
+        Supported source/target zone tokens include IANA zones, `UTC`, numeric offsets, and a curated abbreviation set
+        (for example CET/CEST/EST/EDT/PST/PDT).
+        `DST` and `STD` require `from=<IANA zone>` so the worker can resolve the regional rules.
+        Plain text returns the target local RFC3339 value; JSON adds parsed source/target details.
+      parameters:
+        - name: value
+          in: query
+          required: true
+          schema: { type: string }
+          description: >
+            Human-style local time. Examples: `5pm DST`, `tomorrow 3am CET`,
+            `2026-05-22 17:35 CEST`.
+        - name: to
+          in: query
+          required: true
+          schema: { type: string }
+          description: Target zone token. Accepts IANA zones, `UTC`, curated abbreviations, or numeric offsets.
+        - name: from
+          in: query
+          required: false
+          schema: { type: string }
+          description: >
+            Source IANA time zone used when the value omits a zone or uses DST/STD or an
+            abbreviation hint that should be validated against a real region.
+        - name: base
+          in: query
+          required: false
+          schema: { type: string }
+          description: >
+            RFC3339 base instant used to resolve relative values such as `tomorrow`
+            and time-only inputs.
+        - name: precision
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 9
+            default: 0
+          description: Fractional second digits to emit in rendered source/target values.
+        - $ref: "#/components/parameters/json"
+      responses:
+        "200":
+          description: Converted target local time plus optional source/target metadata
+          content:
+            text/plain:
+              schema: { type: string }
+              examples:
+                target:
+                  value: "2026-05-22T11:35:00-04:00"
+            application/json:
+              schema: { $ref: "#/components/schemas/TzConvertResponse" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /tz/{zone}/offset:
     get:
@@ -660,6 +726,76 @@ components:
             properties:
               id: { type: string }
               exampleCity: { type: [string, "null"] }
+
+    TzConvertResponse:
+      type: object
+      required: [value_in, value_out, from, to, source, target, instant, notes]
+      properties:
+        value_in: { type: string }
+        value_out: { type: string }
+        from:
+          type: object
+          required: [raw, kind, tz, offset, abbreviation, dst]
+          properties:
+            raw:
+              type: [string, "null"]
+            kind:
+              type: string
+              enum: [iana, offset, abbreviation]
+            tz:
+              type: [string, "null"]
+            offset:
+              type: string
+            abbreviation:
+              type: [string, "null"]
+            dst:
+              type: [boolean, "null"]
+        to:
+          type: object
+          required: [raw, kind, tz, offset, abbreviation, dst]
+          properties:
+            raw:
+              type: string
+            kind:
+              type: string
+              enum: [iana, offset, abbreviation]
+            tz:
+              type: [string, "null"]
+            offset: { type: string }
+            abbreviation:
+              type: [string, "null"]
+            dst:
+              type: [boolean, "null"]
+        source:
+          type: object
+          required: [local, date, time, date_source, base]
+          properties:
+            local: { type: string }
+            date: { type: string }
+            time: { type: string }
+            date_source:
+              type: string
+              enum: [explicit, relative, base]
+            base:
+              type: string
+              description: RFC3339 instant used for resolving relative or time-only inputs.
+        target:
+          type: object
+          required: [local, date, time]
+          properties:
+            local: { type: string }
+            date: { type: string }
+            time: { type: string }
+        instant:
+          type: object
+          required: [rfc3339z, unix, unixms]
+          properties:
+            rfc3339z: { type: string }
+            unix: { type: integer }
+            unixms: { type: integer }
+        notes:
+          type: array
+          items: { type: string }
 
     TzOffsetResponse:
       type: object
