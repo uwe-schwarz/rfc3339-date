@@ -6,7 +6,6 @@
     "description": "Strict RFC3339 API docs for validation, conversion, timezone transitions, and leap second data.",
     "version": "1.1.0"
   },
-  "assetsDir": "scalar/assets",
   "siteConfig": {
     "subdomain": "rfc3339date",
     "theme": "deepSpace",
