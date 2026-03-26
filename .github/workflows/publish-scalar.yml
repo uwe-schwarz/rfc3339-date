@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
           version: 10
@@ -24,13 +24,25 @@ jobs:
       - run: pnpm run checks
       - name: Detect OpenAPI changes
         id: openapi_changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_SHA: ${{ github.sha }}
         run: |
-          if ! git rev-parse HEAD^ >/dev/null 2>&1; then
+          compare_paths=(docs/openapi.yaml docs/openapi.json docs/openapi.scalar.json)
+
+          if [ "$EVENT_NAME" = "push" ] && [ -n "$PUSH_BEFORE" ] && [ "$PUSH_BEFORE" != "0000000000000000000000000000000000000000" ]; then
+            base_ref="$PUSH_BEFORE"
+            head_ref="$PUSH_SHA"
+          elif git rev-parse HEAD^ >/dev/null 2>&1; then
+            base_ref="HEAD^"
+            head_ref="HEAD"
+          else
             echo "changed=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          if git diff --quiet HEAD^ HEAD -- docs/openapi.yaml docs/openapi.json docs/openapi.scalar.json; then
+          if git diff --quiet "$base_ref" "$head_ref" -- "${compare_paths[@]}"; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"

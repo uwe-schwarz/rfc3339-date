@@ -19,6 +19,10 @@ describe("extractCreatedProjectSlug", () => {
   it("returns null when the CLI output has no created slug", () => {
     expect(extractCreatedProjectSlug("Project already exists")).toBeNull();
   });
+
+  it("returns null when the slug line only contains whitespace", () => {
+    expect(extractCreatedProjectSlug("Project slug:   \n")).toBeNull();
+  });
 });
 
 describe("resolveProjectPublishSlug", () => {
@@ -45,5 +49,11 @@ describe("shouldPublishProject", () => {
     expect(shouldPublishProject("1")).toBe(true);
     expect(shouldPublishProject("true")).toBe(true);
     expect(shouldPublishProject("yes")).toBe(true);
+    expect(shouldPublishProject("TRUE")).toBe(true);
+    expect(shouldPublishProject("YES")).toBe(true);
+  });
+
+  it("rejects explicit opt-out values", () => {
+    expect(shouldPublishProject("0")).toBe(false);
   });
 });
