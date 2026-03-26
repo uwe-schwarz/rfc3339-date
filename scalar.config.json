@@ -23,7 +23,7 @@
       },
       "styles": [
         {
-          "path": "scalar/assets/scalar-theme.css"
+          "path": "scalar/scalar-theme.css"
         }
       ]
     },
