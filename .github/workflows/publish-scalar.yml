@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
           version: 10
@@ -20,7 +22,36 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run checks
+      - name: Detect OpenAPI changes
+        id: openapi_changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_SHA: ${{ github.sha }}
+        run: |
+          compare_paths=(docs/openapi.yaml docs/openapi.json docs/openapi.scalar.json)
+
+          if [ "$EVENT_NAME" = "push" ] && [ -n "$PUSH_BEFORE" ] && [ "$PUSH_BEFORE" != "0000000000000000000000000000000000000000" ]; then
+            base_ref="$PUSH_BEFORE"
+            head_ref="$PUSH_SHA"
+          elif git rev-parse HEAD^ >/dev/null 2>&1; then
+            base_ref="HEAD^"
+            head_ref="HEAD"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if git diff --quiet "$base_ref" "$head_ref" -- "${compare_paths[@]}"; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
       - run: node scripts/publish-scalar.mjs
+        if: steps.openapi_changes.outputs.changed == 'true'
         env:
           SCALAR_TOKEN: ${{ secrets.SCALAR_TOKEN }}
           SCALAR_AGENT_KEY: ${{ secrets.SCALAR_AGENT_KEY }}
+      - name: Skip Scalar publish
+        if: steps.openapi_changes.outputs.changed != 'true'
+        run: echo "Skipping Scalar publish because docs/openapi artifacts did not change in this commit."
