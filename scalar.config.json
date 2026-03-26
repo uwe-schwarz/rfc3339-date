@@ -19,12 +19,7 @@
       "title": "rfc3339.date Docs",
       "meta": {
         "description": "Scalar docs for rfc3339.date, a strict RFC3339 API with validation, conversion, timezone transitions, and leap second data."
-      },
-      "styles": [
-        {
-          "path": "scalar/scalar-theme.css"
-        }
-      ]
+      }
     },
     "footer": {
       "belowSidebar": true,
