@@ -1,6 +1,8 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 
+import { resolveProjectPublishSlug } from "./publish-scalar-lib.mjs";
+
 function loadEnvFile(path) {
   if (!existsSync(path)) return;
 
@@ -101,10 +103,25 @@ const createResult = runScalar(
   ["project", "create", "--name", projectName, "--slug", projectSlug],
   { allowFailure: true },
 );
+const publishProjectSlug = resolveProjectPublishSlug(
+  projectSlug,
+  createResult.stdout ?? "",
+);
 if (createResult.status !== 0) {
   console.warn(
     "Scalar project create did not succeed. Continuing with publish; this is expected if the project already exists.",
   );
+} else if (publishProjectSlug !== projectSlug) {
+  console.warn(
+    `Scalar assigned project slug ${publishProjectSlug} instead of requested slug ${projectSlug}. Publishing to the created project.`,
+  );
 }
 
-runScalar(["project", "publish", "--slug", projectSlug, "--config", projectConfig]);
+runScalar([
+  "project",
+  "publish",
+  "--slug",
+  publishProjectSlug,
+  "--config",
+  projectConfig,
+]);
