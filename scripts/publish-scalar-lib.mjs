@@ -14,3 +14,7 @@ export function extractCreatedProjectSlug(output) {
 export function resolveProjectPublishSlug(requestedSlug, createOutput) {
   return extractCreatedProjectSlug(createOutput) ?? requestedSlug;
 }
+
+export function shouldPublishProject(flag) {
+  return /^(1|true|yes)$/i.test(flag ?? "");
+}

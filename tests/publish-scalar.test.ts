@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   extractCreatedProjectSlug,
   resolveProjectPublishSlug,
+  shouldPublishProject,
 } from "../scripts/publish-scalar-lib.mjs";
 
 describe("extractCreatedProjectSlug", () => {
@@ -31,5 +32,18 @@ describe("resolveProjectPublishSlug", () => {
 
   it("keeps the requested slug when no created slug is present", () => {
     expect(resolveProjectPublishSlug("rfc3339date", "")).toBe("rfc3339date");
+  });
+});
+
+describe("shouldPublishProject", () => {
+  it("defaults to skipping project publishing", () => {
+    expect(shouldPublishProject(undefined)).toBe(false);
+    expect(shouldPublishProject("")).toBe(false);
+  });
+
+  it("accepts explicit opt-in values", () => {
+    expect(shouldPublishProject("1")).toBe(true);
+    expect(shouldPublishProject("true")).toBe(true);
+    expect(shouldPublishProject("yes")).toBe(true);
   });
 });
