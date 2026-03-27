@@ -32,7 +32,7 @@
     "@scalar/openapi-parser": "^0.25.6",
     "@tailwindcss/cli": "^4.2.2",
     "@types/node": "^25.5.0",
-    "@typescript/native-preview": "^7.0.0-dev.20260326.1",
+    "@typescript/native-preview": "^7.0.0-dev.20260327.2",
     "oxfmt": "^0.42.0",
     "oxlint": "^1.57.0",
     "tailwindcss": "^4.2.2",
