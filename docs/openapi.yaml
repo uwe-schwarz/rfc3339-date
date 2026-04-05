@@ -412,7 +412,9 @@ paths:
           in: query
           required: false
           schema: { type: string, default: UTC }
-          description: Required for `mode=wall`; used for local rendering in both modes.
+          description: >
+            IANA time zone used for local rendering in both modes.
+            When omitted, the endpoint falls back to `UTC`; for `mode=wall`, DST behavior is evaluated in that zone.
         - $ref: "#/components/parameters/json"
       responses:
         "200":
@@ -1154,7 +1156,7 @@ components:
           description: Present when a wall-clock result maps to multiple valid instants.
         ambiguity_resolution:
           type: [string, "null"]
-          description: Strategy used when an ambiguous wall-clock result yields multiple candidates.
+          description: Strategy used when an ambiguous wall-clock result yields multiple candidates, currently `closest_to_input_instant`.
         chosen_candidate_index:
           type: [integer, "null"]
           description: Index into `candidates` for the candidate chosen as the response result.

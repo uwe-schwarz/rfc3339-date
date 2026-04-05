@@ -166,6 +166,25 @@ export function shiftWallClockTime(
   };
 }
 
+export function selectClosestInstant(candidates: Instant[], anchor: Instant): number {
+  let chosenIndex = 0;
+  let bestDistance = Number.POSITIVE_INFINITY;
+
+  for (const [index, candidate] of candidates.entries()) {
+    const distance = Math.abs(candidate.unixMs - anchor.unixMs);
+    if (distance < bestDistance) {
+      chosenIndex = index;
+      bestDistance = distance;
+      continue;
+    }
+    if (distance === bestDistance && candidate.unixMs < candidates[chosenIndex]!.unixMs) {
+      chosenIndex = index;
+    }
+  }
+
+  return chosenIndex;
+}
+
 export function mondayOfIsoWeek(year: number, week: number): Date {
   const jan4 = new Date(Date.UTC(year, 0, 4));
   const jan4Day = (jan4.getUTCDay() + 6) % 7;

@@ -138,7 +138,9 @@ export function registerDevUxHelperRoutes(app: Hono<{ Bindings: Env }>) {
     const name = c.req.query("name");
     if (!name) return errorResponse(c, 400, "missing_name", "Query parameter `name` is required.");
     const key = name.trim().toLowerCase();
-    const resolved = WINDOWS_TZ_MAP[key] ?? (ensureIanaZone(name) ? name : null);
+    const resolved =
+      (Object.hasOwn(WINDOWS_TZ_MAP, key) ? WINDOWS_TZ_MAP[key] : null) ??
+      (ensureIanaZone(name) ? name : null);
     if (!resolved) {
       return errorResponse(c, 404, "zone_not_found", `Could not resolve timezone alias '${name}'.`);
     }

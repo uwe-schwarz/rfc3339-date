@@ -2235,7 +2235,7 @@
               "type": "string",
               "default": "UTC"
             },
-            "description": "Required for `mode=wall`; used for local rendering in both modes."
+            "description": "IANA time zone used for local rendering in both modes. When omitted, the endpoint falls back to `UTC`; for `mode=wall`, DST behavior is evaluated in that zone.\n"
           },
           {
             "name": "json",
@@ -2309,7 +2309,7 @@
                     },
                     "ambiguity_resolution": {
                       "type": "string",
-                      "description": "Strategy used when an ambiguous wall-clock result yields multiple candidates.",
+                      "description": "Strategy used when an ambiguous wall-clock result yields multiple candidates, currently `closest_to_input_instant`.",
                       "nullable": true
                     },
                     "chosen_candidate_index": {

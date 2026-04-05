@@ -8,6 +8,7 @@ import {
   parseTimestamp,
   parseDurationIso,
   durationToMs,
+  selectClosestInstant,
   shiftWallClockTime,
   formatIsoDurationFromMs,
   resolveLocalCandidates,
@@ -77,7 +78,7 @@ export function registerDevUxRoutes(app: Hono<{ Bindings: Env }>) {
       fileSafe: `${d.getUTCFullYear()}${pad2(d.getUTCMonth() + 1)}${pad2(d.getUTCDate())}_${pad2(d.getUTCHours())}${pad2(d.getUTCMinutes())}${pad2(d.getUTCSeconds())}Z`,
     };
 
-    if (!(style in outputs))
+    if (!Object.hasOwn(outputs, style))
       return errorResponse(c, 400, "invalid_style", "style must be iso, http, cron, or fileSafe.");
     const out = outputs[style as keyof typeof outputs];
     return textOrJson(c, { input: value, style, output: out, outputs }, out, 200, {
@@ -102,16 +103,17 @@ export function registerDevUxRoutes(app: Hono<{ Bindings: Env }>) {
       );
     }
     const deltaMs = toParsed.instant.unixMs - fromParsed.instant.unixMs;
-    const scalar = {
+    const scalarByUnit = {
       ms: deltaMs,
       s: deltaMs / 1000,
       min: deltaMs / 60_000,
       h: deltaMs / 3_600_000,
       d: deltaMs / 86_400_000,
       iso: formatIsoDurationFromMs(deltaMs),
-    }[unit];
-    if (scalar === undefined)
+    } as const;
+    if (!Object.hasOwn(scalarByUnit, unit))
       return errorResponse(c, 400, "invalid_unit", "unit must be ms, s, min, h, d, or iso.");
+    const scalar = scalarByUnit[unit as keyof typeof scalarByUnit];
     const payload = { from, to, unit, value: scalar, isoDuration: formatIsoDurationFromMs(deltaMs) };
     return textOrJson(c, payload, String(payload.value), 200, { "cache-control": "no-store" });
   });
@@ -180,7 +182,8 @@ export function registerDevUxRoutes(app: Hono<{ Bindings: Env }>) {
       );
     }
 
-    const chosen = candidates[0];
+    const chosenCandidateIndex = selectClosestInstant(candidates, base.instant);
+    const chosen = candidates[chosenCandidateIndex]!;
     const payload = {
       mode,
       input: ts,
@@ -189,8 +192,8 @@ export function registerDevUxRoutes(app: Hono<{ Bindings: Env }>) {
       result: formatRfc3339Utc(chosen, 0),
       local: toOutput(chosen, "rfc3339", tz, 0),
       ambiguity: candidates.length > 1 ? "ambiguous_local_time" : null,
-      ambiguity_resolution: candidates.length > 1 ? "first_candidate_earlier_utc" : null,
-      chosen_candidate_index: candidates.length > 1 ? 0 : null,
+      ambiguity_resolution: candidates.length > 1 ? "closest_to_input_instant" : null,
+      chosen_candidate_index: candidates.length > 1 ? chosenCandidateIndex : null,
       candidates: candidates.map((instant) => formatRfc3339Utc(instant, 0)),
     };
     return textOrJson(c, payload, payload.local, 200, { "cache-control": "no-store" });

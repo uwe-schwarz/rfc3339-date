@@ -308,6 +308,11 @@ describe("developer UX endpoints", () => {
     expect(format.status).toBe(200);
     expect(await format.text()).toContain("GMT");
 
+    const formatBadPrototypeStyle = await request(
+      "/format?value=2026-04-04T12:00:00Z&style=constructor",
+    );
+    expect(formatBadPrototypeStyle.status).toBe(400);
+
     const diff = await request(
       "/diff?from=2026-04-04T12:00:00Z&to=2026-04-04T13:30:00Z&unit=min&json=1",
     );
@@ -315,6 +320,11 @@ describe("developer UX endpoints", () => {
     const diffJson = (await diff.json()) as { value: number; isoDuration: string };
     expect(diffJson.value).toBe(90);
     expect(diffJson.isoDuration).toBe("P0DT1H30M0S");
+
+    const diffBadPrototypeUnit = await request(
+      "/diff?from=2026-04-04T12:00:00Z&to=2026-04-04T13:30:00Z&unit=constructor",
+    );
+    expect(diffBadPrototypeUnit.status).toBe(400);
 
     const addAbsolute = await request(
       "/add?ts=2026-03-29T00:30:00Z&duration=PT1H&mode=absolute&tz=Europe%2FBerlin&json=1",
@@ -372,12 +382,23 @@ describe("developer UX endpoints", () => {
     };
     expect(addWallAmbiguousJson.result).toBe("2026-10-25T00:30:00Z");
     expect(addWallAmbiguousJson.ambiguity).toBe("ambiguous_local_time");
-    expect(addWallAmbiguousJson.ambiguity_resolution).toBe("first_candidate_earlier_utc");
+    expect(addWallAmbiguousJson.ambiguity_resolution).toBe("closest_to_input_instant");
     expect(addWallAmbiguousJson.chosen_candidate_index).toBe(0);
     expect(addWallAmbiguousJson.candidates).toEqual([
       "2026-10-25T00:30:00Z",
       "2026-10-25T01:30:00Z",
     ]);
+
+    const addWallFoldPreserved = await request(
+      "/add?ts=2026-10-25T01:30:00Z&duration=PT0S&mode=wall&tz=Europe%2FBerlin&json=1",
+    );
+    expect(addWallFoldPreserved.status).toBe(200);
+    const addWallFoldPreservedJson = (await addWallFoldPreserved.json()) as {
+      result: string;
+      chosen_candidate_index: number | null;
+    };
+    expect(addWallFoldPreservedJson.result).toBe("2026-10-25T01:30:00Z");
+    expect(addWallFoldPreservedJson.chosen_candidate_index).toBe(1);
 
     const serialToIso = await request("/excel/serial-to-iso?value=45246.5&json=1");
     expect(serialToIso.status).toBe(200);
@@ -429,6 +450,9 @@ describe("developer UX endpoints", () => {
     expect(tzResolve.status).toBe(200);
     const tzResolveJson = (await tzResolve.json()) as { resolved: string };
     expect(tzResolveJson.resolved).toBe("Europe/Berlin");
+
+    const tzResolvePrototypeAlias = await request("/tz/resolve?name=__proto__");
+    expect(tzResolvePrototypeAlias.status).toBe(404);
   });
 
   it("uses plain text by default and json when requested on scalar helper routes", async () => {

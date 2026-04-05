@@ -3,6 +3,7 @@ import {
   durationToMs,
   maxIsoWeekForYear,
   parseDurationIso,
+  selectClosestInstant,
   shiftWallClockTime,
 } from "../src/lib/devux";
 
@@ -70,5 +71,17 @@ describe("devux helpers", () => {
       second: 0,
       nsRemainder: 123456,
     });
+  });
+
+  test("selects the ambiguous candidate closest to the input instant", () => {
+    const chosen = selectClosestInstant(
+      [
+        { unixMs: Date.parse("2026-10-25T00:30:00Z"), nsRemainder: 0 },
+        { unixMs: Date.parse("2026-10-25T01:30:00Z"), nsRemainder: 0 },
+      ],
+      { unixMs: Date.parse("2026-10-25T01:30:00Z"), nsRemainder: 0 },
+    );
+
+    expect(chosen).toBe(1);
   });
 });
