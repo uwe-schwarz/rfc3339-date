@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { registerConvertRoutes } from "./routes/convert";
 import { registerDatasetRoutes } from "./routes/datasets";
+import { registerDevUxRoutes } from "./routes/devux-core";
+import { registerDevUxHelperRoutes } from "./routes/devux-helpers";
 import { setHeaderSafely } from "./lib/http";
 import { registerPageRoutes } from "./routes/pages";
 import { registerTimeRoutes } from "./routes/time";
@@ -17,6 +19,8 @@ registerPageRoutes(app);
 registerTimeRoutes(app);
 registerConvertRoutes(app);
 registerTimezoneRoutes(app);
+registerDevUxRoutes(app);
+registerDevUxHelperRoutes(app);
 registerDatasetRoutes(app);
 
 export default app;

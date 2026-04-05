@@ -290,3 +290,90 @@ describe("all routes", () => {
     expect(leapSecondsBadVersion.status).toBe(404);
   });
 });
+
+describe("developer UX endpoints", () => {
+  it("supports parse/format/diff/add and helper utilities", async () => {
+    const parse = await request("/parse?q=tomorrow%2017:00&tz=Europe%2FBerlin");
+    expect(parse.status).toBe(200);
+    const parseJson = (await parse.json()) as {
+      instant: string;
+      timezone: string;
+      confidence: number;
+    };
+    expect(parseJson.timezone).toBe("Europe/Berlin");
+    expect(parseJson.instant).toContain("T");
+    expect(parseJson.confidence).toBeGreaterThan(0.5);
+
+    const format = await request("/format?value=2026-04-04T12:00:00Z&style=http");
+    expect(format.status).toBe(200);
+    expect(await format.text()).toContain("GMT");
+
+    const diff = await request("/diff?from=2026-04-04T12:00:00Z&to=2026-04-04T13:30:00Z&unit=min");
+    expect(diff.status).toBe(200);
+    const diffJson = (await diff.json()) as { value: number; isoDuration: string };
+    expect(diffJson.value).toBe(90);
+    expect(diffJson.isoDuration).toBe("P0DT1H30M0S");
+
+    const addAbsolute = await request(
+      "/add?ts=2026-03-29T00:30:00Z&duration=PT1H&mode=absolute&tz=Europe%2FBerlin",
+    );
+    expect(addAbsolute.status).toBe(200);
+    const addAbsoluteJson = (await addAbsolute.json()) as { result: string };
+    expect(addAbsoluteJson.result).toBe("2026-03-29T01:30:00Z");
+
+    const addWall = await request(
+      "/add?ts=2026-03-29T01:30:00Z&duration=PT1H&mode=wall&tz=Europe%2FBerlin",
+    );
+    expect(addWall.status).toBe(200);
+    const addWallJson = (await addWall.json()) as { local: string };
+    expect(addWallJson.local).toContain("T");
+
+    const serialToIso = await request("/excel/serial-to-iso?value=45246.5");
+    expect(serialToIso.status).toBe(200);
+    const serialToIsoJson = (await serialToIso.json()) as { iso: string };
+    expect(serialToIsoJson.iso).toContain("T");
+
+    const isoToSerial = await request("/excel/iso-to-serial?ts=2026-04-04T12:00:00Z");
+    expect(isoToSerial.status).toBe(200);
+    const isoToSerialJson = (await isoToSerial.json()) as { serial: string };
+    expect(Number(isoToSerialJson.serial)).toBeGreaterThan(40000);
+
+    const week = await request("/iso-week?ts=2026-04-04T12:00:00Z");
+    expect(week.status).toBe(200);
+    const weekJson = (await week.json()) as { yearWeek: string; week: number };
+    expect(weekJson.yearWeek).toBe("2026-W14");
+    expect(weekJson.week).toBe(14);
+
+    const weekRange = await request("/iso-week/start-end?year=2026&week=14");
+    expect(weekRange.status).toBe(200);
+    const weekRangeJson = (await weekRange.json()) as { start: string; end: string };
+    expect(weekRangeJson.start).toBe("2026-03-30T00:00:00Z");
+    expect(weekRangeJson.end).toBe("2026-04-05T23:59:59Z");
+
+    const httpDate = await request("/http-date?ts=2026-04-04T12:00:00Z");
+    expect(httpDate.status).toBe(200);
+    expect(await httpDate.text()).toBe("Sat, 04 Apr 2026 12:00:00 GMT");
+
+    const lintIso = await request("/lint/iso?value=2026-04-04T12:00:00Z");
+    expect(lintIso.status).toBe(200);
+    const lintIsoJson = (await lintIso.json()) as { valid: boolean; normalized: string | null };
+    expect(lintIsoJson.valid).toBe(true);
+    expect(lintIsoJson.normalized).toBe("2026-04-04T12:00:00Z");
+
+    const validateLocal = await request(
+      "/validate-local?local=2026-10-25T02:15:00&tz=Europe%2FBerlin",
+    );
+    expect(validateLocal.status).toBe(200);
+    const validateLocalJson = (await validateLocal.json()) as {
+      status: string;
+      candidates: unknown[];
+    };
+    expect(validateLocalJson.status).toBe("ambiguous");
+    expect(validateLocalJson.candidates.length).toBe(2);
+
+    const tzResolve = await request("/tz/resolve?name=W.%20Europe%20Standard%20Time");
+    expect(tzResolve.status).toBe(200);
+    const tzResolveJson = (await tzResolve.json()) as { resolved: string };
+    expect(tzResolveJson.resolved).toBe("Europe/Berlin");
+  });
+});
