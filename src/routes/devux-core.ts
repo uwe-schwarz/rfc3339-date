@@ -1,22 +1,17 @@
 import type { Hono } from "hono";
-import { parseInputToInstant, toOutput } from "../lib/convert";
+import { toOutput } from "../lib/convert";
 import { formatRfc3339Utc, pad2 } from "../lib/date";
 import { errorResponse, textOrJson } from "../lib/http";
 import { parseHumanTime } from "../lib/human-time";
 import { ensureIanaZone, getZoneParts } from "../lib/zone";
 import {
+  parseTimestamp,
   parseDurationIso,
   durationToMs,
+  shiftWallClockTime,
   formatIsoDurationFromMs,
   resolveLocalCandidates,
 } from "../lib/devux";
-
-function parseTimestamp(value: string) {
-  const auto = parseInputToInstant(value, "auto", "latest");
-  if ("instant" in auto) return auto;
-  if (auto.error === "ambiguous_input") return parseInputToInstant(value, "rfc3339", "latest");
-  return auto;
-}
 
 export function registerDevUxRoutes(app: Hono<{ Bindings: Env }>) {
   app.get("/parse", (c) => {
@@ -144,8 +139,24 @@ export function registerDevUxRoutes(app: Hono<{ Bindings: Env }>) {
       return errorResponse(c, 400, "invalid_mode", "mode must be `absolute` or `wall`.");
     }
 
+    if (tz !== "UTC" && !ensureIanaZone(tz)) {
+      return errorResponse(c, 404, "zone_not_found", `Unknown IANA time zone '${tz}'.`);
+    }
+
     if (mode === "absolute") {
-      const instant = { unixMs: base.instant.unixMs + durationToMs(duration), nsRemainder: 0 };
+      if (duration.years !== 0 || duration.months !== 0) {
+        return errorResponse(
+          c,
+          400,
+          "invalid_duration_for_mode",
+          "Calendar units years/months are not supported in absolute mode; use wall mode instead.",
+        );
+      }
+
+      const instant = {
+        unixMs: base.instant.unixMs + durationToMs(duration),
+        nsRemainder: base.instant.nsRemainder,
+      };
       const payload = {
         mode,
         input: ts,
@@ -156,34 +167,9 @@ export function registerDevUxRoutes(app: Hono<{ Bindings: Env }>) {
       return textOrJson(c, payload, payload.local, 200, { "cache-control": "no-store" });
     }
 
-    if (!ensureIanaZone(tz)) {
-      return errorResponse(c, 404, "zone_not_found", `Unknown IANA time zone '${tz}'.`);
-    }
-
     const local = getZoneParts(base.instant, tz);
-    const localShifted = new Date(
-      Date.UTC(
-        local.year + duration.years,
-        local.month - 1 + duration.months,
-        local.day + duration.days,
-        local.hour + duration.hours,
-        local.minute + duration.minutes,
-        local.second + duration.seconds,
-        duration.milliseconds,
-      ),
-    );
-
-    const candidates = resolveLocalCandidates(
-      {
-        year: localShifted.getUTCFullYear(),
-        month: localShifted.getUTCMonth() + 1,
-        day: localShifted.getUTCDate(),
-        hour: localShifted.getUTCHours(),
-        minute: localShifted.getUTCMinutes(),
-        second: localShifted.getUTCSeconds(),
-      },
-      tz,
-    );
+    const localShifted = shiftWallClockTime(local, duration, base.instant);
+    const candidates = resolveLocalCandidates(localShifted, tz);
 
     if (candidates.length === 0) {
       return errorResponse(
@@ -203,6 +189,8 @@ export function registerDevUxRoutes(app: Hono<{ Bindings: Env }>) {
       result: formatRfc3339Utc(chosen, 0),
       local: toOutput(chosen, "rfc3339", tz, 0),
       ambiguity: candidates.length > 1 ? "ambiguous_local_time" : null,
+      ambiguity_resolution: candidates.length > 1 ? "first_candidate_earlier_utc" : null,
+      chosen_candidate_index: candidates.length > 1 ? 0 : null,
       candidates: candidates.map((instant) => formatRfc3339Utc(instant, 0)),
     };
     return textOrJson(c, payload, payload.local, 200, { "cache-control": "no-store" });

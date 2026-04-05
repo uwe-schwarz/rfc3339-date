@@ -387,8 +387,9 @@ paths:
       summary: Add an ISO-8601 duration to a timestamp
       description: >
         Adds an ISO-8601 duration to a parseable timestamp. `mode=absolute` adds elapsed time to the
-        underlying instant. `mode=wall` applies calendar/wall-clock arithmetic in the supplied IANA
-        time zone and can surface ambiguous or nonexistent local results near DST changes.
+        underlying instant and rejects calendar units (`years` / `months`). `mode=wall` applies
+        calendar/wall-clock arithmetic in the supplied IANA time zone and can surface ambiguous or
+        nonexistent local results near DST changes.
       parameters:
         - name: ts
           in: query
@@ -807,8 +808,8 @@ paths:
       tags: [Developer UX, Timezones]
       summary: Resolve a timezone alias to an IANA zone
       description: >
-        Resolves a supported timezone alias, such as a Windows timezone label, to an IANA zone ID.
-        Passing an IANA zone returns it unchanged.
+        Resolves a supported timezone alias, such as a curated set of Windows timezone labels, to an
+        IANA zone ID. Passing an IANA zone returns it unchanged.
       parameters:
         - name: name
           in: query
@@ -1151,6 +1152,12 @@ components:
         ambiguity:
           type: [string, "null"]
           description: Present when a wall-clock result maps to multiple valid instants.
+        ambiguity_resolution:
+          type: [string, "null"]
+          description: Strategy used when an ambiguous wall-clock result yields multiple candidates.
+        chosen_candidate_index:
+          type: [integer, "null"]
+          description: Index into `candidates` for the candidate chosen as the response result.
         candidates:
           type: array
           items: { type: string }

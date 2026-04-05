@@ -327,8 +327,57 @@ describe("developer UX endpoints", () => {
       "/add?ts=2026-03-29T01:30:00Z&duration=PT1H&mode=wall&tz=Europe%2FBerlin&json=1",
     );
     expect(addWall.status).toBe(200);
-    const addWallJson = (await addWall.json()) as { local: string };
-    expect(addWallJson.local).toContain("T");
+    const addWallJson = (await addWall.json()) as {
+      local: string;
+      ambiguity_resolution: string | null;
+      chosen_candidate_index: number | null;
+    };
+    expect(addWallJson.local).toBe("2026-03-29T04:30:00+02:00");
+    expect(addWallJson.ambiguity_resolution).toBeNull();
+    expect(addWallJson.chosen_candidate_index).toBeNull();
+
+    const addAbsoluteBadZone = await request(
+      "/add?ts=2026-03-29T00:30:00Z&duration=PT1H&mode=absolute&tz=Bad%2FZone",
+    );
+    expect(addAbsoluteBadZone.status).toBe(404);
+
+    const addAbsoluteCalendarUnits = await request(
+      "/add?ts=2026-03-29T00:30:00Z&duration=P1M&mode=absolute&tz=UTC",
+    );
+    expect(addAbsoluteCalendarUnits.status).toBe(400);
+
+    const addAbsoluteNegative = await request(
+      "/add?ts=2026-03-29T00:30:00Z&duration=-PT1H&mode=absolute&tz=UTC&json=1",
+    );
+    expect(addAbsoluteNegative.status).toBe(200);
+    const addAbsoluteNegativeJson = (await addAbsoluteNegative.json()) as { result: string };
+    expect(addAbsoluteNegativeJson.result).toBe("2026-03-28T23:30:00Z");
+
+    const addWallPreservesSubsecond = await request(
+      "/add?ts=2026-03-29T00:30:59.900Z&duration=PT0.2S&mode=wall&tz=UTC",
+    );
+    expect(addWallPreservesSubsecond.status).toBe(200);
+    expect(await addWallPreservesSubsecond.text()).toBe("2026-03-29T00:31:00Z");
+
+    const addWallAmbiguous = await request(
+      "/add?ts=2026-10-25T00:30:00Z&duration=PT0S&mode=wall&tz=Europe%2FBerlin&json=1",
+    );
+    expect(addWallAmbiguous.status).toBe(200);
+    const addWallAmbiguousJson = (await addWallAmbiguous.json()) as {
+      result: string;
+      ambiguity: string | null;
+      ambiguity_resolution: string | null;
+      chosen_candidate_index: number | null;
+      candidates: string[];
+    };
+    expect(addWallAmbiguousJson.result).toBe("2026-10-25T00:30:00Z");
+    expect(addWallAmbiguousJson.ambiguity).toBe("ambiguous_local_time");
+    expect(addWallAmbiguousJson.ambiguity_resolution).toBe("first_candidate_earlier_utc");
+    expect(addWallAmbiguousJson.chosen_candidate_index).toBe(0);
+    expect(addWallAmbiguousJson.candidates).toEqual([
+      "2026-10-25T00:30:00Z",
+      "2026-10-25T01:30:00Z",
+    ]);
 
     const serialToIso = await request("/excel/serial-to-iso?value=45246.5&json=1");
     expect(serialToIso.status).toBe(200);
@@ -351,6 +400,9 @@ describe("developer UX endpoints", () => {
     const weekRangeJson = (await weekRange.json()) as { start: string; end: string };
     expect(weekRangeJson.start).toBe("2026-03-30T00:00:00Z");
     expect(weekRangeJson.end).toBe("2026-04-05T23:59:59Z");
+
+    const weekRangeInvalid = await request("/iso-week/start-end?year=2021&week=53");
+    expect(weekRangeInvalid.status).toBe(400);
 
     const httpDate = await request("/http-date?ts=2026-04-04T12:00:00Z");
     expect(httpDate.status).toBe(200);

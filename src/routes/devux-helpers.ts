@@ -5,18 +5,13 @@ import { errorResponse, textOrJson } from "../lib/http";
 import { validateValue } from "../lib/validation";
 import { ensureIanaZone } from "../lib/zone";
 import {
+  maxIsoWeekForYear,
   mondayOfIsoWeek,
+  parseTimestamp,
   parseLocalClock,
   resolveLocalCandidates,
   WINDOWS_TZ_MAP,
 } from "../lib/devux";
-
-function parseTimestamp(value: string) {
-  const auto = parseInputToInstant(value, "auto", "latest");
-  if ("instant" in auto) return auto;
-  if (auto.error === "ambiguous_input") return parseInputToInstant(value, "rfc3339", "latest");
-  return auto;
-}
 
 export function registerDevUxHelperRoutes(app: Hono<{ Bindings: Env }>) {
   app.get("/excel/serial-to-iso", (c) => {
@@ -58,8 +53,11 @@ export function registerDevUxHelperRoutes(app: Hono<{ Bindings: Env }>) {
   app.get("/iso-week/start-end", (c) => {
     const year = Number(c.req.query("year"));
     const week = Number(c.req.query("week"));
-    if (!Number.isInteger(year) || !Number.isInteger(week) || week < 1 || week > 53) {
+    if (!Number.isInteger(year) || !Number.isInteger(week) || week < 1) {
       return errorResponse(c, 400, "invalid_week", "`year` and `week` must be valid integers.");
+    }
+    if (week > maxIsoWeekForYear(year)) {
+      return errorResponse(c, 400, "invalid_week", `ISO week ${week} does not exist in ${year}.`);
     }
     const monday = mondayOfIsoWeek(year, week);
     const sunday = new Date(monday.getTime() + 6 * 86_400_000);

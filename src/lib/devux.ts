@@ -1,4 +1,6 @@
 import type { Instant } from "../types";
+import { parseInputToInstant } from "./convert";
+import { isoWeek } from "./date";
 import { getZoneParts } from "./zone";
 
 export type DurationParts = {
@@ -13,21 +15,29 @@ export type DurationParts = {
 
 export function parseDurationIso(value: string): DurationParts | null {
   const match = value.match(
-    /^P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/,
+    /^(-)?P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/,
   );
   if (!match) return null;
+  const sign = match[1] === "-" ? -1 : 1;
+  const signedInt = (raw: string | undefined) => (raw ? sign * Number(raw) : 0);
+  const secondsRaw = Number(match[7] ?? 0);
   return {
-    years: Number(match[1] ?? 0),
-    months: Number(match[2] ?? 0),
-    days: Number(match[3] ?? 0),
-    hours: Number(match[4] ?? 0),
-    minutes: Number(match[5] ?? 0),
-    seconds: Math.trunc(Number(match[6] ?? 0)),
-    milliseconds: Math.round((Number(match[6] ?? 0) % 1) * 1000),
+    years: signedInt(match[2]),
+    months: signedInt(match[3]),
+    days: signedInt(match[4]),
+    hours: signedInt(match[5]),
+    minutes: signedInt(match[6]),
+    seconds: secondsRaw ? sign * Math.trunc(secondsRaw) : 0,
+    milliseconds: secondsRaw ? sign * Math.round((secondsRaw % 1) * 1000) : 0,
   };
 }
 
 export function durationToMs(parts: DurationParts): number {
+  if (parts.years !== 0 || parts.months !== 0) {
+    throw new RangeError(
+      "Cannot convert duration with years/months to milliseconds; handle calendar units explicitly.",
+    );
+  }
   return (
     (((parts.days * 24 + parts.hours) * 60 + parts.minutes) * 60 + parts.seconds) * 1000 +
     parts.milliseconds
@@ -121,6 +131,41 @@ export function parseLocalClock(value: string): {
   };
 }
 
+export function shiftWallClockTime(
+  local: {
+    year: number;
+    month: number;
+    day: number;
+    hour: number;
+    minute: number;
+    second: number;
+  },
+  duration: DurationParts,
+  baseInstant: Instant,
+) {
+  const shifted = new Date(
+    Date.UTC(
+      local.year + duration.years,
+      local.month - 1 + duration.months,
+      local.day + duration.days,
+      local.hour + duration.hours,
+      local.minute + duration.minutes,
+      local.second + duration.seconds,
+      new Date(baseInstant.unixMs).getUTCMilliseconds() + duration.milliseconds,
+    ),
+  );
+
+  return {
+    year: shifted.getUTCFullYear(),
+    month: shifted.getUTCMonth() + 1,
+    day: shifted.getUTCDate(),
+    hour: shifted.getUTCHours(),
+    minute: shifted.getUTCMinutes(),
+    second: shifted.getUTCSeconds(),
+    nsRemainder: baseInstant.nsRemainder,
+  };
+}
+
 export function mondayOfIsoWeek(year: number, week: number): Date {
   const jan4 = new Date(Date.UTC(year, 0, 4));
   const jan4Day = (jan4.getUTCDay() + 6) % 7;
@@ -128,7 +173,32 @@ export function mondayOfIsoWeek(year: number, week: number): Date {
   return new Date(week1Monday.getTime() + (week - 1) * 7 * 86_400_000);
 }
 
+export function maxIsoWeekForYear(year: number): number {
+  return isoWeek(new Date(Date.UTC(year, 11, 28))).week;
+}
+
+export function parseTimestamp(value: string) {
+  const auto = parseInputToInstant(value, "auto", "latest");
+  if ("instant" in auto) return auto;
+  if (auto.error === "ambiguous_input") return parseInputToInstant(value, "rfc3339", "latest");
+  return auto;
+}
+
+// WINDOWS_TZ_MAP is intentionally curated rather than exhaustive. Extend it here when
+// /tz/resolve needs additional Windows aliases beyond the common interop cases below.
 export const WINDOWS_TZ_MAP: Record<string, string> = {
+  "aus eastern standard time": "Australia/Sydney",
+  "central europe standard time": "Europe/Budapest",
+  "central european standard time": "Europe/Warsaw",
+  "central standard time": "America/Chicago",
+  "eastern standard time": "America/New_York",
+  "gmt standard time": "Europe/London",
+  "greenwich standard time": "Europe/London",
+  "india standard time": "Asia/Kolkata",
+  "mountain standard time": "America/Denver",
+  "pacific standard time": "America/Los_Angeles",
+  "romance standard time": "Europe/Paris",
+  "tokyo standard time": "Asia/Tokyo",
   "w. europe standard time": "Europe/Berlin",
   utc: "UTC",
 };
