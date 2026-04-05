@@ -34,14 +34,15 @@ export function registerDevUxRoutes(app: Hono<{ Bindings: Env }>) {
         tz === "UTC"
           ? formatRfc3339Utc(direct.instant, 0)
           : toOutput(direct.instant, "rfc3339", tz, 0);
-      return c.json({
+      const payload = {
         input: q,
         timezone: tz,
         instant: formatRfc3339Utc(direct.instant, 0),
         local,
         confidence: 1,
         notes: [],
-      });
+      };
+      return textOrJson(c, payload, payload.local, 200, { "cache-control": "no-store" });
     }
 
     const parsed = parseHumanTime(q, {
@@ -50,7 +51,7 @@ export function registerDevUxRoutes(app: Hono<{ Bindings: Env }>) {
     });
     if (!("instant" in parsed)) return errorResponse(c, 400, parsed.error, parsed.message);
 
-    return c.json({
+    const payload = {
       input: q,
       timezone: tz,
       instant: formatRfc3339Utc(parsed.instant, 0),
@@ -60,7 +61,8 @@ export function registerDevUxRoutes(app: Hono<{ Bindings: Env }>) {
           : toOutput(parsed.instant, "rfc3339", tz, 0),
       confidence: parsed.source.dateSource === "explicit" ? 0.96 : 0.9,
       notes: parsed.notes,
-    });
+    };
+    return textOrJson(c, payload, payload.local, 200, { "cache-control": "no-store" });
   });
 
   app.get("/format", (c) => {
@@ -115,7 +117,8 @@ export function registerDevUxRoutes(app: Hono<{ Bindings: Env }>) {
     }[unit];
     if (scalar === undefined)
       return errorResponse(c, 400, "invalid_unit", "unit must be ms, s, min, h, d, or iso.");
-    return c.json({ from, to, unit, value: scalar, isoDuration: formatIsoDurationFromMs(deltaMs) });
+    const payload = { from, to, unit, value: scalar, isoDuration: formatIsoDurationFromMs(deltaMs) };
+    return textOrJson(c, payload, String(payload.value), 200, { "cache-control": "no-store" });
   });
 
   app.get("/add", (c) => {
@@ -143,13 +146,14 @@ export function registerDevUxRoutes(app: Hono<{ Bindings: Env }>) {
 
     if (mode === "absolute") {
       const instant = { unixMs: base.instant.unixMs + durationToMs(duration), nsRemainder: 0 };
-      return c.json({
+      const payload = {
         mode,
         input: ts,
         duration: durationRaw,
         result: formatRfc3339Utc(instant, 0),
         local: tz === "UTC" ? formatRfc3339Utc(instant, 0) : toOutput(instant, "rfc3339", tz, 0),
-      });
+      };
+      return textOrJson(c, payload, payload.local, 200, { "cache-control": "no-store" });
     }
 
     if (!ensureIanaZone(tz)) {
@@ -191,7 +195,7 @@ export function registerDevUxRoutes(app: Hono<{ Bindings: Env }>) {
     }
 
     const chosen = candidates[0];
-    return c.json({
+    const payload = {
       mode,
       input: ts,
       duration: durationRaw,
@@ -200,6 +204,7 @@ export function registerDevUxRoutes(app: Hono<{ Bindings: Env }>) {
       local: toOutput(chosen, "rfc3339", tz, 0),
       ambiguity: candidates.length > 1 ? "ambiguous_local_time" : null,
       candidates: candidates.map((instant) => formatRfc3339Utc(instant, 0)),
-    });
+    };
+    return textOrJson(c, payload, payload.local, 200, { "cache-control": "no-store" });
   });
 }

@@ -26,7 +26,8 @@ export function registerDevUxHelperRoutes(app: Hono<{ Bindings: Env }>) {
     const system = c.req.query("system") === "1904" ? "excel1904" : "excel1900";
     const parsed = parseInputToInstant(value, system, "latest");
     if (!("instant" in parsed)) return errorResponse(c, 400, parsed.error, parsed.message);
-    return c.json({ value, system, iso: formatRfc3339Utc(parsed.instant, 3) });
+    const payload = { value, system, iso: formatRfc3339Utc(parsed.instant, 3) };
+    return textOrJson(c, payload, payload.iso, 200, { "cache-control": "no-store" });
   });
 
   app.get("/excel/iso-to-serial", (c) => {
@@ -35,7 +36,8 @@ export function registerDevUxHelperRoutes(app: Hono<{ Bindings: Env }>) {
     const system = c.req.query("system") === "1904" ? "excel1904" : "excel1900";
     const parsed = parseInputToInstant(ts, "rfc3339", "latest");
     if (!("instant" in parsed)) return errorResponse(c, 400, parsed.error, parsed.message);
-    return c.json({ ts, system, serial: toOutput(parsed.instant, system, null, 0) });
+    const payload = { ts, system, serial: toOutput(parsed.instant, system, null, 0) };
+    return textOrJson(c, payload, payload.serial, 200, { "cache-control": "no-store" });
   });
 
   app.get("/iso-week", (c) => {
@@ -44,12 +46,13 @@ export function registerDevUxHelperRoutes(app: Hono<{ Bindings: Env }>) {
     const parsed = parseTimestamp(ts);
     if (!("instant" in parsed)) return errorResponse(c, 400, parsed.error, parsed.message);
     const info = isoWeek(new Date(parsed.instant.unixMs));
-    return c.json({
+    const payload = {
       yearWeek: `${info.year}-W${pad2(info.week)}`,
       year: info.year,
       week: info.week,
       weekday: info.day,
-    });
+    };
+    return textOrJson(c, payload, payload.yearWeek, 200, { "cache-control": "no-store" });
   });
 
   app.get("/iso-week/start-end", (c) => {
@@ -87,18 +90,26 @@ export function registerDevUxHelperRoutes(app: Hono<{ Bindings: Env }>) {
     const parsed = parseTimestamp(value);
     if (!("instant" in parsed)) {
       const result = validateValue(value, "iso8601", "lenient");
-      return c.json({
+      const payload = {
         valid: false,
         normalized: null,
         reasons: result.errors.map((error) => error.message),
-      });
+      };
+      return textOrJson(
+        c,
+        payload,
+        `INVALID: ${payload.reasons[0] ?? "validation failed"}`,
+        200,
+        { "cache-control": "no-store" },
+      );
     }
 
-    return c.json({
+    const payload = {
       valid: true,
       normalized: formatRfc3339Utc(parsed.instant, 0),
       reasons: [],
-    });
+    };
+    return textOrJson(c, payload, payload.normalized, 200, { "cache-control": "no-store" });
   });
 
   app.get("/validate-local", (c) => {
@@ -133,10 +144,11 @@ export function registerDevUxHelperRoutes(app: Hono<{ Bindings: Env }>) {
     if (!resolved) {
       return errorResponse(c, 404, "zone_not_found", `Could not resolve timezone alias '${name}'.`);
     }
-    return c.json({
+    const payload = {
       input: name,
       resolved,
       source: WINDOWS_TZ_MAP[key] ? "windows-alias" : "iana",
-    });
+    };
+    return textOrJson(c, payload, payload.resolved, 200, { "cache-control": "no-store" });
   });
 }

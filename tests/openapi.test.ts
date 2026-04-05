@@ -20,4 +20,26 @@ describe("openapi document", () => {
     expect(OPENAPI_SCALAR_COMPAT_JSON).toContain('"openapi": "3.0.3"');
     expect(OPENAPI_SCALAR_COMPAT_JSON).not.toContain('"x-runtime"');
   });
+
+  it("includes the new developer ux routes", () => {
+    const documentedRoutes = [
+      "/parse",
+      "/format",
+      "/diff",
+      "/add",
+      "/excel/serial-to-iso",
+      "/excel/iso-to-serial",
+      "/iso-week",
+      "/iso-week/start-end",
+      "/http-date",
+      "/lint/iso",
+      "/validate-local",
+      "/tz/resolve",
+    ];
+
+    for (const route of documentedRoutes) {
+      expect(OPENAPI_YAML).toContain(`\n  ${route}:`);
+      expect(OPENAPI_JSON).toContain(`"${route}"`);
+    }
+  });
 });
