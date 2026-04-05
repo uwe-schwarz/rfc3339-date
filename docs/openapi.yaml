@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: rfc3339.date — Time API
-  version: 1.1.0
+  version: 1.2.0
   summary: "Strict RFC3339 time endpoints + validation + conversions (incl. exotic time standards)"
   description: >
     A precise, developer-centric time API.
@@ -1199,7 +1199,9 @@ components:
       properties:
         yearWeek: { type: string }
         start: { type: string }
-        end: { type: string }
+        end:
+          type: string
+          description: Inclusive end of the ISO week range, including millisecond precision.
 
     HttpDateResponse:
       type: object

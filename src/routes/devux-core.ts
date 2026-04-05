@@ -102,7 +102,10 @@ export function registerDevUxRoutes(app: Hono<{ Bindings: Env }>) {
         "`from` and `to` must be parseable timestamps.",
       );
     }
-    const deltaMs = toParsed.instant.unixMs - fromParsed.instant.unixMs;
+    const deltaNs =
+      BigInt(toParsed.instant.unixMs - fromParsed.instant.unixMs) * 1_000_000n +
+      BigInt(toParsed.instant.nsRemainder - fromParsed.instant.nsRemainder);
+    const deltaMs = Number(deltaNs) / 1_000_000;
     const scalarByUnit = {
       ms: deltaMs,
       s: deltaMs / 1000,

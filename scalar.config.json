@@ -4,7 +4,7 @@
   "info": {
     "title": "rfc3339.date",
     "description": "Strict RFC3339 API docs for validation, conversion, timezone transitions, and leap second data.",
-    "version": "1.1.0"
+    "version": "1.2.0"
   },
   "siteConfig": {
     "subdomain": "rfc3339date",

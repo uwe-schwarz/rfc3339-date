@@ -326,6 +326,17 @@ describe("developer UX endpoints", () => {
     );
     expect(diffBadPrototypeUnit.status).toBe(400);
 
+    const diffNanoseconds = await request(
+      "/diff?from=2026-01-01T00:00:00.000000100Z&to=2026-01-01T00:00:00.000000900Z&unit=ms&json=1",
+    );
+    expect(diffNanoseconds.status).toBe(200);
+    const diffNanosecondsJson = (await diffNanoseconds.json()) as {
+      value: number;
+      isoDuration: string;
+    };
+    expect(diffNanosecondsJson.value).toBe(0.0008);
+    expect(diffNanosecondsJson.isoDuration).toBe("P0DT0H0M0.0000008S");
+
     const addAbsolute = await request(
       "/add?ts=2026-03-29T00:30:00Z&duration=PT1H&mode=absolute&tz=Europe%2FBerlin&json=1",
     );
@@ -405,10 +416,18 @@ describe("developer UX endpoints", () => {
     const serialToIsoJson = (await serialToIso.json()) as { iso: string };
     expect(serialToIsoJson.iso).toContain("T");
 
+    const serialToIsoBadSystem = await request("/excel/serial-to-iso?value=45246.5&system=190O");
+    expect(serialToIsoBadSystem.status).toBe(400);
+
     const isoToSerial = await request("/excel/iso-to-serial?ts=2026-04-04T12:00:00Z&json=1");
     expect(isoToSerial.status).toBe(200);
     const isoToSerialJson = (await isoToSerial.json()) as { serial: string };
     expect(Number(isoToSerialJson.serial)).toBeGreaterThan(40000);
+
+    const isoToSerialBadSystem = await request(
+      "/excel/iso-to-serial?ts=2026-04-04T12:00:00Z&system=190O",
+    );
+    expect(isoToSerialBadSystem.status).toBe(400);
 
     const week = await request("/iso-week?ts=2026-04-04T12:00:00Z&json=1");
     expect(week.status).toBe(200);
@@ -420,7 +439,7 @@ describe("developer UX endpoints", () => {
     expect(weekRange.status).toBe(200);
     const weekRangeJson = (await weekRange.json()) as { start: string; end: string };
     expect(weekRangeJson.start).toBe("2026-03-30T00:00:00Z");
-    expect(weekRangeJson.end).toBe("2026-04-05T23:59:59Z");
+    expect(weekRangeJson.end).toBe("2026-04-05T23:59:59.999Z");
 
     const weekRangeInvalid = await request("/iso-week/start-end?year=2021&week=53");
     expect(weekRangeInvalid.status).toBe(400);
@@ -434,6 +453,11 @@ describe("developer UX endpoints", () => {
     const lintIsoJson = (await lintIso.json()) as { valid: boolean; normalized: string | null };
     expect(lintIsoJson.valid).toBe(true);
     expect(lintIsoJson.normalized).toBe("2026-04-04T12:00:00Z");
+
+    const lintIsoFractional = await request("/lint/iso?value=2026-04-05T12:00:00.123Z&json=1");
+    expect(lintIsoFractional.status).toBe(200);
+    const lintIsoFractionalJson = (await lintIsoFractional.json()) as { normalized: string | null };
+    expect(lintIsoFractionalJson.normalized).toBe("2026-04-05T12:00:00.123Z");
 
     const validateLocal = await request(
       "/validate-local?local=2026-10-25T02:15:00&tz=Europe%2FBerlin",

@@ -1,4 +1,4 @@
-import type { Hono } from "hono";
+import type { Context, Hono } from "hono";
 import { parseInputToInstant, toOutput } from "../lib/convert";
 import { formatRfc3339Utc, isoWeek, pad2 } from "../lib/date";
 import { errorResponse, textOrJson } from "../lib/http";
@@ -13,12 +13,29 @@ import {
   WINDOWS_TZ_MAP,
 } from "../lib/devux";
 
+function resolveExcelSystem(c: Context) {
+  const systemParam = c.req.query("system") ?? "1900";
+  if (systemParam !== "1900" && systemParam !== "1904") {
+    return null;
+  }
+  return systemParam === "1904" ? "excel1904" : "excel1900";
+}
+
+function precisionForInstant(instant: { unixMs: number; nsRemainder: number }): number {
+  if (instant.nsRemainder !== 0) return 9;
+  if (new Date(instant.unixMs).getUTCMilliseconds() !== 0) return 3;
+  return 0;
+}
+
 export function registerDevUxHelperRoutes(app: Hono<{ Bindings: Env }>) {
   app.get("/excel/serial-to-iso", (c) => {
     const value = c.req.query("value");
     if (!value)
       return errorResponse(c, 400, "missing_value", "Query parameter `value` is required.");
-    const system = c.req.query("system") === "1904" ? "excel1904" : "excel1900";
+    const system = resolveExcelSystem(c);
+    if (!system) {
+      return errorResponse(c, 400, "invalid_system", "`system` must be `1900` or `1904`.");
+    }
     const parsed = parseInputToInstant(value, system, "latest");
     if (!("instant" in parsed)) return errorResponse(c, 400, parsed.error, parsed.message);
     const payload = { value, system, iso: formatRfc3339Utc(parsed.instant, 3) };
@@ -28,7 +45,10 @@ export function registerDevUxHelperRoutes(app: Hono<{ Bindings: Env }>) {
   app.get("/excel/iso-to-serial", (c) => {
     const ts = c.req.query("ts");
     if (!ts) return errorResponse(c, 400, "missing_ts", "Query parameter `ts` is required.");
-    const system = c.req.query("system") === "1904" ? "excel1904" : "excel1900";
+    const system = resolveExcelSystem(c);
+    if (!system) {
+      return errorResponse(c, 400, "invalid_system", "`system` must be `1900` or `1904`.");
+    }
     const parsed = parseInputToInstant(ts, "rfc3339", "latest");
     if (!("instant" in parsed)) return errorResponse(c, 400, parsed.error, parsed.message);
     const payload = { ts, system, serial: toOutput(parsed.instant, system, null, 0) };
@@ -64,7 +84,7 @@ export function registerDevUxHelperRoutes(app: Hono<{ Bindings: Env }>) {
     return c.json({
       yearWeek: `${year}-W${pad2(week)}`,
       start: `${monday.toISOString().slice(0, 10)}T00:00:00Z`,
-      end: `${sunday.toISOString().slice(0, 10)}T23:59:59Z`,
+      end: `${sunday.toISOString().slice(0, 10)}T23:59:59.999Z`,
     });
   });
 
@@ -104,7 +124,7 @@ export function registerDevUxHelperRoutes(app: Hono<{ Bindings: Env }>) {
 
     const payload = {
       valid: true,
-      normalized: formatRfc3339Utc(parsed.instant, 0),
+      normalized: formatRfc3339Utc(parsed.instant, precisionForInstant(parsed.instant)),
       reasons: [],
     };
     return textOrJson(c, payload, payload.normalized, 200, { "cache-control": "no-store" });
@@ -147,7 +167,7 @@ export function registerDevUxHelperRoutes(app: Hono<{ Bindings: Env }>) {
     const payload = {
       input: name,
       resolved,
-      source: WINDOWS_TZ_MAP[key] ? "windows-alias" : "iana",
+      source: Object.hasOwn(WINDOWS_TZ_MAP, key) ? "windows-alias" : "iana",
     };
     return textOrJson(c, payload, payload.resolved, 200, { "cache-control": "no-store" });
   });

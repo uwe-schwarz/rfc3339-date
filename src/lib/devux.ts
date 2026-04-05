@@ -45,17 +45,26 @@ export function durationToMs(parts: DurationParts): number {
 }
 
 export function formatIsoDurationFromMs(deltaMs: number): string {
-  const sign = deltaMs < 0 ? "-" : "";
-  let remaining = Math.abs(deltaMs);
-  const days = Math.floor(remaining / 86_400_000);
-  remaining %= 86_400_000;
-  const hours = Math.floor(remaining / 3_600_000);
-  remaining %= 3_600_000;
-  const minutes = Math.floor(remaining / 60_000);
-  remaining %= 60_000;
-  const seconds = Math.floor(remaining / 1000);
-  const ms = remaining % 1000;
-  const secondPart = ms > 0 ? `${seconds}.${String(ms).padStart(3, "0")}` : String(seconds);
+  const totalNanoseconds = BigInt(Math.round(deltaMs * 1_000_000));
+  const sign = totalNanoseconds < 0n ? "-" : "";
+  let remaining = totalNanoseconds < 0n ? -totalNanoseconds : totalNanoseconds;
+  const dayNs = 86_400_000_000_000n;
+  const hourNs = 3_600_000_000_000n;
+  const minuteNs = 60_000_000_000n;
+  const secondNs = 1_000_000_000n;
+
+  const days = remaining / dayNs;
+  remaining %= dayNs;
+  const hours = remaining / hourNs;
+  remaining %= hourNs;
+  const minutes = remaining / minuteNs;
+  remaining %= minuteNs;
+  const seconds = remaining / secondNs;
+  const fractionalNs = remaining % secondNs;
+  const secondPart =
+    fractionalNs > 0n
+      ? `${seconds}.${fractionalNs.toString().padStart(9, "0").replace(/0+$/, "")}`
+      : seconds.toString();
   return `${sign}P${days}DT${hours}H${minutes}M${secondPart}S`;
 }
 
@@ -169,15 +178,23 @@ export function shiftWallClockTime(
 export function selectClosestInstant(candidates: Instant[], anchor: Instant): number {
   let chosenIndex = 0;
   let bestDistance = Number.POSITIVE_INFINITY;
+  const anchorNs = BigInt(anchor.unixMs) * 1_000_000n + BigInt(anchor.nsRemainder);
 
   for (const [index, candidate] of candidates.entries()) {
-    const distance = Math.abs(candidate.unixMs - anchor.unixMs);
+    const candidateNs = BigInt(candidate.unixMs) * 1_000_000n + BigInt(candidate.nsRemainder);
+    const rawDistance = candidateNs - anchorNs;
+    const distance = Number(rawDistance < 0n ? -rawDistance : rawDistance);
     if (distance < bestDistance) {
       chosenIndex = index;
       bestDistance = distance;
       continue;
     }
-    if (distance === bestDistance && candidate.unixMs < candidates[chosenIndex]!.unixMs) {
+    if (
+      distance === bestDistance &&
+      (candidate.unixMs < candidates[chosenIndex]!.unixMs ||
+        (candidate.unixMs === candidates[chosenIndex]!.unixMs &&
+          candidate.nsRemainder < candidates[chosenIndex]!.nsRemainder))
+    ) {
       chosenIndex = index;
     }
   }

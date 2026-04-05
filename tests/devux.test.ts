@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import {
   durationToMs,
   maxIsoWeekForYear,
+  formatIsoDurationFromMs,
   parseDurationIso,
   selectClosestInstant,
   shiftWallClockTime,
@@ -38,6 +39,10 @@ describe("devux helpers", () => {
   test("computes the max ISO week for a given year", () => {
     expect(maxIsoWeekForYear(2021)).toBe(52);
     expect(maxIsoWeekForYear(2026)).toBe(53);
+  });
+
+  test("formats ISO durations with sub-millisecond precision", () => {
+    expect(formatIsoDurationFromMs(0.0008)).toBe("P0DT0H0M0.0000008S");
   });
 
   test("preserves subsecond state when shifting wall-clock times", () => {
