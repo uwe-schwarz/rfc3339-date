@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "rfc3339.date — Time API",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "A precise, developer-centric time API. Defaults to canonical RFC3339 UTC for /now, supports IANA time zones, strict RFC3339 validation, ISO8601 validation, and conversions across common + exotic representations (NTP, GPS, TAI, JD/MJD, Excel, HTTP-date, RFC5322). Plain text is first-class; JSON is optional via Accept header or ?json=1.\n",
     "license": {
       "name": "NOASSERTION",
@@ -31,6 +31,10 @@
     {
       "name": "Timezones",
       "description": "IANA zone discovery, offset inspection, transition lookup, and human-time conversion."
+    },
+    {
+      "name": "Developer UX",
+      "description": "Parsing, formatting, duration, spreadsheet, and calendar helpers for developer workflows."
     },
     {
       "name": "Datasets",
@@ -1664,6 +1668,757 @@
         }
       }
     },
+    "/parse": {
+      "get": {
+        "operationId": "parseDeveloperTimeInput",
+        "tags": [
+          "Developer UX"
+        ],
+        "summary": "Parse a timestamp or human time expression",
+        "description": "Parses either a direct timestamp or a human-style expression such as `tomorrow 17:00`. If `tz` is provided, it is used as the local interpretation zone for human expressions and for rendering the `local` field in the response.\n",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Timestamp or human time expression to parse."
+          },
+          {
+            "name": "tz",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "UTC"
+            },
+            "description": "IANA time zone used to interpret human-style inputs."
+          },
+          {
+            "name": "json",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ],
+              "default": 0
+            },
+            "description": "If 1, forces JSON output regardless of Accept header."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Parsed instant and localized rendering",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "local": {
+                    "value": "2026-04-06T17:00:00+02:00"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "input",
+                    "timezone",
+                    "instant",
+                    "local",
+                    "confidence",
+                    "notes"
+                  ],
+                  "properties": {
+                    "input": {
+                      "type": "string"
+                    },
+                    "timezone": {
+                      "type": "string"
+                    },
+                    "instant": {
+                      "type": "string"
+                    },
+                    "local": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "number"
+                    },
+                    "notes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (invalid input, ambiguity, or unsupported combination)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "at": {
+                            "type": "integer",
+                            "description": "Character index (if applicable)"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found (unknown time zone or resource)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "at": {
+                            "type": "integer",
+                            "description": "Character index (if applicable)"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/format": {
+      "get": {
+        "operationId": "formatTimestampHelper",
+        "tags": [
+          "Developer UX",
+          "Conversion"
+        ],
+        "summary": "Format a timestamp for common developer targets",
+        "description": "Formats a parseable timestamp into one of the dedicated helper styles: ISO, HTTP-date, cron, or a filesystem-safe UTC stamp. Plain text returns the selected output; JSON returns the selected output plus all variants.\n",
+        "parameters": [
+          {
+            "name": "value",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Parseable timestamp value."
+          },
+          {
+            "name": "style",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "iso",
+                "http",
+                "cron",
+                "fileSafe"
+              ],
+              "default": "iso"
+            }
+          },
+          {
+            "name": "json",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ],
+              "default": 0
+            },
+            "description": "If 1, forces JSON output regardless of Accept header."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Formatted output",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "http": {
+                    "value": "Sat, 04 Apr 2026 12:00:00 GMT"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "input",
+                    "style",
+                    "output",
+                    "outputs"
+                  ],
+                  "properties": {
+                    "input": {
+                      "type": "string"
+                    },
+                    "style": {
+                      "type": "string",
+                      "enum": [
+                        "iso",
+                        "http",
+                        "cron",
+                        "fileSafe"
+                      ]
+                    },
+                    "output": {
+                      "type": "string"
+                    },
+                    "outputs": {
+                      "type": "object",
+                      "required": [
+                        "iso",
+                        "http",
+                        "cron",
+                        "fileSafe"
+                      ],
+                      "properties": {
+                        "iso": {
+                          "type": "string"
+                        },
+                        "http": {
+                          "type": "string"
+                        },
+                        "cron": {
+                          "type": "string"
+                        },
+                        "fileSafe": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (invalid input, ambiguity, or unsupported combination)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "at": {
+                            "type": "integer",
+                            "description": "Character index (if applicable)"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/diff": {
+      "get": {
+        "operationId": "diffTimestamps",
+        "tags": [
+          "Developer UX",
+          "Conversion"
+        ],
+        "summary": "Compute the difference between two timestamps",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Start timestamp."
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "End timestamp."
+          },
+          {
+            "name": "unit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ms",
+                "s",
+                "min",
+                "h",
+                "d",
+                "iso"
+              ],
+              "default": "ms"
+            },
+            "description": "Output unit for the computed delta."
+          },
+          {
+            "name": "json",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ],
+              "default": 0
+            },
+            "description": "If 1, forces JSON output regardless of Accept header."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Timestamp difference",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "minutes": {
+                    "value": "90"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "from",
+                    "to",
+                    "unit",
+                    "value",
+                    "isoDuration"
+                  ],
+                  "properties": {
+                    "from": {
+                      "type": "string"
+                    },
+                    "to": {
+                      "type": "string"
+                    },
+                    "unit": {
+                      "type": "string",
+                      "enum": [
+                        "ms",
+                        "s",
+                        "min",
+                        "h",
+                        "d",
+                        "iso"
+                      ]
+                    },
+                    "value": {
+                      "oneOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "isoDuration": {
+                      "type": "string",
+                      "description": "Signed ISO-8601-style duration derived from the millisecond delta."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (invalid input, ambiguity, or unsupported combination)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "at": {
+                            "type": "integer",
+                            "description": "Character index (if applicable)"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/add": {
+      "get": {
+        "operationId": "addIsoDuration",
+        "tags": [
+          "Developer UX",
+          "Conversion",
+          "Timezones"
+        ],
+        "summary": "Add an ISO-8601 duration to a timestamp",
+        "description": "Adds an ISO-8601 duration to a parseable timestamp. `mode=absolute` adds elapsed time to the underlying instant and rejects calendar units (`years` / `months`). `mode=wall` applies calendar/wall-clock arithmetic in the supplied IANA time zone and can surface ambiguous or nonexistent local results near DST changes.\n",
+        "parameters": [
+          {
+            "name": "ts",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Base timestamp."
+          },
+          {
+            "name": "duration",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ISO-8601 duration such as `PT1H`, `P3D`, or `P1DT30M`."
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "absolute",
+                "wall"
+              ],
+              "default": "absolute"
+            }
+          },
+          {
+            "name": "tz",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "UTC"
+            },
+            "description": "IANA time zone used for local rendering in both modes. When omitted, the endpoint falls back to `UTC`; for `mode=wall`, DST behavior is evaluated in that zone.\n"
+          },
+          {
+            "name": "json",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ],
+              "default": 0
+            },
+            "description": "If 1, forces JSON output regardless of Accept header."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Duration-add result",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "local": {
+                    "value": "2026-03-29T04:30:00+02:00"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "mode",
+                    "input",
+                    "duration",
+                    "result",
+                    "local"
+                  ],
+                  "properties": {
+                    "mode": {
+                      "type": "string",
+                      "enum": [
+                        "absolute",
+                        "wall"
+                      ]
+                    },
+                    "input": {
+                      "type": "string"
+                    },
+                    "duration": {
+                      "type": "string"
+                    },
+                    "tz": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "result": {
+                      "type": "string",
+                      "description": "Resulting instant in RFC3339 UTC."
+                    },
+                    "local": {
+                      "type": "string",
+                      "description": "Result rendered in the requested time zone."
+                    },
+                    "ambiguity": {
+                      "type": "string",
+                      "description": "Present when a wall-clock result maps to multiple valid instants.",
+                      "nullable": true
+                    },
+                    "ambiguity_resolution": {
+                      "type": "string",
+                      "description": "Strategy used when an ambiguous wall-clock result yields multiple candidates, currently `closest_to_input_instant`.",
+                      "nullable": true
+                    },
+                    "chosen_candidate_index": {
+                      "type": "integer",
+                      "description": "Index into `candidates` for the candidate chosen as the response result.",
+                      "nullable": true
+                    },
+                    "candidates": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (invalid input, ambiguity, or unsupported combination)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "at": {
+                            "type": "integer",
+                            "description": "Character index (if applicable)"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found (unknown time zone or resource)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "at": {
+                            "type": "integer",
+                            "description": "Character index (if applicable)"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/tz": {
       "get": {
         "operationId": "listTimezones",
@@ -2417,6 +3172,1061 @@
                           }
                         }
                       }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (invalid input, ambiguity, or unsupported combination)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "at": {
+                            "type": "integer",
+                            "description": "Character index (if applicable)"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found (unknown time zone or resource)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "at": {
+                            "type": "integer",
+                            "description": "Character index (if applicable)"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/excel/serial-to-iso": {
+      "get": {
+        "operationId": "excelSerialToIso",
+        "tags": [
+          "Developer UX",
+          "Conversion"
+        ],
+        "summary": "Convert an Excel serial value to RFC3339 UTC",
+        "parameters": [
+          {
+            "name": "value",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Excel serial value."
+          },
+          {
+            "name": "system",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1900",
+                "1904"
+              ],
+              "default": "1900"
+            },
+            "description": "Excel date system to use."
+          },
+          {
+            "name": "json",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ],
+              "default": 0
+            },
+            "description": "If 1, forces JSON output regardless of Accept header."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Excel serial converted to RFC3339 UTC",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "iso": {
+                    "value": "2023-11-16T12:00:00.000Z"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "value",
+                    "system",
+                    "iso"
+                  ],
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    },
+                    "system": {
+                      "type": "string",
+                      "enum": [
+                        "excel1900",
+                        "excel1904"
+                      ]
+                    },
+                    "iso": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (invalid input, ambiguity, or unsupported combination)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "at": {
+                            "type": "integer",
+                            "description": "Character index (if applicable)"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/excel/iso-to-serial": {
+      "get": {
+        "operationId": "isoToExcelSerial",
+        "tags": [
+          "Developer UX",
+          "Conversion"
+        ],
+        "summary": "Convert an RFC3339 timestamp to an Excel serial value",
+        "parameters": [
+          {
+            "name": "ts",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "RFC3339 timestamp."
+          },
+          {
+            "name": "system",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1900",
+                "1904"
+              ],
+              "default": "1900"
+            },
+            "description": "Excel date system to use."
+          },
+          {
+            "name": "json",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ],
+              "default": 0
+            },
+            "description": "If 1, forces JSON output regardless of Accept header."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RFC3339 timestamp converted to an Excel serial value",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ts",
+                    "system",
+                    "serial"
+                  ],
+                  "properties": {
+                    "ts": {
+                      "type": "string"
+                    },
+                    "system": {
+                      "type": "string",
+                      "enum": [
+                        "excel1900",
+                        "excel1904"
+                      ]
+                    },
+                    "serial": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (invalid input, ambiguity, or unsupported combination)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "at": {
+                            "type": "integer",
+                            "description": "Character index (if applicable)"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/iso-week": {
+      "get": {
+        "operationId": "getIsoWeekInfo",
+        "tags": [
+          "Developer UX"
+        ],
+        "summary": "Return ISO week metadata for a timestamp",
+        "parameters": [
+          {
+            "name": "ts",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Parseable timestamp value."
+          },
+          {
+            "name": "json",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ],
+              "default": 0
+            },
+            "description": "If 1, forces JSON output regardless of Accept header."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ISO week breakdown",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "week": {
+                    "value": "2026-W14"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "yearWeek",
+                    "year",
+                    "week",
+                    "weekday"
+                  ],
+                  "properties": {
+                    "yearWeek": {
+                      "type": "string"
+                    },
+                    "year": {
+                      "type": "integer"
+                    },
+                    "week": {
+                      "type": "integer"
+                    },
+                    "weekday": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 7
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (invalid input, ambiguity, or unsupported combination)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "at": {
+                            "type": "integer",
+                            "description": "Character index (if applicable)"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/iso-week/start-end": {
+      "get": {
+        "operationId": "getIsoWeekRange",
+        "tags": [
+          "Developer UX"
+        ],
+        "summary": "Return the UTC start and end boundaries for an ISO week",
+        "parameters": [
+          {
+            "name": "year",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "week",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 53
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ISO week UTC range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "yearWeek",
+                    "start",
+                    "end"
+                  ],
+                  "properties": {
+                    "yearWeek": {
+                      "type": "string"
+                    },
+                    "start": {
+                      "type": "string"
+                    },
+                    "end": {
+                      "type": "string",
+                      "description": "Inclusive end of the ISO week range, including millisecond precision."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (invalid input, ambiguity, or unsupported combination)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "at": {
+                            "type": "integer",
+                            "description": "Character index (if applicable)"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/http-date": {
+      "get": {
+        "operationId": "renderHttpDate",
+        "tags": [
+          "Developer UX",
+          "Conversion"
+        ],
+        "summary": "Render a timestamp as an HTTP-date",
+        "parameters": [
+          {
+            "name": "ts",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Parseable timestamp value."
+          },
+          {
+            "name": "json",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ],
+              "default": 0
+            },
+            "description": "If 1, forces JSON output regardless of Accept header."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "HTTP-date rendering",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "http": {
+                    "value": "Sat, 04 Apr 2026 12:00:00 GMT"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ts",
+                    "httpDate"
+                  ],
+                  "properties": {
+                    "ts": {
+                      "type": "string"
+                    },
+                    "httpDate": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (invalid input, ambiguity, or unsupported combination)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "at": {
+                            "type": "integer",
+                            "description": "Character index (if applicable)"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lint/iso": {
+      "get": {
+        "operationId": "lintIsoTimestamp",
+        "tags": [
+          "Developer UX",
+          "Validation"
+        ],
+        "summary": "Lint and normalize an ISO-like timestamp",
+        "description": "Performs a lenient parse-oriented check for an ISO-like timestamp. If it can be normalized, the response includes the normalized RFC3339 UTC value; otherwise it returns reasons gathered from validation.\n",
+        "parameters": [
+          {
+            "name": "value",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "json",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ],
+              "default": 0
+            },
+            "description": "If 1, forces JSON output regardless of Accept header."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lint result",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "description": "Normalized RFC3339 UTC when valid, otherwise `INVALID: <reason>`."
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "valid",
+                    "normalized",
+                    "reasons"
+                  ],
+                  "properties": {
+                    "valid": {
+                      "type": "boolean"
+                    },
+                    "normalized": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "reasons": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (invalid input, ambiguity, or unsupported combination)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "at": {
+                            "type": "integer",
+                            "description": "Character index (if applicable)"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/validate-local": {
+      "get": {
+        "operationId": "validateLocalTime",
+        "tags": [
+          "Developer UX",
+          "Timezones"
+        ],
+        "summary": "Validate a local wall-clock time in an IANA zone",
+        "description": "Checks whether a local timestamp is valid, ambiguous, or nonexistent in the requested IANA time zone and returns matching instant candidates when they exist.\n",
+        "parameters": [
+          {
+            "name": "local",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Local timestamp in `YYYY-MM-DDTHH:mm[:ss]` format."
+          },
+          {
+            "name": "tz",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "IANA time zone ID."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Local time validation result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "local",
+                    "tz",
+                    "status",
+                    "candidates"
+                  ],
+                  "properties": {
+                    "local": {
+                      "type": "string"
+                    },
+                    "tz": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "invalid",
+                        "ambiguous",
+                        "ok"
+                      ]
+                    },
+                    "candidates": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "instant",
+                          "local"
+                        ],
+                        "properties": {
+                          "instant": {
+                            "type": "string"
+                          },
+                          "local": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (invalid input, ambiguity, or unsupported combination)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "at": {
+                            "type": "integer",
+                            "description": "Character index (if applicable)"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found (unknown time zone or resource)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "at": {
+                            "type": "integer",
+                            "description": "Character index (if applicable)"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tz/resolve": {
+      "get": {
+        "operationId": "resolveTimezoneAlias",
+        "tags": [
+          "Developer UX",
+          "Timezones"
+        ],
+        "summary": "Resolve a timezone alias to an IANA zone",
+        "description": "Resolves a supported timezone alias, such as a curated set of Windows timezone labels, to an IANA zone ID. Passing an IANA zone returns it unchanged.\n",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "json",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1
+              ],
+              "default": 0
+            },
+            "description": "If 1, forces JSON output regardless of Accept header."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resolved timezone alias",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "resolved": {
+                    "value": "Europe/Berlin"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "input",
+                    "resolved",
+                    "source"
+                  ],
+                  "properties": {
+                    "input": {
+                      "type": "string"
+                    },
+                    "resolved": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "windows-alias",
+                        "iana"
+                      ]
                     }
                   }
                 }
