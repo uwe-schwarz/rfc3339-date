@@ -23,25 +23,25 @@
     "lint:scalar:project": "pnpm dlx @scalar/cli project check-config scalar.config.json",
     "scalar:publish": "node scripts/publish-scalar.mjs",
     "scalar:preview": "pnpm dlx @scalar/cli project preview scalar.config.json --no-open",
-    "typecheck": "tsgo --noEmit",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
   "dependencies": {
     "geist": "^1.7.0",
-    "hono": "^4.12.10"
+    "hono": "^4.12.11"
   },
   "devDependencies": {
     "@redocly/cli": "^2.25.4",
     "@scalar/openapi-parser": "^0.25.8",
     "@tailwindcss/cli": "^4.2.2",
     "@types/node": "^25.5.2",
-    "@typescript/native-preview": "^7.0.0-dev.20260405.1",
     "oxfmt": "^0.43.0",
     "oxlint": "^1.58.0",
     "pixelmatch": "^7.1.0",
     "playwright": "^1.59.1",
     "pngjs": "^7.0.0",
     "tailwindcss": "^4.2.2",
+    "typescript": "^6.0.2",
     "vitest": "^4.1.2",
     "wrangler": "^4.80.0"
   }
