@@ -28,15 +28,15 @@
   },
   "dependencies": {
     "geist": "^1.7.0",
-    "hono": "^4.12.11"
+    "hono": "^4.12.12"
   },
   "devDependencies": {
     "@redocly/cli": "^2.25.4",
     "@scalar/openapi-parser": "^0.25.8",
     "@tailwindcss/cli": "^4.2.2",
     "@types/node": "^25.5.2",
-    "oxfmt": "^0.43.0",
-    "oxlint": "^1.58.0",
+    "oxfmt": "^0.44.0",
+    "oxlint": "^1.59.0",
     "pixelmatch": "^7.1.0",
     "playwright": "^1.59.1",
     "pngjs": "^7.0.0",
