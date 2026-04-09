@@ -24,7 +24,7 @@
     "scalar:publish": "node scripts/publish-scalar.mjs",
     "scalar:preview": "pnpm dlx @scalar/cli project preview scalar.config.json --no-open",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run --pool=threads"
   },
   "dependencies": {
     "geist": "^1.7.0",
