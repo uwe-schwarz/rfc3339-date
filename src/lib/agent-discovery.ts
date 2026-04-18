@@ -1,6 +1,7 @@
 import { PUBLIC_PAGE_PATHS, SCALAR_REGISTRY_URL, SITE_URL } from "./page-constants";
 
 const AI_CONTENT_SIGNAL = "ai-train=no, search=yes, ai-input=no";
+const API_CATALOG_PROFILE_URL = "https://www.rfc-editor.org/info/rfc9727";
 const AI_USER_AGENTS = [
   "GPTBot",
   "OAI-SearchBot",
@@ -17,6 +18,22 @@ type LinkDescriptor = {
   href: string;
   rel: string;
   type: string;
+};
+
+type ApiCatalogLink = {
+  href: string;
+  type: string;
+};
+
+type ApiCatalogEntry = {
+  anchor: string;
+  "service-desc": ApiCatalogLink[];
+  "service-doc": ApiCatalogLink[];
+  status: ApiCatalogLink[];
+};
+
+type ApiCatalogDocument = {
+  linkset: ApiCatalogEntry[];
 };
 
 const DISCOVERY_LINKS: readonly LinkDescriptor[] = [
@@ -59,6 +76,23 @@ export function buildAgentDiscoveryLinkHeader(): string {
   return DISCOVERY_LINKS.map(
     ({ href, rel, type }) => `<${href}>; rel="${rel}"; type="${type}"`,
   ).join(", ");
+}
+
+export function getApiCatalogContentType(): string {
+  return `application/linkset+json; profile="${API_CATALOG_PROFILE_URL}"`;
+}
+
+export function buildApiCatalog(): ApiCatalogDocument {
+  return {
+    linkset: [
+      {
+        anchor: SITE_URL,
+        "service-desc": [{ href: `${SITE_URL}/openapi.json`, type: "application/json" }],
+        "service-doc": [{ href: `${SITE_URL}/`, type: "text/html" }],
+        status: [{ href: `${SITE_URL}/health`, type: "application/json" }],
+      },
+    ],
+  };
 }
 
 export function buildRobotsTxt(): string {

@@ -7,10 +7,12 @@ import {
 } from "../lib/fonts.generated";
 import { addCommonHeaders } from "../lib/http";
 import {
+  buildApiCatalog,
   buildAgentDiscoveryLinkHeader,
   buildRobotsTxt,
   buildSitemapXml,
   estimateMarkdownTokens,
+  getApiCatalogContentType,
   shouldReturnMarkdown,
 } from "../lib/agent-discovery";
 import {
@@ -73,6 +75,7 @@ function extractGitHubContributionData(html: string) {
 }
 
 const PAGE_LINK_HEADER = buildAgentDiscoveryLinkHeader();
+const API_CATALOG_BODY = JSON.stringify(buildApiCatalog());
 
 function respondPage(
   request: Request,
@@ -174,6 +177,24 @@ export function registerPageRoutes(app: Hono<{ Bindings: Env }>) {
         },
       );
     }
+  });
+
+  app.get("/health", () => {
+    return new Response(JSON.stringify({ status: "ok" }), {
+      headers: addCommonHeaders({
+        "content-type": "application/json; charset=utf-8",
+        "cache-control": "no-store",
+      }),
+    });
+  });
+
+  app.get("/.well-known/api-catalog", () => {
+    return new Response(API_CATALOG_BODY, {
+      headers: addCommonHeaders({
+        "content-type": getApiCatalogContentType(),
+        "cache-control": "public, max-age=3600",
+      }),
+    });
   });
 
   app.get("/openapi.yaml", () => {
