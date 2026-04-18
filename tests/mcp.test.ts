@@ -236,4 +236,22 @@ describe("MCP discovery and transport", () => {
     });
     expect(deleteResponse.status).toBe(405);
   });
+
+  it("returns invalid request when a request id is present but method is missing", async () => {
+    const response = await mcpRequest({
+      jsonrpc: "2.0",
+      id: 99,
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.headers.get("content-type")).toContain("application/json");
+    await expect(response.json()).resolves.toMatchObject({
+      jsonrpc: "2.0",
+      id: 99,
+      error: {
+        code: -32600,
+        message: "Invalid JSON-RPC request.",
+      },
+    });
+  });
 });

@@ -33,7 +33,10 @@ export function registerMcpRoutes(app: Hono<{ Bindings: Env }>) {
     if (origin && !mcpCorsHeaders(origin)["access-control-allow-origin"]) return new Response("Forbidden", { status: 403, headers: addCommonHeaders({ "cache-control": "no-store" }) });
     const body = await c.req.json().catch(() => null);
     if (!body || Array.isArray(body) || typeof body !== "object") return new Response(JSON.stringify({ jsonrpc: "2.0", id: null, error: { code: -32600, message: "Invalid JSON-RPC request." } }), { status: 400, headers: baseHeaders(origin, { "content-type": "application/json; charset=utf-8" }) });
-    if (!("method" in body) || typeof body.method !== "string") return new Response(null, { status: 202, headers: baseHeaders(origin) });
+    if (!("method" in body) || typeof body.method !== "string") {
+      if (!("id" in body)) return new Response(null, { status: 202, headers: baseHeaders(origin) });
+      return new Response(JSON.stringify({ jsonrpc: "2.0", id: body.id, error: { code: -32600, message: "Invalid JSON-RPC request." } }), { status: 400, headers: baseHeaders(origin, { "content-type": "application/json; charset=utf-8" }) });
+    }
     if (!("id" in body)) return new Response(null, { status: 202, headers: baseHeaders(origin) });
     return new Response(JSON.stringify(await handleMcpJsonRpc(body as never, c.req.header("mcp-protocol-version"))), { headers: baseHeaders(origin, { "content-type": "application/json; charset=utf-8" }) });
   });
