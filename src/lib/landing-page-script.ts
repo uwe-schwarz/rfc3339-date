@@ -1,3 +1,5 @@
+import { buildWebMcpRegistrationScript } from "./webmcp";
+
 export function landingScript(): string {
   return `<script>
     const esc = (value) => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
@@ -88,7 +90,9 @@ export function landingScript(): string {
       });
       void renderOutput(card);
     };
+    ${buildWebMcpRegistrationScript()}
     addEventListener("DOMContentLoaded", () => {
+      registerWebMcpContext();
       setBrowserZoneDefaults();
       const cards = [...document.querySelectorAll("[data-example]")];
       for (const card of cards) bindCard(card);

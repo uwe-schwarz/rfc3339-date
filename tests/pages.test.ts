@@ -32,6 +32,7 @@ describe("renderLanding", () => {
     expect(html).toContain('src="/fav-380.png"');
     expect(html).toContain('srcset="/fav-380.png 1x, /fav-760.png 2x"');
     expect(html).toContain('alt="rfc3339.date clock emblem"');
+    expect(html).toContain("navigator.modelContext.provideContext");
   });
 
   it("renders two event cards and two additional api examples", () => {
