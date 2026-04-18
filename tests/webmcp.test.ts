@@ -54,6 +54,9 @@ describe("WebMCP registration script", () => {
     const registration = buildWebMcpRegistrationScript();
 
     expect(registration).toContain('"modelContext" in navigator');
+    expect(registration).toContain('typeof navigator.modelContext.provideContext !== "function"');
+    expect(registration).toContain("try {");
+    expect(registration).toContain("} catch {");
     expect(registration).toContain("navigator.modelContext.provideContext");
     expect(registration).toContain("get-current-time");
     expect(registration).toContain("convert-timestamp");

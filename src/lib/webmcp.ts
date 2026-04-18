@@ -222,14 +222,19 @@ export function buildWebMcpRegistrationScript(): string {
     };
     const registerWebMcpContext = () => {
       if (!("modelContext" in navigator) || !navigator.modelContext) return;
-      navigator.modelContext.provideContext({
-        tools: webMcpTools.map((tool) => ({
-          name: tool.name,
-          description: tool.description,
-          inputSchema: tool.inputSchema,
-          execute: (input) => webMcpToolHandlers[tool.name](input),
-        })),
-      });
+      if (typeof navigator.modelContext.provideContext !== "function") return;
+      try {
+        navigator.modelContext.provideContext({
+          tools: webMcpTools.map((tool) => ({
+            name: tool.name,
+            description: tool.description,
+            inputSchema: tool.inputSchema,
+            execute: (input) => webMcpToolHandlers[tool.name](input),
+          })),
+        });
+      } catch {
+        // WebMCP is optional; registration failures must not break core page behavior.
+      }
     };
   `;
 }
