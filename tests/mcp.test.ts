@@ -87,6 +87,20 @@ describe("MCP discovery and transport", () => {
     expect(response.status).toBe(403);
   });
 
+  it("advertises only the supported mcp methods during preflight", async () => {
+    const response = await request("/mcp", {
+      method: "OPTIONS",
+      headers: {
+        origin: "http://localhost:8787",
+        "access-control-request-method": "POST",
+      },
+    });
+
+    expect(response.status).toBe(204);
+    expect(response.headers.get("access-control-allow-origin")).toBe("http://localhost:8787");
+    expect(response.headers.get("access-control-allow-methods")).toBe("POST, OPTIONS");
+  });
+
   it("implements streamable http initialize, tools, and resources as JSON responses", async () => {
     const initialize = await mcpRequest({
       jsonrpc: "2.0",
@@ -251,6 +265,28 @@ describe("MCP discovery and transport", () => {
       error: {
         code: -32600,
         message: "Invalid JSON-RPC request.",
+      },
+    });
+  });
+
+  it("returns http 400 for unsupported protocol version headers", async () => {
+    const response = await mcpRequest(
+      {
+        jsonrpc: "2.0",
+        id: 7,
+        method: "tools/list",
+      },
+      { "mcp-protocol-version": "1999-01-01" },
+    );
+
+    expect(response.status).toBe(400);
+    expect(response.headers.get("content-type")).toContain("application/json");
+    await expect(response.json()).resolves.toMatchObject({
+      jsonrpc: "2.0",
+      id: 7,
+      error: {
+        code: -32602,
+        message: "Unsupported protocol version",
       },
     });
   });

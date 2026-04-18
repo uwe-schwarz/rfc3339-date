@@ -193,7 +193,7 @@ function validOrigin(origin: string | null): boolean {
 }
 
 export function mcpCorsHeaders(origin: string | null): Record<string, string> {
-  return validOrigin(origin) && origin ? { "access-control-allow-origin": origin, vary: "Origin", "access-control-allow-methods": "POST, GET, DELETE, OPTIONS", "access-control-allow-headers": "Content-Type, Accept, MCP-Protocol-Version" } : {};
+  return validOrigin(origin) && origin ? { "access-control-allow-origin": origin, vary: "Origin", "access-control-allow-methods": "POST, OPTIONS", "access-control-allow-headers": "Content-Type, Accept, MCP-Protocol-Version" } : {};
 }
 
 function protocolVersionFor(request: JsonRpcRequest, headerVersion: string | null) {

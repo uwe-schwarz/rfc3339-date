@@ -38,6 +38,8 @@ export function registerMcpRoutes(app: Hono<{ Bindings: Env }>) {
       return new Response(JSON.stringify({ jsonrpc: "2.0", id: body.id, error: { code: -32600, message: "Invalid JSON-RPC request." } }), { status: 400, headers: baseHeaders(origin, { "content-type": "application/json; charset=utf-8" }) });
     }
     if (!("id" in body)) return new Response(null, { status: 202, headers: baseHeaders(origin) });
-    return new Response(JSON.stringify(await handleMcpJsonRpc(body as never, c.req.header("mcp-protocol-version"))), { headers: baseHeaders(origin, { "content-type": "application/json; charset=utf-8" }) });
+    const jsonRpcResponse = await handleMcpJsonRpc(body as never, c.req.header("mcp-protocol-version"));
+    const status = "error" in jsonRpcResponse && jsonRpcResponse.error.message === "Unsupported protocol version" ? 400 : 200;
+    return new Response(JSON.stringify(jsonRpcResponse), { status, headers: baseHeaders(origin, { "content-type": "application/json; charset=utf-8" }) });
   });
 }
