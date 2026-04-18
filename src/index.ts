@@ -4,6 +4,7 @@ import { registerDatasetRoutes } from "./routes/datasets";
 import { registerDevUxRoutes } from "./routes/devux-core";
 import { registerDevUxHelperRoutes } from "./routes/devux-helpers";
 import { setHeaderSafely } from "./lib/http";
+import { registerMcpRoutes } from "./routes/mcp";
 import { registerPageRoutes } from "./routes/pages";
 import { registerTimeRoutes } from "./routes/time";
 import { registerTimezoneRoutes } from "./routes/timezones";
@@ -16,6 +17,7 @@ app.use("*", async (c, next) => {
 });
 
 registerPageRoutes(app);
+registerMcpRoutes(app);
 registerTimeRoutes(app);
 registerConvertRoutes(app);
 registerTimezoneRoutes(app);
