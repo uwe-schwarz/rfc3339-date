@@ -147,6 +147,11 @@ describe("all routes", () => {
     });
     expect(landingMarkdownRejected.headers.get("content-type")).toContain("text/html");
 
+    const landingSpecificMarkdown = await request("/", {
+      headers: { accept: "text/*;q=0.8, text/html;q=0.1, text/markdown;q=0.7" },
+    });
+    expect(landingSpecificMarkdown.headers.get("content-type")).toContain("text/markdown");
+
     const imprintMarkdown = await request("/imprint", {
       headers: { accept: "text/markdown, text/html;q=0.9" },
     });

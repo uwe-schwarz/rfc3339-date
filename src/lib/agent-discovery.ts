@@ -126,8 +126,8 @@ function getMediaTypePreference(accept: string, target: string): MediaTypePrefer
 
     if (
       !best ||
-      candidate.q > best.q ||
-      (candidate.q === best.q && candidate.specificity > best.specificity)
+      candidate.specificity > best.specificity ||
+      (candidate.specificity === best.specificity && candidate.q > best.q)
     ) {
       best = candidate;
     }
