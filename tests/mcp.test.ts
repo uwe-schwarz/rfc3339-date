@@ -244,11 +244,13 @@ describe("MCP discovery and transport", () => {
       headers: { accept: "text/event-stream" },
     });
     expect(getResponse.status).toBe(405);
+    expect(getResponse.headers.get("allow")).toBe("POST, OPTIONS");
 
     const deleteResponse = await request("/mcp", {
       method: "DELETE",
     });
     expect(deleteResponse.status).toBe(405);
+    expect(deleteResponse.headers.get("allow")).toBe("POST, OPTIONS");
   });
 
   it("rejects invalid origins before GET and DELETE method handling", async () => {

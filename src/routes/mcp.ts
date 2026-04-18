@@ -6,6 +6,10 @@ function baseHeaders(origin: string | null, headers?: HeadersInit) {
   return addCommonHeaders({ "cache-control": "no-store", ...mcpCorsHeaders(origin), ...headers });
 }
 
+function methodNotAllowedResponse(origin: string | null) {
+  return new Response("Method Not Allowed", { status: 405, headers: baseHeaders(origin, { allow: "POST, OPTIONS" }) });
+}
+
 function forbiddenOriginResponse() {
   return new Response("Forbidden", { status: 403, headers: addCommonHeaders({ "cache-control": "no-store" }) });
 }
@@ -36,13 +40,13 @@ export function registerMcpRoutes(app: Hono<{ Bindings: Env }>) {
   app.get("/mcp", (c) => {
     const origin = c.req.header("origin") ?? null;
     if (!hasAllowedOrigin(origin)) return forbiddenOriginResponse();
-    return new Response("Method Not Allowed", { status: 405, headers: baseHeaders(origin) });
+    return methodNotAllowedResponse(origin);
   });
 
   app.delete("/mcp", (c) => {
     const origin = c.req.header("origin") ?? null;
     if (!hasAllowedOrigin(origin)) return forbiddenOriginResponse();
-    return new Response("Method Not Allowed", { status: 405, headers: baseHeaders(origin) });
+    return methodNotAllowedResponse(origin);
   });
 
   app.post("/mcp", async (c) => {
