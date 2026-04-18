@@ -75,6 +75,7 @@ function extractGitHubContributionData(html: string) {
 }
 
 const PAGE_LINK_HEADER = buildAgentDiscoveryLinkHeader();
+const API_CATALOG_BODY = JSON.stringify(buildApiCatalog());
 
 function respondPage(
   request: Request,
@@ -188,7 +189,7 @@ export function registerPageRoutes(app: Hono<{ Bindings: Env }>) {
   });
 
   app.get("/.well-known/api-catalog", () => {
-    return new Response(JSON.stringify(buildApiCatalog()), {
+    return new Response(API_CATALOG_BODY, {
       headers: addCommonHeaders({
         "content-type": getApiCatalogContentType(),
         "cache-control": "public, max-age=3600",

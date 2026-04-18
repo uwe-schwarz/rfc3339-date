@@ -20,6 +20,22 @@ type LinkDescriptor = {
   type: string;
 };
 
+type ApiCatalogLink = {
+  href: string;
+  type: string;
+};
+
+type ApiCatalogEntry = {
+  anchor: string;
+  "service-desc": ApiCatalogLink[];
+  "service-doc": ApiCatalogLink[];
+  status: ApiCatalogLink[];
+};
+
+type ApiCatalogDocument = {
+  linkset: ApiCatalogEntry[];
+};
+
 const DISCOVERY_LINKS: readonly LinkDescriptor[] = [
   {
     href: "/openapi.json",
@@ -66,7 +82,7 @@ export function getApiCatalogContentType(): string {
   return `application/linkset+json; profile="${API_CATALOG_PROFILE_URL}"`;
 }
 
-export function buildApiCatalog() {
+export function buildApiCatalog(): ApiCatalogDocument {
   return {
     linkset: [
       {
