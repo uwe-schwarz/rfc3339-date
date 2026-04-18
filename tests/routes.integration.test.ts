@@ -102,6 +102,32 @@ describe("all routes", () => {
     expect(sitemapXml).toContain("<loc>https://rfc3339.date/</loc>");
     expect(sitemapXml).toContain("<loc>https://rfc3339.date/imprint</loc>");
 
+    const apiCatalog = await request("/.well-known/api-catalog");
+    expect(apiCatalog.status).toBe(200);
+    const apiCatalogContentType = apiCatalog.headers.get("content-type") ?? "";
+    expect(apiCatalogContentType).toContain("application/linkset+json");
+    expect(apiCatalogContentType).toContain("https://www.rfc-editor.org/info/rfc9727");
+    const apiCatalogJson = (await apiCatalog.json()) as {
+      linkset: Array<{
+        anchor: string;
+        "service-desc": Array<{ href: string; type: string }>;
+        "service-doc": Array<{ href: string; type: string }>;
+        status: Array<{ href: string; type: string }>;
+      }>;
+    };
+    expect(apiCatalogJson.linkset).toHaveLength(1);
+    expect(apiCatalogJson.linkset[0]).toMatchObject({
+      anchor: "https://rfc3339.date",
+      "service-desc": [{ href: "https://rfc3339.date/openapi.json", type: "application/json" }],
+      "service-doc": [{ href: "https://rfc3339.date/", type: "text/html" }],
+      status: [{ href: "https://rfc3339.date/health", type: "application/json" }],
+    });
+
+    const health = await request("/health");
+    expect(health.status).toBe(200);
+    expect(health.headers.get("content-type")).toContain("application/json");
+    expect(await health.json()).toEqual({ status: "ok" });
+
     const landing = await request("/");
     const landingLink = landing.headers.get("link");
     expect(landingLink).toContain("</openapi.json>; rel=\"service-desc\"");
