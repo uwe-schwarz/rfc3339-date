@@ -16,6 +16,11 @@ import {
   shouldReturnMarkdown,
 } from "../lib/agent-discovery";
 import {
+  buildAgentSkillsIndex,
+  buildSiteSkillMarkdown,
+  getSiteSkillPath,
+} from "../lib/agent-skills";
+import {
   renderImprint,
   renderImprintMarkdown,
   renderLanding,
@@ -76,6 +81,9 @@ function extractGitHubContributionData(html: string) {
 
 const PAGE_LINK_HEADER = buildAgentDiscoveryLinkHeader();
 const API_CATALOG_BODY = JSON.stringify(buildApiCatalog());
+const AGENT_SKILLS_INDEX_BODY = JSON.stringify(buildAgentSkillsIndex());
+const SITE_SKILL_PATH = getSiteSkillPath();
+const SITE_SKILL_BODY = buildSiteSkillMarkdown();
 
 function respondPage(
   request: Request,
@@ -192,6 +200,24 @@ export function registerPageRoutes(app: Hono<{ Bindings: Env }>) {
     return new Response(API_CATALOG_BODY, {
       headers: addCommonHeaders({
         "content-type": getApiCatalogContentType(),
+        "cache-control": "public, max-age=3600",
+      }),
+    });
+  });
+
+  app.get("/.well-known/agent-skills/index.json", () => {
+    return new Response(AGENT_SKILLS_INDEX_BODY, {
+      headers: addCommonHeaders({
+        "content-type": "application/json; charset=utf-8",
+        "cache-control": "public, max-age=3600",
+      }),
+    });
+  });
+
+  app.get(SITE_SKILL_PATH, () => {
+    return new Response(SITE_SKILL_BODY, {
+      headers: addCommonHeaders({
+        "content-type": "text/markdown; charset=utf-8",
         "cache-control": "public, max-age=3600",
       }),
     });

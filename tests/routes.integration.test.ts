@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { createHash } from "node:crypto";
 import app from "../src/index";
 
 const FIXED_ISO = "2026-02-26T12:34:56.789Z";
@@ -122,6 +123,43 @@ describe("all routes", () => {
       "service-doc": [{ href: "https://rfc3339.date/", type: "text/html" }],
       status: [{ href: "https://rfc3339.date/health", type: "application/json" }],
     });
+
+    const agentSkillsIndex = await request("/.well-known/agent-skills/index.json");
+    expect(agentSkillsIndex.status).toBe(200);
+    expect(agentSkillsIndex.headers.get("content-type")).toContain("application/json");
+    const agentSkillsJson = (await agentSkillsIndex.json()) as {
+      $schema: string;
+      skills: Array<{
+        name: string;
+        type: string;
+        description: string;
+        url: string;
+        digest: string;
+      }>;
+    };
+    expect(agentSkillsJson.$schema).toBe(
+      "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+    );
+    expect(agentSkillsJson.skills).toHaveLength(1);
+    expect(agentSkillsJson.skills[0]).toMatchObject({
+      name: "rfc3339-date",
+      type: "skill-md",
+      url: "/.well-known/agent-skills/rfc3339-date/SKILL.md",
+    });
+    expect(agentSkillsJson.skills[0]?.digest).toMatch(/^sha256:[0-9a-f]{64}$/);
+
+    const skillArtifact = await request("/.well-known/agent-skills/rfc3339-date/SKILL.md");
+    expect(skillArtifact.status).toBe(200);
+    expect(skillArtifact.headers.get("content-type")).toContain("text/markdown");
+    const skillMarkdown = await skillArtifact.text();
+    expect(skillMarkdown).toContain("# rfc3339.date");
+    expect(skillMarkdown).toContain("/now");
+    expect(skillMarkdown).toContain("/convert");
+    expect(skillMarkdown).toContain("/tz/convert");
+    expect(skillMarkdown).toContain("Use this skill");
+
+    const expectedDigest = createHash("sha256").update(skillMarkdown).digest("hex");
+    expect(agentSkillsJson.skills[0]?.digest).toBe(`sha256:${expectedDigest}`);
 
     const health = await request("/health");
     expect(health.status).toBe(200);
