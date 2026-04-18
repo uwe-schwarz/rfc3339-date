@@ -6,7 +6,19 @@ import {
   GEIST_PIXEL_SQUARE_WOFF2_BASE64,
 } from "../lib/fonts.generated";
 import { addCommonHeaders } from "../lib/http";
-import { renderImprint, renderLanding } from "../lib/html";
+import {
+  buildAgentDiscoveryLinkHeader,
+  buildRobotsTxt,
+  buildSitemapXml,
+  estimateMarkdownTokens,
+  shouldReturnMarkdown,
+} from "../lib/agent-discovery";
+import {
+  renderImprint,
+  renderImprintMarkdown,
+  renderLanding,
+  renderLandingMarkdown,
+} from "../lib/html";
 import { OPENAPI_JSON, OPENAPI_SCALAR_COMPAT_JSON, OPENAPI_YAML } from "../lib/openapi.generated";
 import { TAILWIND_CSS } from "../lib/tailwind.generated";
 
@@ -60,21 +72,57 @@ function extractGitHubContributionData(html: string) {
   return { countText, calendarHtml };
 }
 
+const PAGE_LINK_HEADER = buildAgentDiscoveryLinkHeader();
+
+function respondPage(
+  request: Request,
+  html: string,
+  markdown: string,
+  cacheControl: string,
+): Response {
+  const wantsMarkdown = shouldReturnMarkdown(request);
+  const body = wantsMarkdown ? markdown : html;
+  const headers = addCommonHeaders({
+    "cache-control": cacheControl,
+    "content-type": wantsMarkdown ? "text/markdown; charset=utf-8" : "text/html; charset=utf-8",
+    link: PAGE_LINK_HEADER,
+  });
+
+  if (wantsMarkdown) {
+    headers.set("x-markdown-tokens", String(estimateMarkdownTokens(markdown)));
+  }
+
+  return new Response(body, { headers });
+}
+
 export function registerPageRoutes(app: Hono<{ Bindings: Env }>) {
-  app.get("/", () => {
+  app.get("/", (c) => {
     const now = formatRfc3339Utc({ unixMs: Date.now(), nsRemainder: 0 }, 3);
-    return new Response(renderLanding(now), {
+    return respondPage(c.req.raw, renderLanding(now), renderLandingMarkdown(now), "public, max-age=60");
+  });
+
+  app.get("/imprint", (c) => {
+    return respondPage(
+      c.req.raw,
+      renderImprint(),
+      renderImprintMarkdown(),
+      "public, max-age=3600",
+    );
+  });
+
+  app.get("/robots.txt", () => {
+    return new Response(buildRobotsTxt(), {
       headers: addCommonHeaders({
-        "content-type": "text/html; charset=utf-8",
-        "cache-control": "public, max-age=60",
+        "content-type": "text/plain; charset=utf-8",
+        "cache-control": "public, max-age=3600",
       }),
     });
   });
 
-  app.get("/imprint", () => {
-    return new Response(renderImprint(), {
+  app.get("/sitemap.xml", () => {
+    return new Response(buildSitemapXml(), {
       headers: addCommonHeaders({
-        "content-type": "text/html; charset=utf-8",
+        "content-type": "application/xml; charset=utf-8",
         "cache-control": "public, max-age=3600",
       }),
     });

@@ -82,6 +82,52 @@ describe("all routes", () => {
     expect(rapidocAsset.status).toBe(404);
   });
 
+  it("publishes agent discovery artifacts and markdown-negotiated pages", async () => {
+    const robots = await request("/robots.txt");
+    expect(robots.status).toBe(200);
+    expect(robots.headers.get("content-type")).toContain("text/plain");
+    const robotsText = await robots.text();
+    expect(robotsText).toContain("User-agent: *");
+    expect(robotsText).toContain("User-agent: GPTBot");
+    expect(robotsText).toContain("Allow: /");
+    expect(robotsText).toContain("Disallow: /github/");
+    expect(robotsText).toContain("Content-Signal: ai-train=no, search=yes, ai-input=no");
+    expect(robotsText).toContain("Sitemap: https://rfc3339.date/sitemap.xml");
+
+    const sitemap = await request("/sitemap.xml");
+    expect(sitemap.status).toBe(200);
+    expect(sitemap.headers.get("content-type")).toContain("application/xml");
+    const sitemapXml = await sitemap.text();
+    expect(sitemapXml).toContain("<urlset");
+    expect(sitemapXml).toContain("<loc>https://rfc3339.date/</loc>");
+    expect(sitemapXml).toContain("<loc>https://rfc3339.date/imprint</loc>");
+
+    const landing = await request("/");
+    const landingLink = landing.headers.get("link");
+    expect(landingLink).toContain("</openapi.json>; rel=\"service-desc\"");
+    expect(landingLink).toContain("</openapi.yaml>; rel=\"describedby\"");
+    expect(landingLink).toContain("https://registry.scalar.com/@iq42/apis/rfc3339date-time-api@latest");
+    expect(landingLink).toContain("rel=\"service-doc\"");
+
+    const landingMarkdown = await request("/", {
+      headers: { accept: "text/markdown" },
+    });
+    expect(landingMarkdown.status).toBe(200);
+    expect(landingMarkdown.headers.get("content-type")).toContain("text/markdown");
+    expect(Number(landingMarkdown.headers.get("x-markdown-tokens"))).toBeGreaterThan(0);
+    const landingMarkdownText = await landingMarkdown.text();
+    expect(landingMarkdownText).toContain("# rfc3339.date");
+    expect(landingMarkdownText).toContain("Strict RFC3339 time API");
+    expect(landingMarkdownText).toContain("https://rfc3339.date/openapi.json");
+
+    const imprintMarkdown = await request("/imprint", {
+      headers: { accept: "text/markdown, text/html;q=0.9" },
+    });
+    expect(imprintMarkdown.status).toBe(200);
+    expect(imprintMarkdown.headers.get("content-type")).toContain("text/markdown");
+    expect(await imprintMarkdown.text()).toContain("# rfc3339.date imprint");
+  });
+
   it("serves time and validation routes", async () => {
     const now = await request(`/now?fixed=${encodeURIComponent(FIXED_ISO)}&json=1`);
     expect(now.status).toBe(200);
