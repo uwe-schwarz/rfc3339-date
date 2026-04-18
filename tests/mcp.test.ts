@@ -251,6 +251,24 @@ describe("MCP discovery and transport", () => {
     expect(deleteResponse.status).toBe(405);
   });
 
+  it("rejects invalid origins before GET and DELETE method handling", async () => {
+    const getResponse = await request("/mcp", {
+      headers: {
+        accept: "text/event-stream",
+        origin: "https://evil.example",
+      },
+    });
+    expect(getResponse.status).toBe(403);
+
+    const deleteResponse = await request("/mcp", {
+      method: "DELETE",
+      headers: {
+        origin: "https://evil.example",
+      },
+    });
+    expect(deleteResponse.status).toBe(403);
+  });
+
   it("returns invalid request when a request id is present but method is missing", async () => {
     const response = await mcpRequest({
       jsonrpc: "2.0",
@@ -284,6 +302,27 @@ describe("MCP discovery and transport", () => {
     await expect(response.json()).resolves.toMatchObject({
       jsonrpc: "2.0",
       id: 7,
+      error: {
+        code: -32602,
+        message: "Unsupported protocol version",
+      },
+    });
+  });
+
+  it("returns http 400 for unsupported protocol version headers on notifications", async () => {
+    const response = await mcpRequest(
+      {
+        jsonrpc: "2.0",
+        method: "notifications/initialized",
+      },
+      { "mcp-protocol-version": "1999-01-01" },
+    );
+
+    expect(response.status).toBe(400);
+    expect(response.headers.get("content-type")).toContain("application/json");
+    await expect(response.json()).resolves.toMatchObject({
+      jsonrpc: "2.0",
+      id: null,
       error: {
         code: -32602,
         message: "Unsupported protocol version",

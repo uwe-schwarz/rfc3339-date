@@ -206,8 +206,12 @@ function protocolVersionFor(request: JsonRpcRequest, headerVersion: string | nul
   return SUPPORTED_PROTOCOL_VERSIONS.includes(version as (typeof SUPPORTED_PROTOCOL_VERSIONS)[number]) ? version : null;
 }
 
+export function getMcpProtocolVersion(request: JsonRpcRequest, headerVersion: string | null) {
+  return protocolVersionFor(request, headerVersion);
+}
+
 export async function handleMcpJsonRpc(request: JsonRpcRequest, headerVersion: string | null) {
-  const protocolVersion = protocolVersionFor(request, headerVersion);
+  const protocolVersion = getMcpProtocolVersion(request, headerVersion);
   if (request.jsonrpc !== JSON_RPC_VERSION) return jsonRpcError(request.id, -32600, "Invalid JSON-RPC version.");
   if (!protocolVersion) return jsonRpcError(request.id, -32602, "Unsupported protocol version", { supported: SUPPORTED_PROTOCOL_VERSIONS, requested: headerVersion ?? request.params?.protocolVersion ?? null });
   switch (request.method) {
