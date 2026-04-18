@@ -86,6 +86,7 @@ function respondPage(
     "cache-control": cacheControl,
     "content-type": wantsMarkdown ? "text/markdown; charset=utf-8" : "text/html; charset=utf-8",
     link: PAGE_LINK_HEADER,
+    vary: "Accept",
   });
 
   if (wantsMarkdown) {

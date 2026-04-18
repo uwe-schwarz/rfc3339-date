@@ -84,9 +84,83 @@ export function buildSitemapXml(): string {
   ].join("\n");
 }
 
+type MediaTypePreference = {
+  q: number;
+  specificity: number;
+};
+
+function parseQValue(value: string): number {
+  const parsed = Number.parseFloat(value);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return 0;
+  }
+  return Math.min(parsed, 1);
+}
+
+function getMediaTypePreference(accept: string, target: string): MediaTypePreference | null {
+  const [targetType, targetSubtype] = target.split("/", 2);
+  let best: MediaTypePreference | null = null;
+
+  for (const rawEntry of accept.split(",")) {
+    const entry = rawEntry.trim();
+    if (!entry) continue;
+
+    const [mediaRange, ...rawParams] = entry.split(";");
+    const [type = "", subtype = ""] = mediaRange.trim().toLowerCase().split("/", 2);
+    if (!type || !subtype) continue;
+
+    let specificity = -1;
+    if (type === targetType && subtype === targetSubtype) {
+      specificity = 2;
+    } else if (type === targetType && subtype === "*") {
+      specificity = 1;
+    } else if (type === "*" && subtype === "*") {
+      specificity = 0;
+    }
+
+    if (specificity < 0) continue;
+
+    const qParam = rawParams.find((param) => param.trim().toLowerCase().startsWith("q="));
+    const q = qParam ? parseQValue(qParam.split("=", 2)[1] ?? "") : 1;
+    const candidate = { q, specificity };
+
+    if (
+      !best ||
+      candidate.q > best.q ||
+      (candidate.q === best.q && candidate.specificity > best.specificity)
+    ) {
+      best = candidate;
+    }
+  }
+
+  return best;
+}
+
 export function shouldReturnMarkdown(request: Request): boolean {
   const accept = request.headers.get("accept") ?? "";
-  return accept.includes("text/markdown");
+  if (!accept) {
+    return false;
+  }
+
+  const markdownPreference = getMediaTypePreference(accept.toLowerCase(), "text/markdown");
+  if (!markdownPreference || markdownPreference.q <= 0) {
+    return false;
+  }
+
+  const htmlPreference = getMediaTypePreference(accept.toLowerCase(), "text/html");
+  if (!htmlPreference || htmlPreference.q <= 0) {
+    return true;
+  }
+
+  if (markdownPreference.q !== htmlPreference.q) {
+    return markdownPreference.q > htmlPreference.q;
+  }
+
+  if (markdownPreference.specificity !== htmlPreference.specificity) {
+    return markdownPreference.specificity > htmlPreference.specificity;
+  }
+
+  return false;
 }
 
 export function estimateMarkdownTokens(markdown: string): number {

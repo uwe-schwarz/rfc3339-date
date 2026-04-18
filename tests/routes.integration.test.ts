@@ -108,6 +108,7 @@ describe("all routes", () => {
     expect(landingLink).toContain("</openapi.yaml>; rel=\"describedby\"");
     expect(landingLink).toContain("https://registry.scalar.com/@iq42/apis/rfc3339date-time-api@latest");
     expect(landingLink).toContain("rel=\"service-doc\"");
+    expect(landing.headers.get("vary")).toContain("Accept");
 
     const landingMarkdown = await request("/", {
       headers: { accept: "text/markdown" },
@@ -119,6 +120,32 @@ describe("all routes", () => {
     expect(landingMarkdownText).toContain("# rfc3339.date");
     expect(landingMarkdownText).toContain("Strict RFC3339 time API");
     expect(landingMarkdownText).toContain("https://rfc3339.date/openapi.json");
+
+    const landingMarkdownPreferred = await request("/", {
+      headers: { accept: "text/html;q=0.4, text/markdown;q=0.8" },
+    });
+    expect(landingMarkdownPreferred.headers.get("content-type")).toContain("text/markdown");
+
+    const landingHtmlPreferred = await request("/", {
+      headers: { accept: "text/markdown;q=0.2, text/html;q=0.9" },
+    });
+    expect(landingHtmlPreferred.headers.get("content-type")).toContain("text/html");
+    expect(landingHtmlPreferred.headers.get("x-markdown-tokens")).toBeNull();
+
+    const landingWildcard = await request("/", {
+      headers: { accept: "*/*" },
+    });
+    expect(landingWildcard.headers.get("content-type")).toContain("text/html");
+
+    const landingTextWildcard = await request("/", {
+      headers: { accept: "text/*" },
+    });
+    expect(landingTextWildcard.headers.get("content-type")).toContain("text/html");
+
+    const landingMarkdownRejected = await request("/", {
+      headers: { accept: "text/markdown;q=0, text/html;q=0.5" },
+    });
+    expect(landingMarkdownRejected.headers.get("content-type")).toContain("text/html");
 
     const imprintMarkdown = await request("/imprint", {
       headers: { accept: "text/markdown, text/html;q=0.9" },
