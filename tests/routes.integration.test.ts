@@ -82,6 +82,84 @@ describe("all routes", () => {
     expect(rapidocAsset.status).toBe(404);
   });
 
+  it("publishes agent discovery artifacts and markdown-negotiated pages", async () => {
+    const robots = await request("/robots.txt");
+    expect(robots.status).toBe(200);
+    expect(robots.headers.get("content-type")).toContain("text/plain");
+    const robotsText = await robots.text();
+    expect(robotsText).toContain("User-agent: *");
+    expect(robotsText).toContain("User-agent: GPTBot");
+    expect(robotsText).toContain("Allow: /");
+    expect(robotsText).toContain("Disallow: /github/");
+    expect(robotsText).toContain("Content-Signal: ai-train=no, search=yes, ai-input=no");
+    expect(robotsText).toContain("Sitemap: https://rfc3339.date/sitemap.xml");
+
+    const sitemap = await request("/sitemap.xml");
+    expect(sitemap.status).toBe(200);
+    expect(sitemap.headers.get("content-type")).toContain("application/xml");
+    const sitemapXml = await sitemap.text();
+    expect(sitemapXml).toContain("<urlset");
+    expect(sitemapXml).toContain("<loc>https://rfc3339.date/</loc>");
+    expect(sitemapXml).toContain("<loc>https://rfc3339.date/imprint</loc>");
+
+    const landing = await request("/");
+    const landingLink = landing.headers.get("link");
+    expect(landingLink).toContain("</openapi.json>; rel=\"service-desc\"");
+    expect(landingLink).toContain("</openapi.yaml>; rel=\"describedby\"");
+    expect(landingLink).toContain("https://registry.scalar.com/@iq42/apis/rfc3339date-time-api@latest");
+    expect(landingLink).toContain("rel=\"service-doc\"");
+    expect(landing.headers.get("vary")).toContain("Accept");
+
+    const landingMarkdown = await request("/", {
+      headers: { accept: "text/markdown" },
+    });
+    expect(landingMarkdown.status).toBe(200);
+    expect(landingMarkdown.headers.get("content-type")).toContain("text/markdown");
+    expect(Number(landingMarkdown.headers.get("x-markdown-tokens"))).toBeGreaterThan(0);
+    const landingMarkdownText = await landingMarkdown.text();
+    expect(landingMarkdownText).toContain("# rfc3339.date");
+    expect(landingMarkdownText).toContain("Strict RFC3339 time API");
+    expect(landingMarkdownText).toContain("https://rfc3339.date/openapi.json");
+
+    const landingMarkdownPreferred = await request("/", {
+      headers: { accept: "text/html;q=0.4, text/markdown;q=0.8" },
+    });
+    expect(landingMarkdownPreferred.headers.get("content-type")).toContain("text/markdown");
+
+    const landingHtmlPreferred = await request("/", {
+      headers: { accept: "text/markdown;q=0.2, text/html;q=0.9" },
+    });
+    expect(landingHtmlPreferred.headers.get("content-type")).toContain("text/html");
+    expect(landingHtmlPreferred.headers.get("x-markdown-tokens")).toBeNull();
+
+    const landingWildcard = await request("/", {
+      headers: { accept: "*/*" },
+    });
+    expect(landingWildcard.headers.get("content-type")).toContain("text/html");
+
+    const landingTextWildcard = await request("/", {
+      headers: { accept: "text/*" },
+    });
+    expect(landingTextWildcard.headers.get("content-type")).toContain("text/html");
+
+    const landingMarkdownRejected = await request("/", {
+      headers: { accept: "text/markdown;q=0, text/html;q=0.5" },
+    });
+    expect(landingMarkdownRejected.headers.get("content-type")).toContain("text/html");
+
+    const landingSpecificMarkdown = await request("/", {
+      headers: { accept: "text/*;q=0.8, text/html;q=0.1, text/markdown;q=0.7" },
+    });
+    expect(landingSpecificMarkdown.headers.get("content-type")).toContain("text/markdown");
+
+    const imprintMarkdown = await request("/imprint", {
+      headers: { accept: "text/markdown, text/html;q=0.9" },
+    });
+    expect(imprintMarkdown.status).toBe(200);
+    expect(imprintMarkdown.headers.get("content-type")).toContain("text/markdown");
+    expect(await imprintMarkdown.text()).toContain("# rfc3339.date imprint");
+  });
+
   it("serves time and validation routes", async () => {
     const now = await request(`/now?fixed=${encodeURIComponent(FIXED_ISO)}&json=1`);
     expect(now.status).toBe(200);
