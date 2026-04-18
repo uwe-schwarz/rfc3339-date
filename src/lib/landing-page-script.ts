@@ -90,12 +90,22 @@ export function landingScript(): string {
       });
       void renderOutput(card);
     };
+    const bindCopyTarget = (button) => {
+      button.addEventListener("click", async () => {
+        const target = document.getElementById(button.dataset.copyTarget || "");
+        if (!target) return;
+        await writeClipboard(target.textContent ?? "");
+        button.textContent = "Copied";
+        window.setTimeout(() => { button.textContent = "Copy"; }, 1200);
+      });
+    };
     ${buildWebMcpRegistrationScript()}
     addEventListener("DOMContentLoaded", () => {
       registerWebMcpContext();
       setBrowserZoneDefaults();
       const cards = [...document.querySelectorAll("[data-example]")];
       for (const card of cards) bindCard(card);
+      for (const button of document.querySelectorAll("[data-copy-target]")) bindCopyTarget(button);
       document.getElementById("reset-my-timezone")?.addEventListener("click", () => {
         for (const input of document.querySelectorAll("[data-browser-zone-field]")) input.value = browserZone;
         if (helperNode()) helperNode().textContent = helperText();

@@ -1,78 +1,30 @@
-import { SCALAR_REGISTRY_URL } from "./page-constants";
+import { SCALAR_REGISTRY_URL, SITE_URL } from "./page-constants";
 import { landingScript } from "./landing-page-script";
-type EventExample = {
-  id: string;
-  title: string;
-  detail: string;
-  value: string;
-  from?: string;
-  base?: string;
-};
-
-type ApiExample = {
-  id: string;
-  title: string;
-  detail: string;
-  kind: "now-zone" | "convert";
-  value?: string;
-  in?: string;
-  out?: string;
-};
+type EventExample = { id: string; title: string; detail: string; value: string; from?: string; base?: string };
+type ApiExample = { id: string; title: string; detail: string; kind: "now-zone" | "convert"; value?: string; in?: string; out?: string };
 
 const EVENT_EXAMPLES: EventExample[] = [
-  {
-    id: "west-coast",
-    title: "Event Time",
-    detail: "Turn announcement-style event text into your own timezone or any other target zone.",
-    value: "tomorrow 10am PST",
-  },
-  {
-    id: "dst-hint",
-    title: "STD Hint",
-    detail:
-      "STD needs a winter base date in the source region. Switch back to DST when you move the base into summer.",
-    value: "5pm STD",
-    from: "Europe/Berlin",
-    base: "2026-01-15T12:00:00Z",
-  },
+  { id: "west-coast", title: "Event Time", detail: "Turn announcement-style event text into your own timezone or any other target zone.", value: "tomorrow 10am PST" },
+  { id: "dst-hint", title: "STD Hint", detail: "STD needs a winter base date in the source region. Switch back to DST when you move the base into summer.", value: "5pm STD", from: "Europe/Berlin", base: "2026-01-15T12:00:00Z" },
 ];
 
-const CONVERSION_FORMATS = [
-  "rfc3339",
-  "iso8601",
-  "unix",
-  "unixms",
-  "ntp",
-  "httpdate",
-  "emaildate",
-  "gps",
-  "tai",
-  "jd",
-  "mjd",
-  "excel1900",
-  "excel1904",
-  "weekdate",
-  "ordinal",
-  "doy",
-] as const;
+const CONVERSION_FORMATS = ["rfc3339", "iso8601", "unix", "unixms", "ntp", "httpdate", "emaildate", "gps", "tai", "jd", "mjd", "excel1900", "excel1904", "weekdate", "ordinal", "doy"] as const;
 
 const API_EXAMPLES: ApiExample[] = [
-  {
-    id: "now-zone",
-    title: "Current Time In Zone",
-    detail: "Use /now/{tz} to render the current instant directly in a named timezone.",
-    kind: "now-zone",
-  },
-  {
-    id: "convert-unix",
-    title: "Format Conversion",
-    detail: "Use /convert for exact format changes such as Unix seconds to RFC3339.",
-    kind: "convert",
-    value: "1700000000",
-    in: "unix",
-    out: "rfc3339",
-  },
+  { id: "now-zone", title: "Current Time In Zone", detail: "Use /now/{tz} to render the current instant directly in a named timezone.", kind: "now-zone" },
+  { id: "convert-unix", title: "Format Conversion", detail: "Use /convert for exact format changes such as Unix seconds to RFC3339.", kind: "convert", value: "1700000000", in: "unix", out: "rfc3339" },
 ];
+
+const CODEX_MCP_INSTALL = `codex mcp add rfc3339 --url ${SITE_URL}/mcp`;
+const OPENCODE_MCP_CONFIG = `{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "rfc3339": {
+      "type": "remote",
+      "url": "${SITE_URL}/mcp"
+    }
+  }
+}`;
 
 function escapeHtml(value: string): string {
   return value
@@ -184,6 +136,37 @@ function renderApiCard(example: ApiExample): string {
   </article>`;
 }
 
+function renderCodePanel(id: string, label: string, title: string, body: string): string {
+  return `<section class="mt-4 overflow-hidden rounded-2xl border border-lime-500/20 bg-black/40">
+    <header class="flex items-center justify-between gap-3 border-b border-lime-500/15 px-4 py-3">
+      <div>
+        <p class="text-xs uppercase tracking-[0.18em] text-lime-500">${label}</p>
+        <p class="mt-1 text-sm text-lime-200">${title}</p>
+      </div>
+      <button type="button" data-copy-target="${id}" class="rounded-md border border-lime-500/30 px-3 py-1.5 text-xs text-lime-200 transition hover:border-lime-300 hover:text-lime-100">Copy</button>
+    </header>
+    <pre class="overflow-x-auto px-4 py-4 text-sm leading-7 text-lime-100"><code id="${id}">${escapeHtml(body)}</code></pre>
+  </section>`;
+}
+
+function renderAgentDiscoverySection(): string {
+  return `<section class="fx-enter fx-delay-3 mb-10">
+  <div class="mb-4">
+    <p class="text-xs uppercase tracking-[0.18em] text-lime-500">Agent Discovery</p>
+    <h2 class="mt-2 text-2xl text-lime-100">Machine-readable entry points for agents.</h2>
+  </div>
+  <div class="grid gap-4 lg:grid-cols-1">
+    <article class="surface-card fx-hover-lift rounded-2xl border border-lime-500/35 p-4 md:p-5">
+      <p class="text-xs uppercase tracking-[0.18em] text-lime-500">Remote MCP</p>
+      <h3 class="mt-2 text-lg text-lime-100">Install MCP</h3>
+      <p class="mt-3 text-sm leading-relaxed text-lime-300">Use <code>${SITE_URL}/mcp</code> in clients that support remote HTTP MCP servers.</p>
+      ${renderCodePanel("codex-mcp-install", "Codex", "Add it with the Codex CLI", CODEX_MCP_INSTALL)}
+      ${renderCodePanel("opencode-mcp-install", "Opencode", "Add it to your Opencode config", OPENCODE_MCP_CONFIG)}
+    </article>
+  </div>
+</section>`;
+}
+
 export function renderLandingHead(): string {
   return `<style>
     .example-card { position: relative; overflow: hidden; background: linear-gradient(180deg, rgb(9 9 11 / 0.88), rgb(9 9 11 / 0.72)); }
@@ -284,11 +267,13 @@ export function renderLandingBody(_nowIso: string): string {
     )}
   </article>
 </section>
+${renderAgentDiscoverySection()}
 <nav class="fx-enter fx-delay-3 flex flex-wrap gap-3 text-sm">
   <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="${SCALAR_REGISTRY_URL}">Scalar Registry</a>
   <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="/openapi.yaml">OpenAPI YAML</a>
   <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="/openapi.json">OpenAPI JSON</a>
   <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="/openapi.scalar.json">Scalar-compatible JSON</a>
+  <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="/.well-known/agent-skills/rfc3339-date/SKILL.md">SKILL.md</a>
   <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="/imprint">Imprint</a>
 </nav>
 ${landingScript()}`;

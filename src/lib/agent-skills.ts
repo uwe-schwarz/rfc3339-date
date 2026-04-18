@@ -30,6 +30,12 @@ Use this skill when a task needs precise timestamp handling through the public r
 
 \`${SITE_URL}\`
 
+## API Description
+
+- OpenAPI JSON: ${SITE_URL}/openapi.json
+- OpenAPI YAML: ${SITE_URL}/openapi.yaml
+- Load the OpenAPI description when a task needs exact parameter names, supported formats, or response fields.
+
 ## Main Tasks
 
 - Get the current time in UTC or a requested IANA timezone with \`/now\` and \`/now/{tz}\`.

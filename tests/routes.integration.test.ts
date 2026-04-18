@@ -157,6 +157,10 @@ describe("all routes", () => {
     expect(skillMarkdown).toContain("/convert");
     expect(skillMarkdown).toContain("/tz/convert");
     expect(skillMarkdown).toContain("Use this skill");
+    expect(skillMarkdown).toContain("## API Description");
+    expect(skillMarkdown).toContain("https://rfc3339.date/openapi.json");
+    expect(skillMarkdown).toContain("https://rfc3339.date/openapi.yaml");
+    expect(skillMarkdown).toContain("Load the OpenAPI description");
 
     const expectedDigest = createHash("sha256").update(skillMarkdown).digest("hex");
     expect(agentSkillsJson.skills[0]?.digest).toBe(`sha256:${expectedDigest}`);
