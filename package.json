@@ -32,17 +32,17 @@
   },
   "devDependencies": {
     "@redocly/cli": "^2.29.0",
-    "@scalar/openapi-parser": "^0.25.10",
-    "@tailwindcss/cli": "^4.2.3",
+    "@scalar/openapi-parser": "^0.25.11",
+    "@tailwindcss/cli": "^4.2.4",
     "@types/node": "^25.6.0",
     "oxfmt": "^0.46.0",
     "oxlint": "^1.61.0",
     "pixelmatch": "^7.1.0",
     "playwright": "^1.59.1",
     "pngjs": "^7.0.0",
-    "tailwindcss": "^4.2.3",
+    "tailwindcss": "^4.2.4",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.4",
-    "wrangler": "^4.84.0"
+    "vitest": "^4.1.5",
+    "wrangler": "^4.84.1"
   }
 }
