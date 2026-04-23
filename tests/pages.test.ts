@@ -94,6 +94,24 @@ describe("renderLanding", () => {
     expect(html).toContain("min-h-dvh");
   });
 
+  it("wires live output submit handling, busy state, and stale response guards", () => {
+    const html = renderLanding("2026-01-01T00:00:00.000Z");
+
+    expect(html).toContain("data-output-wrapper");
+    expect(html).toContain("data-output");
+    expect(html).toContain("data-status");
+    expect(html).toContain('addEventListener("submit"');
+    expect(html).toContain("event.preventDefault()");
+    expect(html).toContain("clearTimeout(timer)");
+    expect(html).toContain('setAttribute("aria-busy", "true")');
+    expect(html).toContain('setAttribute("aria-busy", "false")');
+    expect(html).toContain("const latestRender = new WeakMap()");
+    expect(html).toContain("const isLatestRender = () => latestRender.get(card) === renderId");
+    expect(html).toContain("if (!isLatestRender()) return");
+    expect(html).toContain("output.textContent = text");
+    expect(html).toContain("status.textContent = response.ok ? \"200 ok\" : String(response.status)");
+  });
+
   it("includes standard favicon metadata", () => {
     const html = renderLanding("2026-01-01T00:00:00.000Z");
 
