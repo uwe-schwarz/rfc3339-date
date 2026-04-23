@@ -33,6 +33,11 @@ Run `wrangler types` after changing bindings in wrangler.jsonc.
 - If a feature is not automatically covered by lint/typecheck or another existing script, add or extend tests (for example `vitest`) in the same change.
 - Do not rely on manual-only verification for new feature behavior.
 
+## Technology Usage
+
+- Prefer the current feature set of the packages, runtimes, standards, and platform APIs this project already uses. Do not add compatibility workarounds for older versions unless a task explicitly asks for that support.
+- Use semantic HTML according to the element's meaning. For inline technical text, use `<code>` for code, paths, commands, and config; `<var>` for variables, parameters, placeholders, and runtime values; `<kbd>` for user-entered input; and `<samp>` for sample output or live command/API output.
+
 ## Node.js Compatibility
 
 https://developers.cloudflare.com/workers/runtime-apis/nodejs/

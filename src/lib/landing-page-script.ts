@@ -60,8 +60,10 @@ export function landingScript(): string {
       const request = requestForCard(card);
       const status = card.querySelector("[data-status]");
       const output = card.querySelector("[data-output]");
+      const outputWrapper = card.querySelector("[data-output-wrapper]");
       card.querySelector("[data-command]").innerHTML = request.markup;
       status.textContent = "loading";
+      outputWrapper?.setAttribute("aria-busy", "true");
       try {
         const response = await fetch(request.url);
         const raw = await response.text();
@@ -72,16 +74,22 @@ export function landingScript(): string {
         status.textContent = response.ok ? "200 ok" : String(response.status);
         output.classList.toggle("code-output-error", !response.ok);
         output.textContent = text;
+        outputWrapper?.setAttribute("aria-busy", "false");
       } catch {
         status.textContent = "error";
         output.classList.add("code-output-error");
         output.textContent = wantsJson() ? '{\\n  "error": "network_error",\\n  "message": "Could not reach the API."\\n}' : "Could not reach the API.";
+        outputWrapper?.setAttribute("aria-busy", "false");
       }
     };
     const bindCard = (card) => {
       let timer = 0;
       const refresh = () => { clearTimeout(timer); timer = window.setTimeout(() => void renderOutput(card), 220); };
       for (const input of card.querySelectorAll("[data-field]")) input.addEventListener("input", refresh);
+      card.querySelector("[data-example-form]")?.addEventListener("submit", (event) => {
+        event.preventDefault();
+        void renderOutput(card);
+      });
       card.querySelector("[data-copy]").addEventListener("click", async (event) => {
         const button = event.currentTarget;
         await writeClipboard(requestForCard(card).command);
