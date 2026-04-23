@@ -17,7 +17,7 @@ describe("renderLanding", () => {
     expect(html).toContain('id="helper-code"');
     expect(html).toContain("eventlocal() {");
     expect(html).toContain('data-field="value"');
-    expect(html).toContain('<select data-field="in"');
+    expect(html).toContain('<select id="convert-unix-in" data-field="in"');
     expect(html).toContain('<option value="excel1900">excel1900</option>');
     expect(html).toContain('<option value="emaildate">emaildate</option>');
     expect(html).toContain(SCALAR_REGISTRY_URL);
@@ -59,6 +59,57 @@ describe("renderLanding", () => {
     expect(html.match(/data-card="tz-convert"/g)).toHaveLength(2);
     expect(html).toContain('data-card="now-zone"');
     expect(html).toContain('data-card="convert"');
+  });
+
+  it("uses semantic inline elements for code, variables, user input, and sample output", () => {
+    const html = renderLanding("2026-01-01T00:00:00.000Z");
+
+    expect(html).toContain("<code>/tz/convert</code>");
+    expect(html).toContain("<code>/now/<var>tz</var></code>");
+    expect(html).toContain("<var>value</var>");
+    expect(html).toContain("<var>base</var>");
+    expect(html).toContain('<var id="browser-tz"');
+    expect(html).toContain("<kbd");
+    expect(html).toContain(">tomorrow 10am PST</kbd>");
+    expect(html).toContain('<samp data-status');
+    expect(html).toContain('<samp data-output');
+  });
+
+  it("uses modern semantic structures for interactive examples and technical copy", () => {
+    const html = renderLanding("2026-01-01T00:00:00.000Z");
+
+    expect(html.match(/<form data-example-form/g)).toHaveLength(4);
+    expect(html.match(/<fieldset class="example-fields/g)).toHaveLength(4);
+    expect(html).toContain("<legend");
+    expect(html).toContain("<output");
+    expect(html).toContain("aria-live=\"polite\"");
+    expect(html).toContain("<time datetime=\"2026-01-15T12:00:00Z\">2026-01-15T12:00:00Z</time>");
+    expect(html).toContain('<abbr title="Request for Comments 3339">RFC3339</abbr>');
+    expect(html).toContain('<abbr title="Daylight Saving Time">DST</abbr>');
+    expect(html).toContain('<abbr title="Standard Time">STD</abbr>');
+    expect(html).toContain("<ul class=\"fx-enter fx-delay-1 mb-8 grid gap-3 lg:grid-cols-4\"");
+    expect(html).toContain("<li");
+    expect(html).toContain("container-type: inline-size");
+    expect(html).toContain("@container example-card");
+    expect(html).toContain("min-h-dvh");
+  });
+
+  it("wires live output submit handling, busy state, and stale response guards", () => {
+    const html = renderLanding("2026-01-01T00:00:00.000Z");
+
+    expect(html).toContain("data-output-wrapper");
+    expect(html).toContain("data-output");
+    expect(html).toContain("data-status");
+    expect(html).toContain('addEventListener("submit"');
+    expect(html).toContain("event.preventDefault()");
+    expect(html).toContain("clearTimeout(timer)");
+    expect(html).toContain('setAttribute("aria-busy", "true")');
+    expect(html).toContain('setAttribute("aria-busy", "false")');
+    expect(html).toContain("const latestRender = new WeakMap()");
+    expect(html).toContain("const isLatestRender = () => latestRender.get(card) === renderId");
+    expect(html).toContain("if (!isLatestRender()) return");
+    expect(html).toContain("output.textContent = text");
+    expect(html).toContain("status.textContent = response.ok ? \"200 ok\" : String(response.status)");
   });
 
   it("includes standard favicon metadata", () => {

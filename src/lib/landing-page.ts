@@ -1,7 +1,16 @@
-import { SCALAR_REGISTRY_URL, SITE_URL } from "./page-constants";
+import { SCALAR_REGISTRY_URL } from "./page-constants";
+import {
+  DST_ABBR,
+  RFC3339_ABBR,
+  STD_ABBR,
+  escapeHtml,
+  renderAgentDiscoverySection,
+  renderDateTime,
+  renderVar,
+} from "./landing-page-elements";
 import { landingScript } from "./landing-page-script";
 type EventExample = { id: string; title: string; detail: string; value: string; from?: string; base?: string };
-type ApiExample = { id: string; title: string; detail: string; kind: "now-zone" | "convert"; value?: string; in?: string; out?: string };
+type ApiExample = { id: string; title: string; kind: "now-zone" | "convert"; value?: string; in?: string; out?: string };
 
 const EVENT_EXAMPLES: EventExample[] = [
   { id: "west-coast", title: "Event Time", detail: "Turn announcement-style event text into your own timezone or any other target zone.", value: "tomorrow 10am PST" },
@@ -11,27 +20,32 @@ const EVENT_EXAMPLES: EventExample[] = [
 const CONVERSION_FORMATS = ["rfc3339", "iso8601", "unix", "unixms", "ntp", "httpdate", "emaildate", "gps", "tai", "jd", "mjd", "excel1900", "excel1904", "weekdate", "ordinal", "doy"] as const;
 
 const API_EXAMPLES: ApiExample[] = [
-  { id: "now-zone", title: "Current Time In Zone", detail: "Use /now/{tz} to render the current instant directly in a named timezone.", kind: "now-zone" },
-  { id: "convert-unix", title: "Format Conversion", detail: "Use /convert for exact format changes such as Unix seconds to RFC3339.", kind: "convert", value: "1700000000", in: "unix", out: "rfc3339" },
+  { id: "now-zone", title: "Current Time In Zone", kind: "now-zone" },
+  { id: "convert-unix", title: "Format Conversion", kind: "convert", value: "1700000000", in: "unix", out: "rfc3339" },
 ];
 
-const CODEX_MCP_INSTALL = `codex mcp add rfc3339 --url ${SITE_URL}/mcp`;
-const OPENCODE_MCP_CONFIG = `{
-  "$schema": "https://opencode.ai/config.json",
-  "mcp": {
-    "rfc3339": {
-      "type": "remote",
-      "url": "${SITE_URL}/mcp"
-    }
-  }
-}`;
+function renderNowZoneEndpoint(): string {
+  return `<code>/now/${renderVar("tz")}</code>`;
+}
 
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
+function renderEventTitle(example: EventExample): string {
+  if (example.title === "STD Hint") return `${STD_ABBR} Hint`;
+  return escapeHtml(example.title);
+}
+
+function renderEventDetail(example: EventExample): string {
+  const detail = escapeHtml(example.detail)
+    .replaceAll("STD", STD_ABBR)
+    .replaceAll("DST", DST_ABBR);
+  const base = example.base ? ` Base ${renderDateTime(example.base)}.` : "";
+  return `${detail}${base}`;
+}
+
+function renderApiDetail(example: ApiExample): string {
+  if (example.kind === "now-zone") {
+    return `Use ${renderNowZoneEndpoint()} to render the current instant directly in a named timezone.`;
+  }
+  return `Use <code>/convert</code> for exact format changes such as Unix seconds to ${RFC3339_ABBR}.`;
 }
 
 function renderInput(
@@ -40,11 +54,12 @@ function renderInput(
   value = "",
   placeholder = "",
   browserZone = false,
+  id = name,
 ): string {
   const zoneAttr = browserZone ? ' data-browser-zone-field="1"' : "";
   return `<label class="space-y-2 text-xs text-lime-200">
-    <span class="block font-medium uppercase tracking-[0.18em] text-lime-500">${label}</span>
-    <input data-field="${name}"${zoneAttr} value="${escapeHtml(value)}" placeholder="${escapeHtml(placeholder)}" class="w-full rounded-lg border border-lime-500/25 bg-black/35 px-3 py-2 font-mono text-sm text-lime-100 outline-none transition focus:border-lime-300" />
+    <span class="block font-medium uppercase tracking-[0.18em] text-lime-500">${renderVar(label)}</span>
+    <input id="${escapeHtml(id)}" data-field="${name}"${zoneAttr} value="${escapeHtml(value)}" placeholder="${escapeHtml(placeholder)}" class="w-full rounded-lg border border-lime-500/25 bg-black/35 px-3 py-2 font-mono text-sm text-lime-100 outline-none transition focus:border-lime-300" />
   </label>`;
 }
 
@@ -53,6 +68,7 @@ function renderSelect(
   label: string,
   value: string,
   options: readonly string[],
+  id = name,
 ): string {
   const optionMarkup = options
     .map((option) => {
@@ -61,8 +77,8 @@ function renderSelect(
     })
     .join("");
   return `<label class="space-y-2 text-xs text-lime-200">
-    <span class="block font-medium uppercase tracking-[0.18em] text-lime-500">${label}</span>
-    <select data-field="${name}" class="w-full rounded-lg border border-lime-500/25 bg-black/35 px-3 py-2 font-mono text-sm text-lime-100 outline-none transition focus:border-lime-300">${optionMarkup}</select>
+    <span class="block font-medium uppercase tracking-[0.18em] text-lime-500">${renderVar(label)}</span>
+    <select id="${escapeHtml(id)}" data-field="${name}" class="w-full rounded-lg border border-lime-500/25 bg-black/35 px-3 py-2 font-mono text-sm text-lime-100 outline-none transition focus:border-lime-300">${optionMarkup}</select>
   </label>`;
 }
 
@@ -76,107 +92,94 @@ function renderShell(title: string, body: string): string {
   </section>`;
 }
 
-function renderOutputShell(): string {
+function renderOutputShell(controlIds: string[]): string {
   return `<section class="mt-4 overflow-hidden rounded-2xl border border-lime-500/20 bg-zinc-950/75">
     <header class="flex items-center justify-between gap-3 border-b border-lime-500/15 px-4 py-3">
       <p class="text-xs uppercase tracking-[0.18em] text-lime-500">Live Output</p>
-      <span data-status class="text-xs text-lime-400 tabular-nums">loading</span>
+      <samp data-status class="text-xs text-lime-400 tabular-nums">loading</samp>
     </header>
-    <pre class="min-h-32 overflow-x-auto px-4 py-4"><code data-output class="font-mono text-sm text-lime-100">waiting for response…</code></pre>
+    <pre class="min-h-32 overflow-x-auto px-4 py-4"><output data-output-wrapper for="${controlIds.map(escapeHtml).join(" ")}" aria-live="polite" aria-busy="true"><samp data-output class="font-mono text-sm text-lime-100">waiting for response…</samp></output></pre>
   </section>`;
 }
 
 function renderEventCard(example: EventExample): string {
+  const fieldIds = ["value", "to", "from", "base"].map((name) => `${example.id}-${name}`);
   return `<article class="surface-card fx-enter example-card rounded-2xl border border-lime-500/35 p-4 md:p-5" data-card="tz-convert" data-example="${example.id}">
+    <form data-example-form>
     <div class="mb-4 flex items-start justify-between gap-4">
       <div>
-        <p class="text-xs uppercase tracking-[0.18em] text-lime-500">${escapeHtml(example.title)}</p>
-        <h3 class="mt-2 text-xl leading-snug text-lime-100">${escapeHtml(example.value)}</h3>
-        <p class="mt-2 max-w-xl text-sm leading-relaxed text-lime-300">${escapeHtml(example.detail)}</p>
+        <p class="text-xs uppercase tracking-[0.18em] text-lime-500">${renderEventTitle(example)}</p>
+        <h3 class="mt-2 text-xl leading-snug text-lime-100"><kbd>${escapeHtml(example.value)}</kbd></h3>
+        <p class="mt-2 max-w-xl text-sm leading-relaxed text-lime-300">${renderEventDetail(example)}</p>
       </div>
       <span class="rounded-full border border-lime-500/25 px-3 py-1 text-xs text-lime-400">Live</span>
     </div>
-    <div class="grid gap-3 md:grid-cols-2">
-      ${renderInput("value", "value", example.value, "tomorrow 10am PST")}
-      ${renderInput("to", "to", "", "my timezone", true)}
-      ${renderInput("from", "from", example.from ?? "", "Europe/Berlin")}
-      ${renderInput("base", "base", example.base ?? "", "2026-06-01T12:00:00Z")}
-    </div>
+    <fieldset class="example-fields grid gap-3 border-0 p-0" data-field-count="2">
+      <legend class="sr-only">${escapeHtml(example.title)} parameters</legend>
+      ${renderInput("value", "value", example.value, "tomorrow 10am PST", false, fieldIds[0])}
+      ${renderInput("to", "to", "", "my timezone", true, fieldIds[1])}
+      ${renderInput("from", "from", example.from ?? "", "Europe/Berlin", false, fieldIds[2])}
+      ${renderInput("base", "base", example.base ?? "", "2026-06-01T12:00:00Z", false, fieldIds[3])}
+    </fieldset>
     ${renderShell(
       "Copyable Curl",
       '<pre class="overflow-x-auto px-4 py-4 text-sm leading-7"><code data-command class="code-shell language-bash"></code></pre>',
     )}
-    ${renderOutputShell()}
+    ${renderOutputShell(fieldIds)}
+    </form>
   </article>`;
 }
 
 function renderApiCard(example: ApiExample): string {
+  const names = example.kind === "now-zone" ? ["tz"] : ["value", "in", "out"];
+  const fieldIds = names.map((name) => `${example.id}-${name}`);
   const fields =
     example.kind === "now-zone"
-      ? renderInput("tz", "tz", "", "my timezone", true)
+      ? renderInput("tz", "tz", "", "my timezone", true, fieldIds[0])
       : [
-          renderInput("value", "value", example.value ?? "", "1700000000"),
-          renderSelect("in", "in", example.in ?? "unix", CONVERSION_FORMATS),
-          renderSelect("out", "out", example.out ?? "rfc3339", CONVERSION_FORMATS),
+          renderInput("value", "value", example.value ?? "", "1700000000", false, fieldIds[0]),
+          renderSelect("in", "in", example.in ?? "unix", CONVERSION_FORMATS, fieldIds[1]),
+          renderSelect("out", "out", example.out ?? "rfc3339", CONVERSION_FORMATS, fieldIds[2]),
         ].join("");
   return `<article class="surface-card fx-enter example-card rounded-2xl border border-lime-500/35 p-4 md:p-5" data-card="${example.kind}" data-example="${example.id}">
+    <form data-example-form>
     <div class="mb-4 flex items-start justify-between gap-4">
       <div>
         <p class="text-xs uppercase tracking-[0.18em] text-lime-500">${escapeHtml(example.title)}</p>
-        <p class="mt-2 max-w-xl text-sm leading-relaxed text-lime-300">${escapeHtml(example.detail)}</p>
+        <p class="mt-2 max-w-xl text-sm leading-relaxed text-lime-300">${renderApiDetail(example)}</p>
       </div>
       <span class="rounded-full border border-lime-500/25 px-3 py-1 text-xs text-lime-400">Live</span>
     </div>
-    <div class="grid gap-3 md:grid-cols-${example.kind === "now-zone" ? "1" : "3"}">${fields}</div>
+    <fieldset class="example-fields grid gap-3 border-0 p-0" data-field-count="${example.kind === "now-zone" ? "1" : "3"}">
+      <legend class="sr-only">${escapeHtml(example.title)} parameters</legend>
+      ${fields}
+    </fieldset>
     ${renderShell(
       "Copyable Curl",
       '<pre class="overflow-x-auto px-4 py-4 text-sm leading-7"><code data-command class="code-shell language-bash"></code></pre>',
     )}
-    ${renderOutputShell()}
+    ${renderOutputShell(fieldIds)}
+    </form>
   </article>`;
-}
-
-function renderCodePanel(id: string, label: string, title: string, body: string): string {
-  return `<section class="mt-4 overflow-hidden rounded-2xl border border-lime-500/20 bg-black/40">
-    <header class="flex items-center justify-between gap-3 border-b border-lime-500/15 px-4 py-3">
-      <div>
-        <p class="text-xs uppercase tracking-[0.18em] text-lime-500">${label}</p>
-        <p class="mt-1 text-sm text-lime-200">${title}</p>
-      </div>
-      <button type="button" data-copy-target="${id}" class="rounded-md border border-lime-500/30 px-3 py-1.5 text-xs text-lime-200 transition hover:border-lime-300 hover:text-lime-100">Copy</button>
-    </header>
-    <pre class="overflow-x-auto px-4 py-4 text-sm leading-7 text-lime-100"><code id="${id}">${escapeHtml(body)}</code></pre>
-  </section>`;
-}
-
-function renderAgentDiscoverySection(): string {
-  return `<section class="fx-enter fx-delay-3 mb-10">
-  <div class="mb-4">
-    <p class="text-xs uppercase tracking-[0.18em] text-lime-500">Agent Discovery</p>
-    <h2 class="mt-2 text-2xl text-lime-100">Machine-readable entry points for agents.</h2>
-  </div>
-  <div class="grid gap-4 lg:grid-cols-1">
-    <article class="surface-card fx-hover-lift rounded-2xl border border-lime-500/35 p-4 md:p-5">
-      <p class="text-xs uppercase tracking-[0.18em] text-lime-500">Remote MCP</p>
-      <h3 class="mt-2 text-lg text-lime-100">Install MCP</h3>
-      <p class="mt-3 text-sm leading-relaxed text-lime-300">Use <code>${SITE_URL}/mcp</code> in clients that support remote HTTP MCP servers.</p>
-      ${renderCodePanel("codex-mcp-install", "Codex", "Add it with the Codex CLI", CODEX_MCP_INSTALL)}
-      ${renderCodePanel("opencode-mcp-install", "Opencode", "Add it to your Opencode config", OPENCODE_MCP_CONFIG)}
-    </article>
-  </div>
-</section>`;
 }
 
 export function renderLandingHead(): string {
   return `<style>
-    .example-card { position: relative; overflow: hidden; background: linear-gradient(180deg, rgb(9 9 11 / 0.88), rgb(9 9 11 / 0.72)); }
+    .example-card { position: relative; overflow: hidden; container-name: example-card; container-type: inline-size; background: linear-gradient(180deg, rgb(9 9 11 / 0.88), rgb(9 9 11 / 0.72)); }
     .example-card::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(135deg, rgb(132 204 22 / 0.08), transparent 45%); }
+    .example-fields { grid-template-columns: minmax(0, 1fr); }
+    @container example-card (min-width: 42rem) {
+      .example-fields[data-field-count="2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .example-fields[data-field-count="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
     .code-shell { color: rgb(244 244 245); }
     .code-cmd { color: rgb(217 249 157); }
     .code-flag { color: rgb(132 204 22); }
     .code-url { color: rgb(165 243 252); }
     .code-arg { color: rgb(253 224 71); }
     .code-output-error { color: rgb(253 186 116); }
+    kbd, samp, var { font: inherit; }
+    var { font-style: normal; }
     .mode-switch { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
     .mode-switch input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
     .mode-track {
@@ -199,7 +202,7 @@ export function renderLandingBody(_nowIso: string): string {
   <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-center">
     <div>
       <h1 class="fx-flicker text-4xl leading-none tracking-tight text-lime-100">rfc3339.date</h1>
-      <p class="mt-3 max-w-4xl text-base leading-relaxed text-lime-300">Strict RFC3339 time API for current time, validation, conversion, timezone lookup, transitions, and human event-time parsing. The examples below are live requests against the public API.</p>
+      <p class="mt-3 max-w-4xl text-base leading-relaxed text-lime-300">Strict ${RFC3339_ABBR} time API for current time, validation, conversion, timezone lookup, transitions, and human event-time parsing. The examples below are live requests against the public API.</p>
       <p class="mt-3 max-w-3xl rounded-lg border border-amber-500/30 bg-amber-500/8 px-4 py-3 text-sm text-amber-200">This is a fun project, not a reliable source of correct date or time. It only reports this server's current clock and is not backed by any serious timekeeping hardware or authority.</p>
     </div>
     <div class="mx-auto w-full max-w-64 lg:max-w-none">
@@ -212,12 +215,12 @@ export function renderLandingBody(_nowIso: string): string {
     </div>
   </div>
 </header>
-<section class="fx-enter fx-delay-1 mb-8 grid gap-3 lg:grid-cols-4">
-  <div class="surface-card fx-hover-lift rounded-lg border border-lime-500/35 px-4 py-3 text-center text-sm text-lime-300">FREE</div>
-  <div class="surface-card fx-hover-lift rounded-lg border border-lime-500/35 px-4 py-3 text-center text-sm text-lime-300">No auth</div>
-  <div class="surface-card fx-hover-lift rounded-lg border border-lime-500/35 px-4 py-3 text-center text-sm text-lime-300">No tracking</div>
-  <button id="reset-my-timezone" type="button" class="surface-card fx-hover-lift rounded-lg border border-lime-500/35 px-4 py-3 text-center text-sm text-lime-200">Reset to my timezone: <span id="browser-tz" class="text-lime-400">detecting…</span></button>
-</section>
+<ul class="fx-enter fx-delay-1 mb-8 grid gap-3 lg:grid-cols-4">
+  <li class="surface-card fx-hover-lift rounded-lg border border-lime-500/35 px-4 py-3 text-center text-sm text-lime-300">FREE</li>
+  <li class="surface-card fx-hover-lift rounded-lg border border-lime-500/35 px-4 py-3 text-center text-sm text-lime-300">No auth</li>
+  <li class="surface-card fx-hover-lift rounded-lg border border-lime-500/35 px-4 py-3 text-center text-sm text-lime-300">No tracking</li>
+  <li><button id="reset-my-timezone" type="button" class="surface-card fx-hover-lift w-full rounded-lg border border-lime-500/35 px-4 py-3 text-center text-sm text-lime-200">Reset to my timezone: <var id="browser-tz" class="text-lime-400">detecting…</var></button></li>
+</ul>
 <section class="fx-enter fx-delay-1 mb-10 rounded-2xl border border-lime-500/25 bg-zinc-950/35 p-4">
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div>
@@ -248,7 +251,7 @@ export function renderLandingBody(_nowIso: string): string {
   <div class="mb-4">
     <p class="text-xs uppercase tracking-[0.18em] text-lime-500">Other Endpoints</p>
     <h2 class="mt-2 text-2xl text-lime-100">A couple more live API examples.</h2>
-    <p class="mt-3 max-w-3xl text-sm leading-relaxed text-lime-300">One example renders <code>/now/{tz}</code>. The other shows a plain <code>/convert</code> request.</p>
+    <p class="mt-3 max-w-3xl text-sm leading-relaxed text-lime-300">One example renders ${renderNowZoneEndpoint()}. The other shows a plain <code>/convert</code> request.</p>
   </div>
   <div class="grid gap-4 lg:grid-cols-2">${API_EXAMPLES.map(renderApiCard).join("")}</div>
 </section>

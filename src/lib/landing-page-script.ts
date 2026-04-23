@@ -56,15 +56,22 @@ export function landingScript(): string {
       if (json) { params.set("json", "1"); parts.push(["arg", enc("json", "1")]); }
       return { url: "/convert?" + params.toString(), command: parts.map(([, value]) => value).join(" "), markup: colorize(parts) };
     };
+    const latestRender = new WeakMap();
     const renderOutput = async (card) => {
+      const renderId = (latestRender.get(card) ?? 0) + 1;
+      latestRender.set(card, renderId);
+      const isLatestRender = () => latestRender.get(card) === renderId;
       const request = requestForCard(card);
       const status = card.querySelector("[data-status]");
       const output = card.querySelector("[data-output]");
+      const outputWrapper = card.querySelector("[data-output-wrapper]");
       card.querySelector("[data-command]").innerHTML = request.markup;
       status.textContent = "loading";
+      outputWrapper?.setAttribute("aria-busy", "true");
       try {
         const response = await fetch(request.url);
         const raw = await response.text();
+        if (!isLatestRender()) return;
         let text = raw;
         if (wantsJson() || raw.trim().startsWith("{")) {
           try { text = JSON.stringify(JSON.parse(raw), null, 2); } catch {}
@@ -73,15 +80,23 @@ export function landingScript(): string {
         output.classList.toggle("code-output-error", !response.ok);
         output.textContent = text;
       } catch {
+        if (!isLatestRender()) return;
         status.textContent = "error";
         output.classList.add("code-output-error");
         output.textContent = wantsJson() ? '{\\n  "error": "network_error",\\n  "message": "Could not reach the API."\\n}' : "Could not reach the API.";
+      } finally {
+        if (isLatestRender()) outputWrapper?.setAttribute("aria-busy", "false");
       }
     };
     const bindCard = (card) => {
       let timer = 0;
       const refresh = () => { clearTimeout(timer); timer = window.setTimeout(() => void renderOutput(card), 220); };
       for (const input of card.querySelectorAll("[data-field]")) input.addEventListener("input", refresh);
+      card.querySelector("[data-example-form]")?.addEventListener("submit", (event) => {
+        event.preventDefault();
+        clearTimeout(timer);
+        void renderOutput(card);
+      });
       card.querySelector("[data-copy]").addEventListener("click", async (event) => {
         const button = event.currentTarget;
         await writeClipboard(requestForCard(card).command);

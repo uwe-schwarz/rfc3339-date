@@ -70,7 +70,7 @@ function baseLayout(
     <link rel="stylesheet" href="/styles.css" />
     ${head}
   </head>
-  <body class="page-shell terminal-grid min-h-screen antialiased">
+  <body class="page-shell terminal-grid min-h-dvh antialiased">
     <main class="${mainClassName}">${content}</main>
   </body>
 </html>`;
