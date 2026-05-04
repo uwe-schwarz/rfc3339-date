@@ -2,6 +2,7 @@
   "name": "rfc3339-date",
   "version": "1.2.0",
   "private": true,
+  "packageManager": "pnpm@11.0.4",
   "scripts": {
     "build:fonts": "node scripts/build-fonts.mjs",
     "build:openapi": "node scripts/build-openapi.mjs",
@@ -20,9 +21,9 @@
     "lint": "oxlint .",
     "lint:openapi": "redocly lint docs/openapi.yaml",
     "lint:openapi:scalar": "node scripts/validate-openapi-scalar.mjs",
-    "lint:scalar:project": "pnpm dlx @scalar/cli project check-config scalar.config.json",
+    "lint:scalar:project": "pnpm dlx --allow-build=esbuild --allow-build=vue-demi @scalar/cli project check-config scalar.config.json",
     "scalar:publish": "node scripts/publish-scalar.mjs",
-    "scalar:preview": "pnpm dlx @scalar/cli project preview scalar.config.json --no-open",
+    "scalar:preview": "pnpm dlx --allow-build=esbuild --allow-build=vue-demi @scalar/cli project preview scalar.config.json --no-open",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --pool=threads"
   },
