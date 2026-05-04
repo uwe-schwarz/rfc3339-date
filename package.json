@@ -2,6 +2,7 @@
   "name": "rfc3339-date",
   "version": "1.2.0",
   "private": true,
+  "packageManager": "pnpm@11.0.4",
   "scripts": {
     "build:fonts": "node scripts/build-fonts.mjs",
     "build:openapi": "node scripts/build-openapi.mjs",
