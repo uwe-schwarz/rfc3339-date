@@ -29,10 +29,10 @@
   },
   "dependencies": {
     "geist": "^1.7.0",
-    "hono": "^4.12.17"
+    "hono": "^4.12.18"
   },
   "devDependencies": {
-    "@redocly/cli": "^2.30.3",
+    "@redocly/cli": "^2.30.4",
     "@scalar/openapi-parser": "^0.28.2",
     "@tailwindcss/cli": "^4.2.4",
     "@types/node": "^25.6.0",
@@ -44,6 +44,6 @@
     "tailwindcss": "^4.2.4",
     "typescript": "^6.0.3",
     "vitest": "^4.1.5",
-    "wrangler": "^4.88.0"
+    "wrangler": "^4.90.0"
   }
 }
