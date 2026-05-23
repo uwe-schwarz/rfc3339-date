@@ -10,7 +10,7 @@
     "check:component-lines": "node scripts/check-component-lines.mjs",
     "deps:visual": "node ./scripts/deps-visual-check.mjs",
     "deps:visual:install-browser": "playwright install chromium",
-    "deps:visual:preview": "pnpm run build:styles && wrangler dev --ip 127.0.0.1 --port 4321 --local --log-level warn --show-interactive-dev-session=false",
+    "deps:visual:preview": "pnpm run build:styles && CI=1 wrangler dev --ip 127.0.0.1 --port 4321 --local --log-level warn --show-interactive-dev-session=false",
     "dev": "pnpm run build:styles && wrangler dev",
     "start": "pnpm run build:styles && wrangler dev",
     "deploy": "pnpm run build:styles && wrangler deploy",
@@ -32,8 +32,8 @@
     "hono": "^4.12.21"
   },
   "devDependencies": {
-    "@redocly/cli": "^2.31.2",
-    "@scalar/openapi-parser": "^0.28.4",
+    "@redocly/cli": "^2.31.4",
+    "@scalar/openapi-parser": "^0.28.5",
     "@tailwindcss/cli": "^4.3.0",
     "@types/node": "^25.9.1",
     "oxfmt": "^0.51.0",
@@ -44,6 +44,6 @@
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.7",
-    "wrangler": "^4.93.0"
+    "wrangler": "^4.94.0"
   }
 }
