@@ -5,9 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  next: ^16.2.6
-  postcss: ^8.5.15
-  vite: ^8.0.14
+  next: 16.2.6
+  postcss: 8.5.15
+  vite: 8.0.14
 
 importers:
 
@@ -33,7 +33,7 @@ importers:
         specifier: ^25.9.1
         version: 25.9.1
       next:
-        specifier: ^16.2.6
+        specifier: 16.2.6
         version: 16.2.6(@opentelemetry/api@1.9.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       oxfmt:
         specifier: ^0.52.0
@@ -57,7 +57,7 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
       vite:
-        specifier: ^8.0.14
+        specifier: 8.0.14
         version: 8.0.14(@types/node@25.9.1)(esbuild@0.27.3)(jiti@2.7.0)(yaml@2.9.0)
       vitest:
         specifier: ^4.1.7
@@ -1279,7 +1279,7 @@ packages:
     resolution: {integrity: sha512-vY7nuamKgfvpA1Koa3oYIw/k7D6kZnpGyNMZW8loow2bsBYla1TFdqTaXncWdRn4pgwNs+90RhnXhJScDwQeJA==}
     peerDependencies:
       msw: ^2.4.9
-      vite: ^8.0.14
+      vite: 8.0.14
     peerDependenciesMeta:
       msw:
         optional: true
@@ -1523,7 +1523,7 @@ packages:
   geist@1.7.1:
     resolution: {integrity: sha512-XF8DM30ODhDu0Ng5S2kOS8j4ZkG/6z2fKWAiFJA7wG0Hc92ZXgjYLrwbD9bVU4nGVzwboPtG+QtaPGsfgnXLaA==}
     peerDependencies:
-      next: ^16.2.6
+      next: 16.2.6
 
   get-caller-file@2.0.5:
     resolution: {integrity: sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==}
@@ -2280,7 +2280,7 @@ packages:
       '@vitest/ui': 4.1.7
       happy-dom: '*'
       jsdom: '*'
-      vite: ^8.0.14
+      vite: 8.0.14
     peerDependenciesMeta:
       '@edge-runtime/vm':
         optional: true

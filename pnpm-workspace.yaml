@@ -7,9 +7,9 @@ allowBuilds:
   vue-demi: true
   workerd: true
 overrides:
-  next: ^16.2.6
-  postcss: ^8.5.15
-  vite: ^8.0.14
+  next: 16.2.6
+  postcss: 8.5.15
+  vite: 8.0.14
 minimumReleaseAgeExclude:
   - next@16.1.7
   - vite@7.3.2
