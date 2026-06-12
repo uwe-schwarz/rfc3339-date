@@ -11,6 +11,8 @@ overrides:
   postcss: 8.5.15
   vite: 8.0.16
 minimumReleaseAgeExclude:
+  - wrangler
+  - miniflare
   - next@16.1.7
   - vite@7.3.2
   - next@16.2.3
@@ -27,3 +29,5 @@ minimumReleaseAgeExclude:
   - next@16.2.9
   - wrangler@4.99.0
   - miniflare@4.20260609.0
+  - wrangler@4.100.0
+  - miniflare@4.20260611.0
