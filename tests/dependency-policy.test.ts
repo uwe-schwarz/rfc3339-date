@@ -16,7 +16,7 @@ function normalizeYamlScalar(value: string): string {
 
 function readMinimumReleaseAgeExcludes(workspace: string): string[] {
   const lines = workspace.split("\n");
-  const startIndex = lines.findIndex((line) => line === "minimumReleaseAgeExclude:");
+  const startIndex = lines.findIndex((line) => /^minimumReleaseAgeExclude\s*:/.test(line));
   const followingLines = lines.slice(startIndex + 1);
   const endIndex = followingLines.findIndex((line) => line.length > 0 && !line.startsWith(" "));
   const sectionLines = endIndex === -1 ? followingLines : followingLines.slice(0, endIndex);
@@ -60,5 +60,16 @@ describe("dependency release-age policy", () => {
     );
 
     expect(excludes).toEqual(["wrangler", "miniflare@4.20260611.0"]);
+  });
+
+  it("accepts inline comments on the release-age key", () => {
+    const excludes = readMinimumReleaseAgeExcludes(
+      [
+        "minimumReleaseAgeExclude: # temporary allowlist",
+        "  - wrangler",
+      ].join("\n"),
+    );
+
+    expect(excludes).toEqual(["wrangler"]);
   });
 });
