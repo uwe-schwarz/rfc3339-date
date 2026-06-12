@@ -10,13 +10,38 @@ function readMinimumReleaseAgeExcludes(workspace: string): string[] {
   return excludes.filter((entry): entry is string => typeof entry === "string");
 }
 
+function globMatches(pattern: string, value: string): boolean {
+  const source = pattern
+    .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
+    .replaceAll("*", ".*");
+
+  return new RegExp(`^${source}$`).test(value);
+}
+
+function broadlyExemptsPackage(selector: string, packageName: string): boolean {
+  const versionSeparator = selector.startsWith("@")
+    ? selector.indexOf("@", 1)
+    : selector.indexOf("@");
+  const selectorName =
+    versionSeparator === -1 ? selector : selector.slice(0, versionSeparator);
+  const selectorVersion =
+    versionSeparator === -1 ? "" : selector.slice(versionSeparator + 1);
+
+  if (!globMatches(selectorName, packageName)) return false;
+  return !/^\d+(?:\.\d+)+(?:[-+][0-9A-Za-z.-]+)?$/.test(selectorVersion);
+}
+
 describe("dependency release-age policy", () => {
   it("does not broadly exempt deploy tooling from minimum release age", () => {
     const workspace = readFileSync("pnpm-workspace.yaml", "utf8");
     const excludes = readMinimumReleaseAgeExcludes(workspace);
 
-    expect(excludes).not.toContain("wrangler");
-    expect(excludes).not.toContain("miniflare");
+    expect(excludes.some((entry) => broadlyExemptsPackage(entry, "wrangler"))).toBe(
+      false,
+    );
+    expect(excludes.some((entry) => broadlyExemptsPackage(entry, "miniflare"))).toBe(
+      false,
+    );
   });
 
   it("normalizes quoted YAML scalars before checking package names", () => {
@@ -61,5 +86,14 @@ describe("dependency release-age policy", () => {
     );
 
     expect(excludes).toEqual(["wrangler", "miniflare"]);
+  });
+
+  it("detects release-age selector patterns that match deploy tooling", () => {
+    expect(broadlyExemptsPackage("wrangler*", "wrangler")).toBe(true);
+    expect(broadlyExemptsPackage("miniflare@*", "miniflare")).toBe(true);
+    expect(broadlyExemptsPackage("wrangler@4.100.0", "wrangler")).toBe(false);
+    expect(broadlyExemptsPackage("miniflare@4.20260611.0", "miniflare")).toBe(
+      false,
+    );
   });
 });
