@@ -19,6 +19,8 @@ function globMatches(pattern: string, value: string): boolean {
 }
 
 function broadlyExemptsPackage(selector: string, packageName: string): boolean {
+  if (selector.startsWith("!")) return selector.slice(1) !== packageName;
+
   const versionSeparator = selector.startsWith("@")
     ? selector.indexOf("@", 1)
     : selector.indexOf("@");
@@ -28,7 +30,16 @@ function broadlyExemptsPackage(selector: string, packageName: string): boolean {
     versionSeparator === -1 ? "" : selector.slice(versionSeparator + 1);
 
   if (!globMatches(selectorName, packageName)) return false;
-  return !/^\d+(?:\.\d+)+(?:[-+][0-9A-Za-z.-]+)?$/.test(selectorVersion);
+  if (!selectorVersion) return true;
+
+  const exactVersions = selectorVersion
+    .split("||")
+    .map((version) => version.trim())
+    .filter(Boolean);
+
+  return !exactVersions.every((version) =>
+    /^\d+(?:\.\d+)+(?:[-+][0-9A-Za-z.-]+)?$/.test(version),
+  );
 }
 
 describe("dependency release-age policy", () => {
@@ -94,6 +105,21 @@ describe("dependency release-age policy", () => {
     expect(broadlyExemptsPackage("wrangler@4.100.0", "wrangler")).toBe(false);
     expect(broadlyExemptsPackage("miniflare@4.20260611.0", "miniflare")).toBe(
       false,
+    );
+  });
+
+  it("detects negated release-age selector patterns that match deploy tooling", () => {
+    expect(broadlyExemptsPackage("!some-package", "wrangler")).toBe(true);
+    expect(broadlyExemptsPackage("!wrangler", "wrangler")).toBe(false);
+    expect(broadlyExemptsPackage("!wrangler", "miniflare")).toBe(true);
+  });
+
+  it("allows exact-version disjunctions for deploy-tool exceptions", () => {
+    expect(
+      broadlyExemptsPackage("wrangler@4.100.0 || 4.101.0", "wrangler"),
+    ).toBe(false);
+    expect(broadlyExemptsPackage("wrangler@4.100.0 || *", "wrangler")).toBe(
+      true,
     );
   });
 });
