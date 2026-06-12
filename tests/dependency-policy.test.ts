@@ -17,10 +17,13 @@ function normalizeYamlScalar(value: string): string {
 function readMinimumReleaseAgeExcludes(workspace: string): string[] {
   const lines = workspace.split("\n");
   const startIndex = lines.findIndex((line) => line === "minimumReleaseAgeExclude:");
-  return lines
-    .slice(startIndex + 1)
-    .filter((line) => line.startsWith("  - "))
-    .map((line) => line.match(/^\s*-\s+(.+)$/)?.[1]?.trim())
+  const followingLines = lines.slice(startIndex + 1);
+  const endIndex = followingLines.findIndex((line) => line.length > 0 && !line.startsWith(" "));
+  const sectionLines = endIndex === -1 ? followingLines : followingLines.slice(0, endIndex);
+
+  return sectionLines
+    .filter((line) => /^\s+-\s+/.test(line))
+    .map((line) => line.match(/^\s+-\s+(.+)$/)?.[1]?.trim())
     .filter((entry): entry is string => Boolean(entry))
     .map(normalizeYamlScalar);
 }
@@ -45,5 +48,17 @@ describe("dependency release-age policy", () => {
     );
 
     expect(excludes).toEqual(["wrangler", "miniflare", "wrangler@4.100.0"]);
+  });
+
+  it("accepts YAML-indented release-age list entries", () => {
+    const excludes = readMinimumReleaseAgeExcludes(
+      [
+        "minimumReleaseAgeExclude:",
+        "    - wrangler",
+        "    - miniflare@4.20260611.0",
+      ].join("\n"),
+    );
+
+    expect(excludes).toEqual(["wrangler", "miniflare@4.20260611.0"]);
   });
 });
