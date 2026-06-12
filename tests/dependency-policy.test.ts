@@ -1,31 +1,13 @@
 import { readFileSync } from "node:fs";
+import { parse } from "yaml";
 import { describe, expect, it } from "vitest";
 
-function normalizeYamlScalar(value: string): string {
-  const withoutComment = value.split("#")[0]?.trim() ?? "";
-  const quote = withoutComment[0];
-  if (
-    (quote === "'" || quote === '"') &&
-    withoutComment.endsWith(quote)
-  ) {
-    return withoutComment.slice(1, -1);
-  }
-
-  return withoutComment;
-}
-
 function readMinimumReleaseAgeExcludes(workspace: string): string[] {
-  const lines = workspace.split("\n");
-  const startIndex = lines.findIndex((line) => /^minimumReleaseAgeExclude\s*:/.test(line));
-  const followingLines = lines.slice(startIndex + 1);
-  const endIndex = followingLines.findIndex((line) => line.length > 0 && !line.startsWith(" "));
-  const sectionLines = endIndex === -1 ? followingLines : followingLines.slice(0, endIndex);
+  const parsed = parse(workspace) as { minimumReleaseAgeExclude?: unknown };
+  const excludes = parsed.minimumReleaseAgeExclude;
+  if (!Array.isArray(excludes)) return [];
 
-  return sectionLines
-    .filter((line) => /^\s+-\s+/.test(line))
-    .map((line) => line.match(/^\s+-\s+(.+)$/)?.[1]?.trim())
-    .filter((entry): entry is string => Boolean(entry))
-    .map(normalizeYamlScalar);
+  return excludes.filter((entry): entry is string => typeof entry === "string");
 }
 
 describe("dependency release-age policy", () => {
@@ -71,5 +53,13 @@ describe("dependency release-age policy", () => {
     );
 
     expect(excludes).toEqual(["wrangler"]);
+  });
+
+  it("accepts flow-style release-age list entries", () => {
+    const excludes = readMinimumReleaseAgeExcludes(
+      "minimumReleaseAgeExclude: [wrangler, miniflare]",
+    );
+
+    expect(excludes).toEqual(["wrangler", "miniflare"]);
   });
 });
