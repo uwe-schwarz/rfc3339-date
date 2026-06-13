@@ -2,7 +2,7 @@
   "name": "rfc3339-date",
   "version": "1.2.0",
   "private": true,
-  "packageManager": "pnpm@11.5.0",
+  "packageManager": "pnpm@11.6.0",
   "scripts": {
     "build:fonts": "node scripts/build-fonts.mjs",
     "build:openapi": "node scripts/build-openapi.mjs",
@@ -32,7 +32,7 @@
     "hono": "^4.12.25"
   },
   "devDependencies": {
-    "@redocly/cli": "^2.32.0",
+    "@redocly/cli": "^2.32.2",
     "@scalar/openapi-parser": "^0.28.7",
     "@tailwindcss/cli": "^4.3.0",
     "@types/node": "^25.9.3",
