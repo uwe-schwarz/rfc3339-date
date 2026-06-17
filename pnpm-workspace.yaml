@@ -29,3 +29,5 @@ minimumReleaseAgeExclude:
   - miniflare@4.20260609.0
   - wrangler@4.100.0
   - miniflare@4.20260611.0
+  - wrangler@4.101.0
+  - miniflare@4.20260616.0
