@@ -79,6 +79,14 @@ Use this repo-local skill when the user wants the full dependency-upgrade flow e
   - required checks are green,
   - and the PR is mergeable.
 
+## Follow-Up Issue Closure
+
+- Before merging, list open GitHub issues created by earlier dependency-upgrade runs, especially release-age, upstream-support, or intentionally-held-back package issues.
+- For each matching issue, compare the current PR's manifest and lockfile changes against the issue's requested fixed state.
+- If the PR fixes the issue but the branch or PR body does not already use a GitHub closing keyword, update the PR body to reference the issue before merge when practical.
+- If the fix has already landed on `main` without a closing reference, verify the current manifest/lockfile state and validation result, then comment with the fixing PR or commit evidence and close the stale issue.
+- Do not close an issue just because a later dependency PR merged; close it only after the package/version or policy state named in the issue is actually satisfied.
+
 ## Merge And Cleanup
 
 - Merge the PR once it is green and unblocked. Prefer `gh pr merge --squash --delete-branch` unless the repo convention clearly prefers another merge strategy.
