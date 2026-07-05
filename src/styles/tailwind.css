@@ -60,7 +60,7 @@
   }
 
   a {
-    color: currentColor;
+    color: currentcolor;
   }
 }
 
@@ -68,13 +68,6 @@
   .page-shell {
     position: relative;
     isolation: isolate;
-  }
-
-  .surface-card {
-    background-color: color-mix(in oklab, var(--neo-paper) 90%, var(--neo-ink));
-    box-shadow:
-      inset 0 0 0 2px var(--neo-ink),
-      6px 6px 0 var(--neo-ink);
   }
 
   .terminal-grid {
@@ -143,7 +136,7 @@
     transform: translateY(-2px);
     box-shadow:
       inset 0 0 0 2px var(--neo-ink),
-      8px 8px 0 var(--neo-ink);
+      8px 8px 0 var(--neo-shadow, var(--neo-ink));
   }
 
   .fx-flicker {

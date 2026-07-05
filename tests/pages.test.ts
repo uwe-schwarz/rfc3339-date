@@ -101,7 +101,7 @@ describe("renderLanding", () => {
       ["dark muted on paper", "#d8cfa6", "#24212b"],
       ["dark ink on panel", "#fff7d6", "#302c37"],
       ["light code on strong panel", "#fff7d6", "#101014"],
-      ["dark code on strong panel", "#fff7d6", "#101014"],
+      ["dark code on strong panel", "#f7f2dc", "#101014"],
       ["ink on cyan", "#101014", "#27d7ff"],
       ["ink on lime", "#101014", "#b7ff2a"],
       ["ink on coral", "#101014", "#ff5a5f"],
