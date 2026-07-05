@@ -1,11 +1,30 @@
 import { describe, expect, it } from "vitest";
 import { renderImprint, renderLanding, SCALAR_REGISTRY_URL } from "../src/lib/html";
+import { LANDING_PAGE_STYLES } from "../src/lib/landing-page-styles";
+
+function relativeLuminance(hex: string): number {
+  const value = hex.replace("#", "");
+  const channels = [0, 2, 4].map((offset) => Number.parseInt(value.slice(offset, offset + 2), 16) / 255);
+  const linear = channels.map((channel) =>
+    channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,
+  );
+  return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+}
+
+function contrastRatio(foreground: string, background: string): number {
+  const fg = relativeLuminance(foreground);
+  const bg = relativeLuminance(background);
+  const lighter = Math.max(fg, bg);
+  const darker = Math.min(fg, bg);
+  return (lighter + 0.05) / (darker + 0.05);
+}
 
 describe("renderLanding", () => {
   it("mentions the api focus, interactive controls, and openapi links", () => {
     const html = renderLanding("2026-01-01T00:00:00.000Z");
 
     expect(html).toContain(">rfc3339.date<");
+    expect(html).not.toContain('<a class="neo-label" href="/">rfc3339.date</a>');
     expect(html).toContain("Strict RFC3339 time API");
     expect(html).toContain("This is a fun project");
     expect(html).toContain("not a reliable source of correct date or time");
@@ -41,15 +60,60 @@ describe("renderLanding", () => {
     expect(html).not.toContain("There is no browser link here because the transport is meant for MCP clients, not direct navigation.");
     expect(html).not.toContain("Published Skill");
     expect(html).not.toContain("WebMCP Browser Tools");
-    expect(html).toContain("<picture>");
+    expect(html).toContain("<picture ");
+    expect(html).toContain("neo-logo-mat");
     expect(html).toContain('type="image/avif"');
-    expect(html).toContain('srcset="/fav-380.avif 1x, /fav-760.avif 2x"');
+    expect(html).toContain('srcset="/logo-560.avif 560w, /logo-1115.avif 1115w"');
     expect(html).toContain('type="image/webp"');
-    expect(html).toContain('srcset="/fav-380.webp 1x, /fav-760.webp 2x"');
-    expect(html).toContain('src="/fav-380.png"');
-    expect(html).toContain('srcset="/fav-380.png 1x, /fav-760.png 2x"');
-    expect(html).toContain('alt="rfc3339.date clock emblem"');
+    expect(html).toContain('srcset="/logo-560.webp 560w, /logo-1115.webp 1115w"');
+    expect(html).toContain('src="/logo-560.png"');
+    expect(html).toContain('srcset="/logo-560.png 560w, /logo-1115.png 1115w"');
+    expect(html).toContain('alt="rfc3339.date logo"');
     expect(html).toContain("navigator.modelContext.provideContext");
+  });
+
+  it("renders neobrutalist light and dark mode controls", () => {
+    const html = renderLanding("2026-01-01T00:00:00.000Z");
+
+    expect(html).toContain("neo-page");
+    expect(html).toContain("neo-panel");
+    expect(html).toContain("neo-shadow");
+    expect(html).toContain("neo-hero-controls");
+    expect(html).toContain('id="theme-toggle"');
+    expect(html).toContain('data-theme-toggle="1"');
+    expect(html).toContain("Light");
+    expect(html).toContain("Dark");
+    expect(html).not.toContain('data-theme-preview="dark"');
+    expect(html).not.toContain("Dark mode preview");
+    expect(html).toContain('matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"');
+    expect(html).toContain('document.documentElement.dataset.theme = theme');
+    expect(html).toContain('localStorage.setItem("rfc3339-theme", theme)');
+  });
+
+  it("keeps neobrutalist text colors at WCAG AA contrast", () => {
+    expect(LANDING_PAGE_STYLES).toContain("--neo-paper: #fff7d6");
+
+    const pairs = [
+      ["light ink on paper", "#101014", "#fff7d6"],
+      ["light muted on paper", "#3d3a33", "#fff7d6"],
+      ["light ink on panel", "#101014", "#fffef5"],
+      ["dark ink on paper", "#fff7d6", "#24212b"],
+      ["dark muted on paper", "#d8cfa6", "#24212b"],
+      ["dark ink on panel", "#fff7d6", "#302c37"],
+      ["light code on strong panel", "#fff7d6", "#101014"],
+      ["dark code on strong panel", "#f7f2dc", "#101014"],
+      ["ink on cyan", "#101014", "#27d7ff"],
+      ["ink on lime", "#101014", "#b7ff2a"],
+      ["ink on coral", "#101014", "#ff5a5f"],
+      ["cyan code on black", "#27d7ff", "#101014"],
+      ["lime code on black", "#b7ff2a", "#101014"],
+      ["coral code on black", "#ff5a5f", "#101014"],
+      ["violet code on black", "#8568ff", "#101014"],
+    ] as const;
+
+    for (const [label, foreground, background] of pairs) {
+      expect(contrastRatio(foreground, background), label).toBeGreaterThanOrEqual(4.5);
+    }
   });
 
   it("renders two event cards and two additional api examples", () => {
@@ -136,9 +200,12 @@ describe("renderLanding", () => {
     );
     expect(html).toContain('<meta property="og:url" content="https://rfc3339.date/" />');
     expect(html).toContain('<meta property="og:image" content="https://rfc3339.date/fav.png" />');
-    expect(html).toContain('<meta property="og:image:alt" content="rfc3339.date clock emblem" />');
+    expect(html).toContain('<meta property="og:image:width" content="660" />');
+    expect(html).toContain('<meta property="og:image:height" content="660" />');
+    expect(html).toContain('<meta property="og:image:alt" content="rfc3339.date icon" />');
     expect(html).toContain('<meta name="twitter:card" content="summary_large_image" />');
     expect(html).toContain('<meta name="twitter:image" content="https://rfc3339.date/fav.png" />');
+    expect(html).toContain('<meta name="twitter:image:alt" content="rfc3339.date icon" />');
   });
 });
 
@@ -146,10 +213,29 @@ describe("renderImprint", () => {
   it("links to github and loads the contributions view from same origin", () => {
     const html = renderImprint();
 
+    expect(html).toContain('<a class="neo-label" href="/">← Back to main</a>');
+    expect(html).not.toContain('<a class="neo-label" href="/">rfc3339.date</a>');
     expect(html).toContain("https://github.com/uwe-schwarz");
     expect(html).toContain("/github/uwe-schwarz/contributions");
     expect(html).toContain("Loading GitHub contribution stats");
     expect(html).not.toContain("proxy.scalar.com");
+  });
+
+  it("uses the shared neobrutalist theme system", () => {
+    const html = renderImprint();
+
+    expect(html).toContain("neo-page");
+    expect(html).toContain("neo-panel");
+    expect(html).toContain("neo-shadow");
+    expect(html).toContain('id="theme-toggle"');
+    expect(html).toContain('data-theme-toggle="1"');
+    expect(html).toContain('matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"');
+    expect(html).toContain('document.documentElement.dataset.theme = theme');
+    expect(html).toContain('localStorage.setItem("rfc3339-theme", theme)');
+    expect(html).not.toContain("surface-card");
+    expect(html).not.toContain("bg-zinc-950/40");
+    expect(html).not.toContain("text-lime-");
+    expect(html).not.toContain("fx-flicker");
   });
 
   it("keeps the scalar registry target in one place", () => {

@@ -1,5 +1,35 @@
 import { buildWebMcpRegistrationScript } from "./webmcp";
 
+const THEME_SCRIPT_BODY = `
+    const savedTheme = () => {
+      try { return localStorage.getItem("rfc3339-theme"); } catch { return null; }
+    };
+    const preferredTheme = () => savedTheme() || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const applyTheme = (theme) => {
+      document.documentElement.dataset.theme = theme;
+      const toggle = document.getElementById("theme-toggle");
+      if (toggle) toggle.checked = theme === "dark";
+    };
+    const setTheme = (theme) => {
+      applyTheme(theme);
+      try { localStorage.setItem("rfc3339-theme", theme); } catch {}
+    };
+    applyTheme(preferredTheme());
+    const bindThemeToggle = () => {
+      const toggle = document.getElementById("theme-toggle");
+      if (toggle) toggle.checked = document.documentElement.dataset.theme === "dark";
+      document.getElementById("theme-toggle")?.addEventListener("change", (event) => {
+        setTheme(event.currentTarget.checked ? "dark" : "light");
+      });
+    };`;
+
+export function themeScript(): string {
+  return `<script>
+    ${THEME_SCRIPT_BODY}
+    addEventListener("DOMContentLoaded", bindThemeToggle);
+  </script>`;
+}
+
 export function landingScript(): string {
   return `<script>
     const esc = (value) => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
@@ -8,6 +38,7 @@ export function landingScript(): string {
     const browserZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
     const wantsJson = () => document.getElementById("json-toggle")?.checked ?? false;
     const helperNode = () => document.getElementById("helper-code");
+    ${THEME_SCRIPT_BODY}
     const writeClipboard = async (text) => {
       if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(text);
       const probe = document.createElement("textarea");
@@ -116,6 +147,7 @@ export function landingScript(): string {
     };
     ${buildWebMcpRegistrationScript()}
     addEventListener("DOMContentLoaded", () => {
+      bindThemeToggle();
       registerWebMcpContext();
       setBrowserZoneDefaults();
       const cards = [...document.querySelectorAll("[data-example]")];
