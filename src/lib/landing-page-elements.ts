@@ -32,7 +32,7 @@ const OPENCODE_MCP_CONFIG = `{
 }`;
 
 function renderCodePanel(id: string, label: string, title: string, body: string): string {
-  return `<section class="neo-code-panel mt-4 overflow-hidden">
+  return `<section class="neo-code-panel mt-4 min-w-0 max-w-full overflow-hidden">
     <header class="flex items-center justify-between gap-3 px-4 py-3">
       <div>
         <p class="neo-label">${label}</p>
@@ -51,10 +51,10 @@ export function renderAgentDiscoverySection(): string {
     <h2 class="mt-2 text-2xl">Machine-readable entry points for agents.</h2>
   </div>
   <div class="grid gap-4 lg:grid-cols-1">
-    <article class="neo-panel neo-shadow fx-hover-lift p-4 md:p-5">
+    <article class="neo-agent-panel neo-panel neo-shadow fx-hover-lift min-w-0 p-4 md:p-5">
       <p class="neo-label">Remote MCP</p>
       <h3 class="mt-2 text-lg">Install MCP</h3>
-      <p class="mt-3 text-sm leading-relaxed">Use <code>${SITE_URL}/mcp</code> in clients that support remote HTTP MCP servers.</p>
+      <p class="mt-3 break-all text-sm leading-relaxed">Use <code>${SITE_URL}/mcp</code> in clients that support remote HTTP MCP servers.</p>
       ${renderCodePanel("codex-mcp-install", "Codex", "Add it with the Codex CLI", CODEX_MCP_INSTALL)}
       ${renderCodePanel("opencode-mcp-install", "Opencode", "Add it to your Opencode config", OPENCODE_MCP_CONFIG)}
     </article>

@@ -171,6 +171,8 @@ export const LANDING_PAGE_STYLES = `<style>
       color: var(--neo-code);
       border-radius: 0;
       box-shadow: 5px 5px 0 var(--neo-shadow);
+      max-width: 100%;
+      min-width: 0;
     }
     .neo-code-panel header,
     .neo-output-panel header {
@@ -182,7 +184,11 @@ export const LANDING_PAGE_STYLES = `<style>
     .neo-output-panel header .neo-label { color: #101014; }
     .neo-output-panel header { background: var(--neo-lime); }
     .neo-code-panel pre,
-    .neo-output-panel pre { background: color-mix(in oklab, var(--neo-panel-strong) 90%, black); }
+    .neo-output-panel pre {
+      background: color-mix(in oklab, var(--neo-panel-strong) 90%, black);
+      max-width: 100%;
+      min-width: 0;
+    }
     .code-shell { color: var(--neo-code); }
     .code-cmd { color: var(--neo-lime); }
     .code-flag { color: var(--neo-cyan); }
