@@ -9,6 +9,7 @@ import {
   renderVar,
 } from "./landing-page-elements";
 import { landingScript } from "./landing-page-script";
+import { LANDING_PAGE_STYLES } from "./landing-page-styles";
 type EventExample = { id: string; title: string; detail: string; value: string; from?: string; base?: string };
 type ApiExample = { id: string; title: string; kind: "now-zone" | "convert"; value?: string; in?: string; out?: string };
 
@@ -57,9 +58,9 @@ function renderInput(
   id = name,
 ): string {
   const zoneAttr = browserZone ? ' data-browser-zone-field="1"' : "";
-  return `<label class="space-y-2 text-xs text-lime-200">
-    <span class="block font-medium uppercase tracking-[0.18em] text-lime-500">${renderVar(label)}</span>
-    <input id="${escapeHtml(id)}" data-field="${name}"${zoneAttr} value="${escapeHtml(value)}" placeholder="${escapeHtml(placeholder)}" class="w-full rounded-lg border border-lime-500/25 bg-black/35 px-3 py-2 font-mono text-sm text-lime-100 outline-none transition focus:border-lime-300" />
+  return `<label class="neo-field space-y-2 text-xs">
+    <span class="neo-label block">${renderVar(label)}</span>
+    <input id="${escapeHtml(id)}" data-field="${name}"${zoneAttr} value="${escapeHtml(value)}" placeholder="${escapeHtml(placeholder)}" class="w-full px-3 py-2 font-mono text-sm outline-none transition" />
   </label>`;
 }
 
@@ -76,43 +77,43 @@ function renderSelect(
       return `<option value="${escapeHtml(option)}"${selected}>${escapeHtml(option)}</option>`;
     })
     .join("");
-  return `<label class="space-y-2 text-xs text-lime-200">
-    <span class="block font-medium uppercase tracking-[0.18em] text-lime-500">${renderVar(label)}</span>
-    <select id="${escapeHtml(id)}" data-field="${name}" class="w-full rounded-lg border border-lime-500/25 bg-black/35 px-3 py-2 font-mono text-sm text-lime-100 outline-none transition focus:border-lime-300">${optionMarkup}</select>
+  return `<label class="neo-field space-y-2 text-xs">
+    <span class="neo-label block">${renderVar(label)}</span>
+    <select id="${escapeHtml(id)}" data-field="${name}" class="w-full px-3 py-2 font-mono text-sm outline-none transition">${optionMarkup}</select>
   </label>`;
 }
 
 function renderShell(title: string, body: string): string {
-  return `<section class="mt-4 overflow-hidden rounded-2xl border border-lime-500/20 bg-black/40">
-    <header class="flex items-center justify-between gap-3 border-b border-lime-500/15 px-4 py-3">
-      <p class="text-xs uppercase tracking-[0.18em] text-lime-500">${title}</p>
-      <button type="button" data-copy class="rounded-md border border-lime-500/30 px-3 py-1.5 text-xs text-lime-200 transition hover:border-lime-300 hover:text-lime-100" aria-label="Copy example command">Copy</button>
+  return `<section class="neo-code-panel mt-4 overflow-hidden">
+    <header class="flex items-center justify-between gap-3 px-4 py-3">
+      <p class="neo-label">${title}</p>
+      <button type="button" data-copy class="neo-copy-button" aria-label="Copy example command">Copy</button>
     </header>
     ${body}
   </section>`;
 }
 
 function renderOutputShell(controlIds: string[]): string {
-  return `<section class="mt-4 overflow-hidden rounded-2xl border border-lime-500/20 bg-zinc-950/75">
-    <header class="flex items-center justify-between gap-3 border-b border-lime-500/15 px-4 py-3">
-      <p class="text-xs uppercase tracking-[0.18em] text-lime-500">Live Output</p>
-      <samp data-status class="text-xs text-lime-400 tabular-nums">loading</samp>
+  return `<section class="neo-output-panel mt-4 overflow-hidden">
+    <header class="flex items-center justify-between gap-3 px-4 py-3">
+      <p class="neo-label">Live Output</p>
+      <samp data-status class="neo-status text-xs tabular-nums">loading</samp>
     </header>
-    <pre class="min-h-32 overflow-x-auto px-4 py-4"><output data-output-wrapper for="${controlIds.map(escapeHtml).join(" ")}" aria-live="polite" aria-busy="true"><samp data-output class="font-mono text-sm text-lime-100">waiting for response…</samp></output></pre>
+    <pre class="min-h-32 overflow-x-auto px-4 py-4"><output data-output-wrapper for="${controlIds.map(escapeHtml).join(" ")}" aria-live="polite" aria-busy="true"><samp data-output class="font-mono text-sm">waiting for response…</samp></output></pre>
   </section>`;
 }
 
 function renderEventCard(example: EventExample): string {
   const fieldIds = ["value", "to", "from", "base"].map((name) => `${example.id}-${name}`);
-  return `<article class="surface-card fx-enter example-card rounded-2xl border border-lime-500/35 p-4 md:p-5" data-card="tz-convert" data-example="${example.id}">
+  return `<article class="neo-panel neo-shadow fx-enter example-card p-4 md:p-5" data-card="tz-convert" data-example="${example.id}">
     <form data-example-form>
     <div class="mb-4 flex items-start justify-between gap-4">
       <div>
-        <p class="text-xs uppercase tracking-[0.18em] text-lime-500">${renderEventTitle(example)}</p>
-        <h3 class="mt-2 text-xl leading-snug text-lime-100"><kbd>${escapeHtml(example.value)}</kbd></h3>
-        <p class="mt-2 max-w-xl text-sm leading-relaxed text-lime-300">${renderEventDetail(example)}</p>
+        <p class="neo-label">${renderEventTitle(example)}</p>
+        <h3 class="mt-2 text-xl leading-snug"><kbd>${escapeHtml(example.value)}</kbd></h3>
+        <p class="mt-2 max-w-xl text-sm leading-relaxed">${renderEventDetail(example)}</p>
       </div>
-      <span class="rounded-full border border-lime-500/25 px-3 py-1 text-xs text-lime-400">Live</span>
+      <span class="neo-stamp">Live</span>
     </div>
     <fieldset class="example-fields grid gap-3 border-0 p-0" data-field-count="2">
       <legend class="sr-only">${escapeHtml(example.title)} parameters</legend>
@@ -141,14 +142,14 @@ function renderApiCard(example: ApiExample): string {
           renderSelect("in", "in", example.in ?? "unix", CONVERSION_FORMATS, fieldIds[1]),
           renderSelect("out", "out", example.out ?? "rfc3339", CONVERSION_FORMATS, fieldIds[2]),
         ].join("");
-  return `<article class="surface-card fx-enter example-card rounded-2xl border border-lime-500/35 p-4 md:p-5" data-card="${example.kind}" data-example="${example.id}">
+  return `<article class="neo-panel neo-shadow fx-enter example-card p-4 md:p-5" data-card="${example.kind}" data-example="${example.id}">
     <form data-example-form>
     <div class="mb-4 flex items-start justify-between gap-4">
       <div>
-        <p class="text-xs uppercase tracking-[0.18em] text-lime-500">${escapeHtml(example.title)}</p>
-        <p class="mt-2 max-w-xl text-sm leading-relaxed text-lime-300">${renderApiDetail(example)}</p>
+        <p class="neo-label">${escapeHtml(example.title)}</p>
+        <p class="mt-2 max-w-xl text-sm leading-relaxed">${renderApiDetail(example)}</p>
       </div>
-      <span class="rounded-full border border-lime-500/25 px-3 py-1 text-xs text-lime-400">Live</span>
+      <span class="neo-stamp">Live</span>
     </div>
     <fieldset class="example-fields grid gap-3 border-0 p-0" data-field-count="${example.kind === "now-zone" ? "1" : "3"}">
       <legend class="sr-only">${escapeHtml(example.title)} parameters</legend>
@@ -164,106 +165,86 @@ function renderApiCard(example: ApiExample): string {
 }
 
 export function renderLandingHead(): string {
-  return `<style>
-    .example-card { position: relative; overflow: hidden; container-name: example-card; container-type: inline-size; background: linear-gradient(180deg, rgb(9 9 11 / 0.88), rgb(9 9 11 / 0.72)); }
-    .example-card::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(135deg, rgb(132 204 22 / 0.08), transparent 45%); }
-    .example-fields { grid-template-columns: minmax(0, 1fr); }
-    @container example-card (min-width: 42rem) {
-      .example-fields[data-field-count="2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .example-fields[data-field-count="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    }
-    .code-shell { color: rgb(244 244 245); }
-    .code-cmd { color: rgb(217 249 157); }
-    .code-flag { color: rgb(132 204 22); }
-    .code-url { color: rgb(165 243 252); }
-    .code-arg { color: rgb(253 224 71); }
-    .code-output-error { color: rgb(253 186 116); }
-    kbd, samp, var { font: inherit; }
-    var { font-style: normal; }
-    .mode-switch { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
-    .mode-switch input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-    .mode-track {
-      position: relative; display: inline-flex; align-items: center; width: 52px; height: 30px;
-      border-radius: 9999px; background: rgb(24 24 27); border: 1px solid rgb(63 63 70); transition: background 160ms ease, border-color 160ms ease;
-    }
-    .mode-thumb {
-      width: 24px; height: 24px; margin-left: 3px; border-radius: 9999px; background: rgb(244 244 245);
-      box-shadow: 0 0 0 1px rgb(39 39 42); transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
-    }
-    .mode-switch input:checked + .mode-track { background: rgb(244 244 245); border-color: rgb(228 228 231); }
-    .mode-switch input:checked + .mode-track .mode-thumb { transform: translateX(22px); background: rgb(9 9 11); box-shadow: 0 0 0 1px rgb(63 63 70); }
-    .mode-switch input:focus-visible + .mode-track { outline: 2px solid rgb(132 204 22 / 0.7); outline-offset: 2px; }
-  </style>`;
+  return LANDING_PAGE_STYLES;
 }
 
 export function renderLandingBody(_nowIso: string): string {
   return `
-<header class="fx-enter mb-10 border-b border-lime-500/25 pb-6">
-  <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-center">
-    <div>
-      <h1 class="fx-flicker text-4xl leading-none tracking-tight text-lime-100">rfc3339.date</h1>
-      <p class="mt-3 max-w-4xl text-base leading-relaxed text-lime-300">Strict ${RFC3339_ABBR} time API for current time, validation, conversion, timezone lookup, transitions, and human event-time parsing. The examples below are live requests against the public API.</p>
-      <p class="mt-3 max-w-3xl rounded-lg border border-amber-500/30 bg-amber-500/8 px-4 py-3 text-sm text-amber-200">This is a fun project, not a reliable source of correct date or time. It only reports this server's current clock and is not backed by any serious timekeeping hardware or authority.</p>
+<div class="neo-page">
+<header class="neo-hero fx-enter mb-8 p-4 md:p-6">
+  <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-stretch">
+    <div class="flex flex-col justify-between gap-6">
+      <div>
+        <h1 class="neo-hero-title text-5xl leading-none md:text-7xl">rfc3339.date</h1>
+        <p class="mt-4 max-w-4xl text-lg leading-relaxed">Strict ${RFC3339_ABBR} time API for current time, validation, conversion, timezone lookup, transitions, and human event-time parsing. The examples below are live requests against the public API.</p>
+      </div>
+      <p class="neo-warning max-w-4xl px-4 py-3 text-sm leading-relaxed">This is a fun project, not a reliable source of correct date or time. It only reports this server's current clock and is not backed by any serious timekeeping hardware or authority.</p>
     </div>
-    <div class="mx-auto w-full max-w-64 lg:max-w-none">
-      <div class="relative overflow-hidden rounded-[2rem] border border-cyan-400/20 bg-[radial-gradient(circle_at_top,_rgb(34_211_238_/_0.16),_transparent_55%),linear-gradient(180deg,_rgb(9_9_11_/_0.92),_rgb(9_9_11_/_0.75))] p-4 shadow-[0_0_60px_rgb(34_211_238_/_0.12)]">
-        <picture>
-          <source type="image/avif" srcset="/fav-380.avif 1x, /fav-760.avif 2x" /><source type="image/webp" srcset="/fav-380.webp 1x, /fav-760.webp 2x" />
-          <img src="/fav-380.png" srcset="/fav-380.png 1x, /fav-760.png 2x" alt="rfc3339.date clock emblem" width="760" height="760" fetchpriority="high" decoding="async" class="relative mx-auto block h-auto w-full drop-shadow-[0_0_36px_rgb(34_211_238_/_0.24)]" />
+    <aside>
+      <div class="neo-hero-controls flex justify-end">
+        <label class="neo-theme-toggle relative inline-flex items-center gap-1" aria-label="Toggle color theme">
+          <span>Light</span>
+          <input id="theme-toggle" data-theme-toggle="1" type="checkbox" />
+          <span class="mode-track"><span class="mode-thumb"></span></span>
+          <span>Dark</span>
+        </label>
+      </div>
+      <div class="neo-panel neo-logo-panel neo-shadow-small p-3">
+        <picture class="neo-logo-mat block p-3">
+          <source type="image/avif" srcset="/logo-560.avif 560w, /logo-1115.avif 1115w" sizes="(min-width: 1024px) 22rem, calc(100vw - 4rem)" /><source type="image/webp" srcset="/logo-560.webp 560w, /logo-1115.webp 1115w" sizes="(min-width: 1024px) 22rem, calc(100vw - 4rem)" />
+          <img src="/logo-560.png" srcset="/logo-560.png 560w, /logo-1115.png 1115w" sizes="(min-width: 1024px) 22rem, calc(100vw - 4rem)" alt="rfc3339.date logo" width="1115" height="370" fetchpriority="high" decoding="async" class="mx-auto block h-auto w-full" />
         </picture>
       </div>
-    </div>
+    </aside>
   </div>
 </header>
 <ul class="fx-enter fx-delay-1 mb-8 grid gap-3 lg:grid-cols-4">
-  <li class="surface-card fx-hover-lift rounded-lg border border-lime-500/35 px-4 py-3 text-center text-sm text-lime-300">FREE</li>
-  <li class="surface-card fx-hover-lift rounded-lg border border-lime-500/35 px-4 py-3 text-center text-sm text-lime-300">No auth</li>
-  <li class="surface-card fx-hover-lift rounded-lg border border-lime-500/35 px-4 py-3 text-center text-sm text-lime-300">No tracking</li>
-  <li><button id="reset-my-timezone" type="button" class="surface-card fx-hover-lift w-full rounded-lg border border-lime-500/35 px-4 py-3 text-center text-sm text-lime-200">Reset to my timezone: <var id="browser-tz" class="text-lime-400">detecting…</var></button></li>
+  <li class="neo-chip fx-hover-lift flex items-center justify-center px-4 py-3 text-center text-sm">FREE</li>
+  <li class="neo-chip fx-hover-lift flex items-center justify-center px-4 py-3 text-center text-sm">No auth</li>
+  <li class="neo-chip fx-hover-lift flex items-center justify-center px-4 py-3 text-center text-sm">No tracking</li>
+  <li class="neo-chip fx-hover-lift"><button id="reset-my-timezone" type="button" class="w-full px-4 py-3 text-center text-sm">Reset to my timezone: <var id="browser-tz">detecting…</var></button></li>
 </ul>
-<section class="fx-enter fx-delay-1 mb-10 rounded-2xl border border-lime-500/25 bg-zinc-950/35 p-4">
+<section class="neo-panel neo-shadow fx-enter fx-delay-1 mb-10 p-4">
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div>
-      <p class="text-xs uppercase tracking-[0.18em] text-lime-500">Output Mode</p>
-      <p class="mt-1 text-sm text-lime-300">Examples default to plain text so you see the one-line API result first.</p>
+      <p class="neo-label">Output Mode</p>
+      <p class="neo-muted mt-1 text-sm">Examples default to plain text so you see the one-line API result first.</p>
     </div>
-    <label class="flex items-center gap-3 rounded-full border border-lime-500/25 px-4 py-2 text-sm text-lime-200">
+    <label class="neo-theme-toggle relative inline-flex items-center gap-1">
       <span>Plain text</span>
-      <span class="mode-switch">
-        <input id="json-toggle" type="checkbox" />
-        <span class="mode-track"><span class="mode-thumb"></span></span>
-      </span>
+      <input id="json-toggle" type="checkbox" />
+      <span class="mode-track"><span class="mode-thumb"></span></span>
       <span>JSON output</span>
     </label>
   </div>
 </section>
-<section class="fx-enter fx-delay-2 mb-10">
+<section class="neo-section fx-enter fx-delay-2">
   <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
     <div>
-      <p class="text-xs uppercase tracking-[0.18em] text-lime-500">Event Times</p>
-      <h2 class="mt-2 text-2xl text-lime-100">Convert human-style event text into your timezone.</h2>
+      <p class="neo-label">Event Times</p>
+      <h2 class="mt-2 text-2xl">Convert human-style event text into your timezone.</h2>
     </div>
-    <p class="max-w-xl text-sm leading-relaxed text-lime-300">These two cards focus on the new <code>/tz/convert</code> endpoint and start with your browser timezone as the target.</p>
+    <p class="neo-muted max-w-xl text-sm leading-relaxed">These two cards focus on the new <code>/tz/convert</code> endpoint and start with your browser timezone as the target.</p>
   </div>
   <div class="grid gap-4 lg:grid-cols-2">${EVENT_EXAMPLES.map(renderEventCard).join("")}</div>
 </section>
-<section class="fx-enter fx-delay-3 mb-10">
+<section class="neo-section fx-enter fx-delay-3">
   <div class="mb-4">
-    <p class="text-xs uppercase tracking-[0.18em] text-lime-500">Other Endpoints</p>
-    <h2 class="mt-2 text-2xl text-lime-100">A couple more live API examples.</h2>
-    <p class="mt-3 max-w-3xl text-sm leading-relaxed text-lime-300">One example renders ${renderNowZoneEndpoint()}. The other shows a plain <code>/convert</code> request.</p>
+    <p class="neo-label">Other Endpoints</p>
+    <h2 class="mt-2 text-2xl">A couple more live API examples.</h2>
+    <p class="neo-muted mt-3 max-w-3xl text-sm leading-relaxed">One example renders ${renderNowZoneEndpoint()}. The other shows a plain <code>/convert</code> request.</p>
   </div>
   <div class="grid gap-4 lg:grid-cols-2">${API_EXAMPLES.map(renderApiCard).join("")}</div>
 </section>
-<section class="fx-enter fx-delay-3 mb-10">
+<section class="neo-section fx-enter fx-delay-3">
   <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
     <div>
-      <p class="text-xs uppercase tracking-[0.18em] text-lime-500">Shell Helper</p>
-      <h2 class="mt-2 text-2xl text-lime-100">Copy a local helper for event conversions.</h2>
+      <p class="neo-label">Shell Helper</p>
+      <h2 class="mt-2 text-2xl">Copy a local helper for event conversions.</h2>
     </div>
   </div>
-  <article class="surface-card example-card rounded-2xl border border-lime-500/35 p-4 md:p-5">
-    <p class="max-w-3xl text-sm leading-relaxed text-lime-300">This bash helper sends free-form event text to <code>/tz/convert</code> and defaults the target zone to your browser timezone.</p>
+  <article class="neo-panel neo-shadow example-card p-4 md:p-5">
+    <p class="neo-muted max-w-3xl text-sm leading-relaxed">This bash helper sends free-form event text to <code>/tz/convert</code> and defaults the target zone to your browser timezone.</p>
     ${renderShell(
       "Copyable Bash Function",
       '<pre class="overflow-x-auto px-4 py-4 text-sm leading-7"><code id="helper-code" class="code-shell language-bash"></code></pre>',
@@ -271,13 +252,14 @@ export function renderLandingBody(_nowIso: string): string {
   </article>
 </section>
 ${renderAgentDiscoverySection()}
-<nav class="fx-enter fx-delay-3 flex flex-wrap gap-3 text-sm">
-  <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="${SCALAR_REGISTRY_URL}">Scalar Registry</a>
-  <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="/openapi.yaml">OpenAPI YAML</a>
-  <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="/openapi.json">OpenAPI JSON</a>
-  <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="/openapi.scalar.json">Scalar-compatible JSON</a>
-  <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="/.well-known/agent-skills/rfc3339-date/SKILL.md">SKILL.md</a>
-  <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="/imprint">Imprint</a>
+<nav class="neo-footer-nav fx-enter fx-delay-3 flex flex-wrap gap-3 text-sm">
+  <a class="fx-hover-lift" href="${SCALAR_REGISTRY_URL}">Scalar Registry</a>
+  <a class="fx-hover-lift" href="/openapi.yaml">OpenAPI YAML</a>
+  <a class="fx-hover-lift" href="/openapi.json">OpenAPI JSON</a>
+  <a class="fx-hover-lift" href="/openapi.scalar.json">Scalar-compatible JSON</a>
+  <a class="fx-hover-lift" href="/.well-known/agent-skills/rfc3339-date/SKILL.md">SKILL.md</a>
+  <a class="fx-hover-lift" href="/imprint">Imprint</a>
 </nav>
+</div>
 ${landingScript()}`;
 }

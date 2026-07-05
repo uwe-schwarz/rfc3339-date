@@ -1,4 +1,5 @@
 import { renderLandingBody, renderLandingHead } from "./landing-page";
+import { themeScript } from "./landing-page-script";
 import { SCALAR_REGISTRY_URL, SITE_URL } from "./page-constants";
 
 export { SCALAR_REGISTRY_URL };
@@ -37,14 +38,14 @@ function renderMetadataHead(title: string, options: MetadataOptions): string {
     <meta property="og:url" content="${escapedCanonicalUrl}" />
     <meta property="og:image" content="${escapedImageUrl}" />
     <meta property="og:image:type" content="image/png" />
-    <meta property="og:image:width" content="760" />
-    <meta property="og:image:height" content="760" />
-    <meta property="og:image:alt" content="rfc3339.date clock emblem" />
+    <meta property="og:image:width" content="660" />
+    <meta property="og:image:height" content="660" />
+    <meta property="og:image:alt" content="rfc3339.date icon" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escapedTitle}" />
     <meta name="twitter:description" content="${escapedDescription}" />
     <meta name="twitter:image" content="${escapedImageUrl}" />
-    <meta name="twitter:image:alt" content="rfc3339.date clock emblem" />`;
+    <meta name="twitter:image:alt" content="rfc3339.date icon" />`;
 }
 
 function baseLayout(
@@ -117,45 +118,73 @@ Current example time: \`${nowIso}\`
 
 export function renderImprint(): string {
   const content = `
-<h1 class="fx-enter fx-flicker mb-4 text-3xl">Imprint</h1>
-<div class="surface-card fx-enter fx-delay-1 space-y-3 rounded-xl border border-lime-500/35 bg-zinc-950/40 p-6 text-sm text-lime-200">
-  <p>rfc3339.date</p>
-  <p>Owner: Uwe Schwarz, Uhlandstr. 20, 67069 Ludwigshafen, Germany</p>
-  <p>Email: mail@uweschwarz.eu</p>
-  <p>GitHub: <a class="text-lime-300 hover:underline" href="https://github.com/uwe-schwarz">github.com/uwe-schwarz</a></p>
-  <p>Scalar Registry: <a class="text-lime-300 hover:underline" href="${SCALAR_REGISTRY_URL}">${SCALAR_REGISTRY_URL}</a></p>
-  <p>This service is provided for development and testing use. No user tracking and no authentication.</p>
-</div>
-<section class="surface-card fx-enter fx-delay-2 mt-6 rounded-xl border border-lime-500/35 bg-zinc-950/40 p-6 text-sm text-lime-200">
-  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-    <div>
-      <h2 class="text-lg text-lime-100">GitHub Profile</h2>
-      <p class="mt-1 text-lime-300">Public activity snapshot from GitHub for <a class="text-lime-300 hover:underline" href="https://github.com/uwe-schwarz">uwe-schwarz</a>.</p>
+<div class="neo-page">
+  <header class="neo-hero fx-enter mb-8 p-4 md:p-6">
+    <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
+      <a class="neo-label" href="/">← Back to main</a>
+      <label class="neo-theme-toggle relative inline-flex items-center gap-1" aria-label="Toggle color theme">
+        <span>Light</span>
+        <input id="theme-toggle" data-theme-toggle="1" type="checkbox" />
+        <span class="mode-track"><span class="mode-thumb"></span></span>
+        <span>Dark</span>
+      </label>
     </div>
-    <a class="fx-hover-lift rounded-md border border-lime-500/35 px-3 py-2 text-lime-300 hover:border-lime-400 hover:text-lime-200" href="https://github.com/uwe-schwarz">Open GitHub Profile</a>
-  </div>
-  <div id="github-profile" class="rounded-lg border border-lime-500/25 bg-black/20 p-4">
-    <p class="text-lime-400">Loading GitHub contribution stats…</p>
-  </div>
-</section>
-<p class="fx-enter fx-delay-2 mt-6 text-sm"><a class="text-lime-300 hover:underline" href="/">Back to landing page</a></p>`;
+    <div>
+      <p class="neo-stamp mb-4">Legal + profile</p>
+      <h1 class="neo-hero-title text-5xl font-black leading-none md:text-7xl">Imprint</h1>
+      <p class="neo-muted mt-5 max-w-3xl text-base md:text-lg">
+        Project contact details for <strong>rfc3339.date</strong>, the public GitHub profile, and the API registry entry.
+      </p>
+    </div>
+  </header>
+  <section class="neo-panel neo-shadow fx-enter fx-delay-1 p-4 md:p-6">
+    <p class="neo-label mb-4">Contact</p>
+    <address class="space-y-3 text-sm not-italic md:text-base">
+      <p><strong>rfc3339.date</strong></p>
+      <p>Owner: Uwe Schwarz, Uhlandstr. 20, 67069 Ludwigshafen, Germany</p>
+      <p>Email: <a class="font-bold underline" href="mailto:mail@uweschwarz.eu">mail@uweschwarz.eu</a></p>
+      <p>GitHub: <a class="font-bold underline" href="https://github.com/uwe-schwarz">github.com/uwe-schwarz</a></p>
+      <p>Scalar Registry: <a class="break-all font-bold underline" href="${SCALAR_REGISTRY_URL}">${SCALAR_REGISTRY_URL}</a></p>
+    </address>
+    <p class="neo-warning mt-5 p-3 text-sm">This service is provided for development and testing use. No user tracking and no authentication.</p>
+  </section>
+  <section class="neo-panel neo-shadow fx-enter fx-delay-2 mt-8 p-4 md:p-6">
+    <div class="mb-5 flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <p class="neo-label">GitHub Profile</p>
+        <h2 class="mt-2 text-2xl font-black md:text-3xl">uwe-schwarz</h2>
+        <p class="neo-muted mt-2 max-w-2xl text-sm md:text-base">
+          Public activity snapshot from GitHub for <a class="font-bold underline" href="https://github.com/uwe-schwarz">uwe-schwarz</a>.
+        </p>
+      </div>
+      <a class="neo-copy-button inline-flex items-center" href="https://github.com/uwe-schwarz">Open GitHub Profile</a>
+    </div>
+    <div id="github-profile" class="neo-output-panel overflow-hidden p-4">
+      <p class="neo-muted">Loading GitHub contribution stats...</p>
+    </div>
+  </section>
+  <nav class="neo-footer-nav fx-enter fx-delay-3 mt-8 flex flex-wrap gap-3 text-sm">
+    <a href="/">Back to landing page</a>
+  </nav>
+</div>`;
   return baseLayout(content, "rfc3339.date imprint", {
     metadata: {
       description:
         "Imprint and project contact details for rfc3339.date, including the GitHub profile and Scalar registry link.",
       path: "/imprint",
     },
-    head: `<style>
+    head: `${renderLandingHead()}
+    <style>
       .gh-calendar-shell { overflow-x: auto; }
       .gh-calendar-shell table { border-collapse: separate; border-spacing: 4px; width: max-content; }
-      .gh-calendar-shell td { min-width: 11px; height: 11px; border-radius: 2px; }
+      .gh-calendar-shell td { min-width: 11px; height: 11px; border: 1px solid var(--neo-ink); border-radius: 0; }
       .gh-calendar-shell td[aria-hidden="true"] { min-width: auto; height: auto; }
-      .gh-calendar-shell .ContributionCalendar-label { color: rgb(163 230 53 / 0.8); font-size: 0.7rem; white-space: nowrap; }
-      .gh-calendar-shell .ContributionCalendar-day[data-level="0"] { background: rgba(132, 204, 22, 0.12); }
-      .gh-calendar-shell .ContributionCalendar-day[data-level="1"] { background: rgba(132, 204, 22, 0.35); }
-      .gh-calendar-shell .ContributionCalendar-day[data-level="2"] { background: rgba(132, 204, 22, 0.55); }
-      .gh-calendar-shell .ContributionCalendar-day[data-level="3"] { background: rgba(163, 230, 53, 0.75); }
-      .gh-calendar-shell .ContributionCalendar-day[data-level="4"] { background: rgba(217, 249, 157, 0.95); }
+      .gh-calendar-shell .ContributionCalendar-label { color: var(--neo-code); font-size: 0.7rem; white-space: nowrap; }
+      .gh-calendar-shell .ContributionCalendar-day[data-level="0"] { background: #272735; }
+      .gh-calendar-shell .ContributionCalendar-day[data-level="1"] { background: var(--neo-cyan); }
+      .gh-calendar-shell .ContributionCalendar-day[data-level="2"] { background: var(--neo-lime); }
+      .gh-calendar-shell .ContributionCalendar-day[data-level="3"] { background: var(--neo-coral); }
+      .gh-calendar-shell .ContributionCalendar-day[data-level="4"] { background: var(--neo-violet); }
       .gh-calendar-shell .sr-only { display: none; }
     </style>
     <script>
@@ -166,15 +195,16 @@ export function renderImprint(): string {
           const response = await fetch("/github/uwe-schwarz/contributions");
           const data = await response.json();
           if (!data.countText || !data.calendarHtml) {
-            target.innerHTML = '<p class="text-lime-400">GitHub stats are temporarily unavailable. <a class="text-lime-300 hover:underline" href="' + data.profileUrl + '">View the profile directly</a>.</p>';
+            target.innerHTML = '<p>GitHub stats are temporarily unavailable. <a class="font-bold underline" href="' + data.profileUrl + '">View the profile directly</a>.</p>';
             return;
           }
-          target.innerHTML = '<p class="mb-4 text-base text-lime-100">' + data.countText + '</p><div class="gh-calendar-shell">' + data.calendarHtml + "</div>";
+          target.innerHTML = '<p class="mb-4 text-base font-bold">' + data.countText + '</p><div class="gh-calendar-shell">' + data.calendarHtml + "</div>";
         } catch {
-          target.innerHTML = '<p class="text-lime-400">GitHub stats are temporarily unavailable. <a class="text-lime-300 hover:underline" href="https://github.com/uwe-schwarz">View the profile directly</a>.</p>';
+          target.innerHTML = '<p>GitHub stats are temporarily unavailable. <a class="font-bold underline" href="https://github.com/uwe-schwarz">View the profile directly</a>.</p>';
         }
       });
-    </script>`,
+    </script>
+    ${themeScript()}`,
   });
 }
 

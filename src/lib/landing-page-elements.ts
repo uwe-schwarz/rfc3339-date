@@ -32,29 +32,29 @@ const OPENCODE_MCP_CONFIG = `{
 }`;
 
 function renderCodePanel(id: string, label: string, title: string, body: string): string {
-  return `<section class="mt-4 overflow-hidden rounded-2xl border border-lime-500/20 bg-black/40">
-    <header class="flex items-center justify-between gap-3 border-b border-lime-500/15 px-4 py-3">
+  return `<section class="neo-code-panel mt-4 overflow-hidden">
+    <header class="flex items-center justify-between gap-3 px-4 py-3">
       <div>
-        <p class="text-xs uppercase tracking-[0.18em] text-lime-500">${label}</p>
-        <p class="mt-1 text-sm text-lime-200">${title}</p>
+        <p class="neo-label">${label}</p>
+        <p class="mt-1 text-sm">${title}</p>
       </div>
-      <button type="button" data-copy-target="${id}" class="rounded-md border border-lime-500/30 px-3 py-1.5 text-xs text-lime-200 transition hover:border-lime-300 hover:text-lime-100">Copy</button>
+      <button type="button" data-copy-target="${id}" class="neo-copy-button">Copy</button>
     </header>
-    <pre class="overflow-x-auto px-4 py-4 text-sm leading-7 text-lime-100"><code id="${id}">${escapeHtml(body)}</code></pre>
+    <pre class="overflow-x-auto px-4 py-4 text-sm leading-7"><code id="${id}">${escapeHtml(body)}</code></pre>
   </section>`;
 }
 
 export function renderAgentDiscoverySection(): string {
-  return `<section class="fx-enter fx-delay-3 mb-10">
+  return `<section class="neo-section fx-enter fx-delay-3">
   <div class="mb-4">
-    <p class="text-xs uppercase tracking-[0.18em] text-lime-500">Agent Discovery</p>
-    <h2 class="mt-2 text-2xl text-lime-100">Machine-readable entry points for agents.</h2>
+    <p class="neo-label">Agent Discovery</p>
+    <h2 class="mt-2 text-2xl">Machine-readable entry points for agents.</h2>
   </div>
   <div class="grid gap-4 lg:grid-cols-1">
-    <article class="surface-card fx-hover-lift rounded-2xl border border-lime-500/35 p-4 md:p-5">
-      <p class="text-xs uppercase tracking-[0.18em] text-lime-500">Remote MCP</p>
-      <h3 class="mt-2 text-lg text-lime-100">Install MCP</h3>
-      <p class="mt-3 text-sm leading-relaxed text-lime-300">Use <code>${SITE_URL}/mcp</code> in clients that support remote HTTP MCP servers.</p>
+    <article class="neo-panel neo-shadow fx-hover-lift p-4 md:p-5">
+      <p class="neo-label">Remote MCP</p>
+      <h3 class="mt-2 text-lg">Install MCP</h3>
+      <p class="mt-3 text-sm leading-relaxed">Use <code>${SITE_URL}/mcp</code> in clients that support remote HTTP MCP servers.</p>
       ${renderCodePanel("codex-mcp-install", "Codex", "Add it with the Codex CLI", CODEX_MCP_INSTALL)}
       ${renderCodePanel("opencode-mcp-install", "Opencode", "Add it to your Opencode config", OPENCODE_MCP_CONFIG)}
     </article>
