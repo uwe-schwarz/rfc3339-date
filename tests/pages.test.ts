@@ -158,6 +158,17 @@ describe("renderLanding", () => {
     expect(html).toContain("min-h-dvh");
   });
 
+  it("keeps agent discovery code panels responsive on narrow screens", () => {
+    const html = renderLanding("2026-01-01T00:00:00.000Z");
+
+    expect(html).toContain('class="neo-agent-panel neo-panel neo-shadow fx-hover-lift min-w-0 p-4 md:p-5"');
+    expect(html).toContain('class="neo-code-panel mt-4 min-w-0 max-w-full overflow-hidden"');
+    expect(html).toContain('class="mt-3 break-all text-sm leading-relaxed"');
+    expect(LANDING_PAGE_STYLES).toContain(".neo-code-panel pre,");
+    expect(LANDING_PAGE_STYLES).toContain("max-width: 100%;");
+    expect(LANDING_PAGE_STYLES).toContain("min-width: 0;");
+  });
+
   it("wires live output submit handling, busy state, and stale response guards", () => {
     const html = renderLanding("2026-01-01T00:00:00.000Z");
 
