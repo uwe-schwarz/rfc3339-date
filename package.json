@@ -2,7 +2,7 @@
   "name": "rfc3339-date",
   "version": "1.2.0",
   "private": true,
-  "packageManager": "pnpm@11.9.0",
+  "packageManager": "pnpm@11.10.0",
   "engines": {
     "node": ">=22.12.0 || >=20.19.0 <21.0.0"
   },
