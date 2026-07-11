@@ -57,7 +57,14 @@ Use this repo-local skill when the user wants the full dependency-upgrade flow e
   - the commands run for validation
   - the visual regression result summary
   - any intentionally accepted tiny visual drift with a concrete explanation
-  - any follow-up issues created from release-note review
+  - any follow-up issues created from release-note review, or links to matching open issues reused instead
+
+## Follow-Up Issue Deduplication
+
+- Before creating any follow-up issue, search all open issues for the same underlying dependency, target version or version range, incompatibility, failed check, error, or other blocker.
+- Compare the substance of the problem, not only exact or similar titles. Read candidate issue bodies and recent comments, and account for package aliases, renamed packages, differently phrased symptoms, and overlapping version ranges that describe the same required work.
+- If a matching open issue exists, do not create another issue. Treat the most complete or established matching issue as canonical, link to it in the PR body and final summary, and add any genuinely new evidence there when useful.
+- Create a new issue only when the search shows that no open issue already tracks the same underlying problem. Record the search result in the run summary so the decision is auditable.
 
 ## GitHub Babysitting
 
