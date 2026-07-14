@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "geist": "^1.7.2",
-    "hono": "^4.12.29"
+    "hono": "^4.12.30"
   },
   "devDependencies": {
     "@redocly/cli": "^2.38.0",
