@@ -21,8 +21,8 @@ importers:
         version: 4.12.30
     devDependencies:
       '@redocly/cli':
-        specifier: ^2.38.0
-        version: 2.38.0
+        specifier: ^2.39.0
+        version: 2.39.0
       '@scalar/openapi-parser':
         specifier: ^0.28.8
         version: 0.28.8
@@ -863,8 +863,8 @@ packages:
   '@poppinss/exception@1.2.3':
     resolution: {integrity: sha512-dCED+QRChTVatE9ibtoaxc+WkdzOSjYTKi/+uacHWIsfodVfpsueo3+DKpgU5Px8qXjgmXkSvhXvSCz3fnP9lw==}
 
-  '@redocly/cli@2.38.0':
-    resolution: {integrity: sha512-zYwQiDJTqoiscB6pFwd80FwI065gA13lp8hg2tgjDDu4p8gotVdCD/EOCaPTalIHskiIa1UFxEPRErPOgkWqJw==}
+  '@redocly/cli@2.39.0':
+    resolution: {integrity: sha512-xA0Z9YMEhlzbpn/BVErlE2UzuKfahp9llBwEnVtAYuhWdF8UCIm+cgYX8f/gHQIJ/TKwB93awAewTOgEsbZFZw==}
     engines: {node: '>=22.12.0 || >=20.19.0 <21.0.0', npm: '>=10'}
     hasBin: true
 
@@ -2303,7 +2303,7 @@ snapshots:
 
   '@poppinss/exception@1.2.3': {}
 
-  '@redocly/cli@2.38.0': {}
+  '@redocly/cli@2.39.0': {}
 
   '@rolldown/binding-android-arm64@1.1.5':
     optional: true

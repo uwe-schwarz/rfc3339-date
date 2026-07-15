@@ -35,7 +35,7 @@
     "hono": "^4.12.30"
   },
   "devDependencies": {
-    "@redocly/cli": "^2.38.0",
+    "@redocly/cli": "^2.39.0",
     "@scalar/openapi-parser": "^0.28.8",
     "@tailwindcss/cli": "^4.3.2",
     "@types/node": "^26.1.1",
