@@ -43,6 +43,18 @@ function broadlyExemptsPackage(selector: string, packageName: string): boolean {
 }
 
 describe("dependency release-age policy", () => {
+  it("does not override the directly declared Next version", () => {
+    const workspace = parse(readFileSync("pnpm-workspace.yaml", "utf8")) as {
+      overrides?: Record<string, unknown>;
+    };
+    const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as {
+      devDependencies?: Record<string, unknown>;
+    };
+
+    expect(packageJson.devDependencies?.next).toMatch(/^\^/);
+    expect(workspace.overrides?.next).toBeUndefined();
+  });
+
   it("does not broadly exempt deploy tooling from minimum release age", () => {
     const workspace = readFileSync("pnpm-workspace.yaml", "utf8");
     const excludes = readMinimumReleaseAgeExcludes(workspace);
