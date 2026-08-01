@@ -35,21 +35,21 @@
     "hono": "^4.12.32"
   },
   "devDependencies": {
-    "@redocly/cli": "^2.41.2",
-    "@scalar/openapi-parser": "^0.28.10",
+    "@redocly/cli": "^2.43.1",
+    "@scalar/openapi-parser": "^0.28.11",
     "@tailwindcss/cli": "^4.3.3",
     "@types/node": "^26.1.2",
     "next": "^16.2.12",
     "oxfmt": "^0.61.0",
     "oxlint": "^1.76.0",
     "pixelmatch": "^7.2.0",
-    "playwright": "^1.62.0",
+    "playwright": "^1.62.1",
     "pngjs": "^7.0.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
-    "vite": "^8.1.5",
+    "vite": "^8.2.0",
     "vitest": "^4.1.10",
-    "wrangler": "^4.115.0",
+    "wrangler": "^4.116.0",
     "yaml": "^2.9.0"
   }
 }
