@@ -7,7 +7,7 @@ allowBuilds:
   vue-demi: true
   workerd: true
 overrides:
-  '@napi-rs/wasm-runtime': 1.1.6
+  '@napi-rs/wasm-runtime': 1.2.2
   postcss: 8.5.15
   sharp: 0.35.3
 minimumReleaseAgeExclude:
@@ -16,3 +16,4 @@ minimumReleaseAgeExclude:
   - postcss@8.5.10 || 8.5.15
   - wrangler@4.97.0 || 4.99.0 || 4.100.0 || 4.104.0 || 4.107.0
   - miniflare@4.20260601.0 || 4.20260609.0 || 4.20260611.0 || 4.20260623.0 || 4.20260701.0
+  - '@napi-rs/wasm-runtime@1.2.2'
