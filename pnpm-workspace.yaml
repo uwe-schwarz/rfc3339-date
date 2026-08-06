@@ -17,3 +17,4 @@ minimumReleaseAgeExclude:
   - wrangler@4.97.0 || 4.99.0 || 4.100.0 || 4.104.0 || 4.107.0
   - miniflare@4.20260601.0 || 4.20260609.0 || 4.20260611.0 || 4.20260623.0 || 4.20260701.0
   - '@napi-rs/wasm-runtime@1.2.2'
+  - '@redocly/cli@2.44.2'
