@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "geist": "^1.7.2",
-    "hono": "^4.13.2"
+    "hono": "^4.13.3"
   },
   "devDependencies": {
     "@redocly/cli": "^2.46.1",
@@ -40,16 +40,16 @@
     "@tailwindcss/cli": "^4.3.3",
     "@types/node": "^26.2.0",
     "next": "^16.3.1",
-    "oxfmt": "^0.63.0",
-    "oxlint": "^1.78.0",
+    "oxfmt": "^0.64.0",
+    "oxlint": "^1.79.0",
     "pixelmatch": "^7.2.0",
     "playwright": "^1.62.1",
     "pngjs": "^7.0.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.2.1",
-    "vitest": "^4.1.10",
-    "wrangler": "^4.123.0",
+    "vitest": "^4.1.11",
+    "wrangler": "^4.124.0",
     "yaml": "^2.9.0"
   }
 }
