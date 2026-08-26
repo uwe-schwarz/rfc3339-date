@@ -32,16 +32,16 @@
   },
   "dependencies": {
     "geist": "^1.7.2",
-    "hono": "^4.13.3"
+    "hono": "^4.13.4"
   },
   "devDependencies": {
     "@redocly/cli": "^2.47.0",
     "@scalar/openapi-parser": "^0.28.16",
     "@tailwindcss/cli": "^4.3.3",
-    "@types/node": "^26.2.0",
+    "@types/node": "^26.3.0",
     "next": "^16.3.2",
-    "oxfmt": "^0.64.0",
-    "oxlint": "^1.79.0",
+    "oxfmt": "^0.65.0",
+    "oxlint": "^1.80.0",
     "pixelmatch": "^7.2.0",
     "playwright": "^1.62.1",
     "pngjs": "^7.0.0",
