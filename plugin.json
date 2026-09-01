@@ -1,0 +1,19 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "rfc3339-date",
+  "version": "0.1.0",
+  "description": "RFC3339 Instant tools wrapping https://rfc3339.date (now, validate, convert, parse, tz_convert). Canonical hub: Instant = { rfc3339z, unix, unixms }. Fun project — not a reliable time source.",
+  "author": {
+    "name": "Uwe"
+  },
+  "homepage": "https://rfc3339.date",
+  "repository": "https://github.com/uwe-schwarz/rfc3339-date",
+  "license": "MIT",
+  "keywords": [
+    "rfc3339",
+    "iso8601",
+    "timestamp",
+    "instant",
+    "timezone"
+  ]
+}
