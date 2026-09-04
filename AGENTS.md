@@ -1,6 +1,6 @@
 # Cloudflare Workers
 
-STOP. Your knowledge of Cloudflare Workers APIs and limits may be outdated. Always retrieve current documentation before any Workers, KV, R2, D1, Durable Objects, Queues, Vectorize, AI, or Agents SDK task.
+Consult current official Cloudflare documentation for the APIs, configuration, compatibility, or limits affected by the task. Reuse relevant documentation already checked during the task; unrelated edits do not require a documentation pass.
 
 ## Docs
 
@@ -13,25 +13,22 @@ For all limits and quotas, retrieve from the product's `/platform/limits/` page.
 
 | Command | Purpose |
 |---------|---------|
-| `npx wrangler dev` | Local development |
-| `npx wrangler deploy` | Deploy to Cloudflare |
-| `npx wrangler types` | Generate TypeScript types |
+| `bunx wrangler dev` | Local development |
+| `bunx wrangler deploy` | Deploy to Cloudflare |
+| `bunx wrangler types` | Generate TypeScript types |
 | `pnpm run checks` | Run all quality gates (`lint`, `typecheck`, `test`, `build`) |
 
 Run `wrangler types` after changing bindings in wrangler.jsonc.
 
 ## Required Checks Workflow
 
-- Run `pnpm run checks` after every change.
-- Run `pnpm run checks` again immediately before every commit.
-- Run `pnpm run checks` again immediately before every push.
-- Do not commit or push if `pnpm run checks` fails.
+- Run focused checks while iterating, then `pnpm run checks` once against the final code or dependency state before commit or push. Reuse the result for that unchanged state; Git events alone do not require another run.
+- Rerun affected checks after relevant edits. Do not commit or push with failing required checks. For documentation-only edits, validate the changed content and formatting.
 
 ## Test Requirements
 
-- Every new feature must include automated test coverage when behavior is not fully validated by existing automated checks.
-- If a feature is not automatically covered by lint/typecheck or another existing script, add or extend tests (for example `vitest`) in the same change.
-- Do not rely on manual-only verification for new feature behavior.
+- Cover new runtime behavior with automated tests when existing behavioral tests do not establish the result. Lint and typecheck validate syntax and types; they do not prove runtime behavior.
+- Do not rely on manual-only verification for new feature behavior. Avoid tests that merely mirror implementation details.
 
 ## Technology Usage
 
