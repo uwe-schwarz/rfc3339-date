@@ -14,7 +14,7 @@ describe("package scripts", () => {
     const script = readPackageJson().scripts?.["lint:scalar:project"];
 
     expect(script).toBe(
-      "pnpm dlx --ignore-scripts @scalar/cli project check-config scalar.config.json",
+      "pnpm --config.ignore-scripts=true dlx @scalar/cli project check-config scalar.config.json",
     );
   });
 });
