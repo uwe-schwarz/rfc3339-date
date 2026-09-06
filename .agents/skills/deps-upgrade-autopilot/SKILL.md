@@ -18,6 +18,8 @@ Use this repo-local skill when the user wants the full dependency-upgrade flow e
 - Main validation set:
   - `pnpm run checks`
   - repo visual regression via `pnpm run deps:visual`
+- Match CI when changing package-manager commands: inspect `packageManager` and `.github/workflows/publish-scalar.yml`, then run the affected command with that pnpm version and CI Node major. A global pnpm can report the project version for `--version` while executing `dlx` with a different version; verify the actual invocation, using the matching executable first on `PATH` if necessary.
+- For Scalar config validation, use `pnpm --config.ignore-scripts=true dlx @scalar/cli project check-config scalar.config.json`. pnpm 11.10.0 rejects `dlx --ignore-scripts`; preserve lifecycle-script suppression through the explicit config option. Execute the command to validate it; a test asserting its text does not establish CLI compatibility. See the [pnpm CLI option rules](https://pnpm.io/pnpm-cli).
 - If Playwright Chromium is missing, run `pnpm run deps:visual:install-browser` once before the first visual capture.
 
 ## Visual Regression Flow
@@ -108,6 +110,15 @@ Use this repo-local skill when the user wants the full dependency-upgrade flow e
   - `git fetch --prune origin`
   - verify `git branch -r` no longer lists the merged dependency branch before reporting cleanup complete
 - Report the merged PR URL, the final commit on `main`, and the temp artifact root that contains the screenshots/diff report.
+
+## Post-Merge Scalar Workflow
+
+- After merging, find `Publish Scalar Registry` for the exact merged commit on `main` with `gh run list --workflow publish-scalar.yml --branch main --commit <merge-sha> --json databaseId,headSha,status,conclusion,url`. Allow a bounded wait for the push run to appear; do not substitute a green run from an older commit.
+- Wait for completion in bounded intervals and inspect the jobs/steps with `gh run view <run-id> --json status,conclusion,jobs,url`. PR checks and local validation do not establish that this post-merge workflow succeeded.
+- On failure, inspect `gh run view <run-id> --log-failed` with the existing GitHub credentials. Identify the failed phase: installation, checks, change detection, or Scalar publishing. A checks failure is not evidence of a Scalar credential problem. Keep tokens masked; GitHub access does not expose or replace Scalar secrets.
+- Fix deterministic command/configuration failures through the normal validated PR flow; rerunning the unchanged failing commit will not repair them. Retry once only for a plausibly transient failure within the authorized publishing scope; stop and report persistent failures or missing permissions rather than looping or changing secrets.
+- Confirm whether the publish step ran successfully or was intentionally skipped because the OpenAPI artifacts were unchanged. Do not force publication for dependency-only changes, and do not call a skipped publish a new publication.
+- Include the workflow URL and outcome in the final report. If a Healthchecks lifecycle is active, wait for this result before its single terminal success action; report failure through that lifecycle when the workflow remains blocked.
 
 ## Stop Conditions
 
