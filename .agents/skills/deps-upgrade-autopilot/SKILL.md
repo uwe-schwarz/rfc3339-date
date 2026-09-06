@@ -113,7 +113,7 @@ Use this repo-local skill when the user wants the full dependency-upgrade flow e
 
 ## Post-Merge Scalar Workflow
 
-- After merging, find `Publish Scalar Registry` for the exact merged commit on `main` with `gh run list --workflow publish-scalar.yml --branch main --commit <merge-sha> --json databaseId,headSha,status,conclusion,url`. Allow a bounded wait for the push run to appear; do not substitute a green run from an older commit.
+- After merging, find `Publish Scalar Registry` for the exact merged commit on `main` with `gh run list --workflow publish-scalar.yml --event push --branch main --commit <merge-sha> --json databaseId,headSha,status,conclusion,url`. Allow a bounded wait for the push run to appear; do not substitute a green run from an older commit.
 - Wait for completion in bounded intervals and inspect the jobs/steps with `gh run view <run-id> --json status,conclusion,jobs,url`. PR checks and local validation do not establish that this post-merge workflow succeeded.
 - On failure, inspect `gh run view <run-id> --log-failed` with the existing GitHub credentials. Identify the failed phase: installation, checks, change detection, or Scalar publishing. A checks failure is not evidence of a Scalar credential problem. Keep tokens masked; GitHub access does not expose or replace Scalar secrets.
 - Fix deterministic command/configuration failures through the normal validated PR flow; rerunning the unchanged failing commit will not repair them. Retry once only for a plausibly transient failure within the authorized publishing scope; stop and report persistent failures or missing permissions rather than looping or changing secrets.
