@@ -10,11 +10,11 @@ function readPackageJson(): PackageJson {
 }
 
 describe("package scripts", () => {
-  it("uses pnpm dlx for Scalar project config validation", () => {
+  it("uses pnpm dlx without lifecycle scripts for Scalar project config validation", () => {
     const script = readPackageJson().scripts?.["lint:scalar:project"];
 
     expect(script).toBe(
-      "pnpm dlx @scalar/cli project check-config scalar.config.json",
+      "pnpm dlx --ignore-scripts @scalar/cli project check-config scalar.config.json",
     );
   });
 });
