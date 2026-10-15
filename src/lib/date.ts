@@ -1,5 +1,5 @@
-import type { Instant } from "../types";
-import { DAY_MS } from "./constants";
+import type { Instant } from "../types.ts";
+import { DAY_MS } from "./constants.ts";
 
 export function isLeapYear(year: number): boolean {
   return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;

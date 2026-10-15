@@ -5,8 +5,8 @@ import type {
   ValidationMode,
   ValidationProfile,
   ValidationResult,
-} from "../types";
-import { daysInMonth, formatRfc3339Utc, isLeapYear, parseOffsetToMinutes } from "./date";
+} from "../types.ts";
+import { daysInMonth, formatRfc3339Utc, isLeapYear, parseOffsetToMinutes } from "./date.ts";
 
 type ParseOk = { ok: true; instant: Instant; parts: ParsedParts; canonical: string };
 type ParseErr = { ok: false; errors: Diagnostic[] };

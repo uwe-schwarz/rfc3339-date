@@ -1,4 +1,4 @@
-import type { Encoding, Instant } from "../types";
+import type { Encoding, Instant } from "../types.ts";
 import {
   DAY_MS,
   EXCEL_1900_BASE_MS,
@@ -6,10 +6,10 @@ import {
   GPS_EPOCH_MS,
   LEAP_SECONDS_PARSED,
   NTP_UNIX_OFFSET_SECONDS,
-} from "./constants";
-import { dayOfYear, formatRfc3339Utc, isoWeek, pad2 } from "./date";
-import { formatRfc3339InZone } from "./zone";
-import { parseIsoBasic, parseOrdinal, parseRfc3339, parseWeekDate } from "./validation";
+} from "./constants.ts";
+import { dayOfYear, formatRfc3339Utc, isoWeek, pad2 } from "./date.ts";
+import { formatRfc3339InZone } from "./zone.ts";
+import { parseIsoBasic, parseOrdinal, parseRfc3339, parseWeekDate } from "./validation.ts";
 
 export function taiMinusUtcAt(unixMs: number): number {
   let current = 10;

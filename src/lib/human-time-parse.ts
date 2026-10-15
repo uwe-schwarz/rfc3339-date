@@ -1,12 +1,12 @@
-import { daysInMonth } from "./date";
-import { ensureIanaZone } from "./zone";
+import { daysInMonth } from "./date.ts";
+import { ensureIanaZone } from "./zone.ts";
 import type {
   ErrorResult,
   ParsedLocalInput,
   RelativeDateKeyword,
   SourceSpec,
   TimeParts,
-} from "./human-time.types";
+} from "./human-time.types.ts";
 
 const FIXED_ZONE_ABBREVIATIONS: Record<string, { offsetMinutes: number; dst: boolean }> = {
   UTC: { offsetMinutes: 0, dst: false },

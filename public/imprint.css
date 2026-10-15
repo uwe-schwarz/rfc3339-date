@@ -1,0 +1,41 @@
+.gh-calendar-shell {
+  overflow-x: auto;
+}
+.gh-calendar-shell table {
+  border-collapse: separate;
+  border-spacing: 4px;
+  width: max-content;
+}
+.gh-calendar-shell td {
+  min-width: 11px;
+  height: 11px;
+  border: 1px solid var(--neo-ink);
+  border-radius: 0;
+}
+.gh-calendar-shell td[aria-hidden="true"] {
+  min-width: auto;
+  height: auto;
+}
+.gh-calendar-shell .ContributionCalendar-label {
+  color: var(--neo-code);
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+.gh-calendar-shell .ContributionCalendar-day[data-level="0"] {
+  background: #272735;
+}
+.gh-calendar-shell .ContributionCalendar-day[data-level="1"] {
+  background: var(--neo-cyan);
+}
+.gh-calendar-shell .ContributionCalendar-day[data-level="2"] {
+  background: var(--neo-lime);
+}
+.gh-calendar-shell .ContributionCalendar-day[data-level="3"] {
+  background: var(--neo-coral);
+}
+.gh-calendar-shell .ContributionCalendar-day[data-level="4"] {
+  background: var(--neo-violet);
+}
+.gh-calendar-shell .sr-only {
+  display: none;
+}

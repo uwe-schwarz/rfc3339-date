@@ -1,9 +1,9 @@
 import type { Hono } from "hono";
-import { formatOffset, formatRfc3339Utc } from "../lib/date";
-import { parseHumanTime, convertInstantToTargetDetails, resolveZoneSpec } from "../lib/human-time";
-import { errorResponse, textOrJson } from "../lib/http";
-import { ensureIanaZone, getZoneParts } from "../lib/zone";
-import { parseInputToInstant } from "../lib/convert";
+import { formatOffset, formatRfc3339Utc } from "../lib/date.ts";
+import { parseHumanTime, convertInstantToTargetDetails, resolveZoneSpec } from "../lib/human-time.ts";
+import { errorResponse, textOrJson } from "../lib/http.ts";
+import { ensureIanaZone, getZoneParts } from "../lib/zone.ts";
+import { parseInputToInstant } from "../lib/convert.ts";
 
 function findTransitionBoundary(
   zone: string,

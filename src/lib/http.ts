@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import type { Diagnostic } from "../types";
+import type { Diagnostic } from "../types.ts";
 
 export function addCommonHeaders(headers?: HeadersInit): Headers {
   const merged = new Headers(headers);

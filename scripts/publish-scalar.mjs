@@ -1,10 +1,7 @@
-import { spawnSync } from "node:child_process";
+import { runScalar } from "./scalar.mjs";
 import { existsSync, readFileSync } from "node:fs";
 
-import {
-  resolveProjectPublishSlug,
-  shouldPublishProject,
-} from "./publish-scalar-lib.mjs";
+import { resolveProjectPublishSlug, shouldPublishProject } from "./publish-scalar-lib.mjs";
 
 function loadEnvFile(path) {
   if (!existsSync(path)) return;
@@ -32,25 +29,13 @@ function loadEnvFile(path) {
   }
 }
 
-function runScalar(args, options = {}) {
-  const result = spawnSync("pnpm", ["dlx", "@scalar/cli", ...args], {
-    encoding: "utf8",
-    stdio: "pipe",
-    env: process.env,
-  });
-  if (result.stdout) process.stdout.write(result.stdout);
-  if (result.stderr) process.stderr.write(result.stderr);
-  if (result.status !== 0 && !options.allowFailure) {
-    throw new Error(`Scalar command failed: scalar ${args.join(" ")}`);
-  }
-  return result;
-}
-
 loadEnvFile(".env.local");
 
 const token = process.env.SCALAR_TOKEN ?? process.env.SCALAR_AGENT_KEY;
 if (!token) {
-  console.error("SCALAR_TOKEN is required to publish to Scalar. SCALAR_AGENT_KEY is accepted as a fallback env name.");
+  console.error(
+    "SCALAR_TOKEN is required to publish to Scalar. SCALAR_AGENT_KEY is accepted as a fallback env name.",
+  );
   process.exit(1);
 }
 if (!process.env.SCALAR_TOKEN && process.env.SCALAR_AGENT_KEY) {
@@ -61,7 +46,7 @@ if (!process.env.SCALAR_TOKEN && process.env.SCALAR_AGENT_KEY) {
 
 const namespace = process.env.SCALAR_NAMESPACE ?? "iq42";
 const slug = process.env.SCALAR_API_SLUG ?? "rfc3339date-time-api";
-const file = process.env.SCALAR_OPENAPI_FILE ?? "docs/openapi.scalar.json";
+const file = process.env.SCALAR_OPENAPI_FILE ?? "public/openapi.scalar.json";
 const projectSlug = process.env.SCALAR_PROJECT_SLUG ?? "rfc3339date";
 const projectName = process.env.SCALAR_PROJECT_NAME ?? "rfc3339.date";
 const projectConfig = process.env.SCALAR_PROJECT_CONFIG ?? "scalar.config.json";
@@ -92,21 +77,10 @@ runScalar([
   version,
   "--force",
 ]);
-runScalar([
-  "registry",
-  "update",
-  namespace,
-  slug,
-  "--title",
-  title,
-  "--description",
-  description,
-]);
+runScalar(["registry", "update", namespace, slug, "--title", title, "--description", description]);
 
 if (!publishProject) {
-  console.log(
-    "Skipping Scalar docs project publish. Set SCALAR_PUBLISH_PROJECT=1 to enable it.",
-  );
+  console.log("Skipping Scalar docs project publish. Set SCALAR_PUBLISH_PROJECT=1 to enable it.");
   process.exit(0);
 }
 
@@ -114,10 +88,7 @@ const createResult = runScalar(
   ["project", "create", "--name", projectName, "--slug", projectSlug],
   { allowFailure: true },
 );
-const publishProjectSlug = resolveProjectPublishSlug(
-  projectSlug,
-  createResult.stdout ?? "",
-);
+const publishProjectSlug = resolveProjectPublishSlug(projectSlug, createResult.stdout ?? "");
 if (createResult.status !== 0) {
   console.warn(
     "Scalar project create did not succeed. Continuing with publish; this is expected if the project already exists.",
@@ -128,11 +99,4 @@ if (createResult.status !== 0) {
   );
 }
 
-runScalar([
-  "project",
-  "publish",
-  "--slug",
-  publishProjectSlug,
-  "--config",
-  projectConfig,
-]);
+runScalar(["project", "publish", "--slug", publishProjectSlug, "--config", projectConfig]);

@@ -1,7 +1,7 @@
-import type { Instant } from "../types";
-import { parseInputToInstant } from "./convert";
-import { isoWeek } from "./date";
-import { getZoneParts } from "./zone";
+import type { Instant } from "../types.ts";
+import { parseInputToInstant } from "./convert.ts";
+import { isoWeek } from "./date.ts";
+import { getZoneParts } from "./zone.ts";
 
 export type DurationParts = {
   years: number;

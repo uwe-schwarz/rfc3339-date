@@ -1,4 +1,4 @@
-import { PUBLIC_PAGE_PATHS, SCALAR_REGISTRY_URL, SITE_URL } from "./page-constants";
+import { PUBLIC_PAGE_PATHS, SCALAR_REGISTRY_URL, SITE_URL } from "./page-constants.ts";
 
 const AI_CONTENT_SIGNAL = "ai-train=no, search=yes, ai-input=no";
 const API_CATALOG_PROFILE_URL = "https://www.rfc-editor.org/info/rfc9727";

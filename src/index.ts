@@ -1,13 +1,13 @@
 import { Hono } from "hono";
-import { registerConvertRoutes } from "./routes/convert";
-import { registerDatasetRoutes } from "./routes/datasets";
-import { registerDevUxRoutes } from "./routes/devux-core";
-import { registerDevUxHelperRoutes } from "./routes/devux-helpers";
-import { setHeaderSafely } from "./lib/http";
-import { registerMcpRoutes } from "./routes/mcp";
-import { registerPageRoutes } from "./routes/pages";
-import { registerTimeRoutes } from "./routes/time";
-import { registerTimezoneRoutes } from "./routes/timezones";
+import { registerConvertRoutes } from "./routes/convert.ts";
+import { registerDatasetRoutes } from "./routes/datasets.ts";
+import { registerDevUxRoutes } from "./routes/devux-core.ts";
+import { registerDevUxHelperRoutes } from "./routes/devux-helpers.ts";
+import { setHeaderSafely } from "./lib/http.ts";
+import { registerMcpRoutes } from "./routes/mcp.ts";
+import { registerPageRoutes } from "./routes/pages.ts";
+import { registerTimeRoutes } from "./routes/time.ts";
+import { registerTimezoneRoutes } from "./routes/timezones.ts";
 
 const app = new Hono<{ Bindings: Env }>();
 

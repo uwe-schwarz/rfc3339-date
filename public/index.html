@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>rfc3339.date</title>
+
+    <meta
+      name="description"
+      content="Strict RFC3339 time API for current time, validation, conversion, timezone lookup, transitions, and human event-time parsing."
+    />
+    <link rel="canonical" href="https://rfc3339.date/" />
+    <meta name="theme-color" content="#000000" />
+    <meta property="og:site_name" content="rfc3339.date" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="rfc3339.date" />
+    <meta
+      property="og:description"
+      content="Strict RFC3339 time API for current time, validation, conversion, timezone lookup, transitions, and human event-time parsing."
+    />
+    <meta property="og:url" content="https://rfc3339.date/" />
+    <meta property="og:image" content="https://rfc3339.date/fav.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="660" />
+    <meta property="og:image:height" content="660" />
+    <meta property="og:image:alt" content="rfc3339.date icon" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="rfc3339.date" />
+    <meta
+      name="twitter:description"
+      content="Strict RFC3339 time API for current time, validation, conversion, timezone lookup, transitions, and human event-time parsing."
+    />
+    <meta name="twitter:image" content="https://rfc3339.date/fav.png" />
+    <meta name="twitter:image:alt" content="rfc3339.date icon" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/design.css" />
+    <script src="/theme.js"></script>
+  </head>
+  <body class="page-shell terminal-grid min-h-dvh antialiased">
+    <main class="mx-auto w-full max-w-6xl px-4 py-8 md:px-8 md:py-12">
+      <div class="neo-page">
+        <header class="neo-hero fx-enter mb-8 p-4 md:p-6">
+          <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-stretch">
+            <div class="flex flex-col justify-between gap-6">
+              <div>
+                <h1 class="neo-hero-title text-5xl leading-none md:text-7xl">rfc3339.date</h1>
+                <p class="mt-4 max-w-4xl text-lg leading-relaxed">
+                  Strict <abbr title="Request for Comments 3339">RFC3339</abbr> time API for current
+                  time, validation, conversion, timezone lookup, transitions, and human event-time
+                  parsing. The examples below are live requests against the public API.
+                </p>
+              </div>
+              <p class="neo-warning max-w-4xl px-4 py-3 text-sm leading-relaxed">
+                This is a fun project, not a reliable source of correct date or time. It only
+                reports this server's current clock and is not backed by any serious timekeeping
+                hardware or authority.
+              </p>
+            </div>
+            <aside>
+              <div class="neo-hero-controls flex justify-end">
+                <label
+                  class="neo-theme-toggle relative inline-flex items-center gap-1"
+                  aria-label="Toggle color theme"
+                >
+                  <span>Light</span>
+                  <input id="theme-toggle" data-theme-toggle="1" type="checkbox" />
+                  <span class="mode-track"><span class="mode-thumb"></span></span>
+                  <span>Dark</span>
+                </label>
+              </div>
+              <div class="neo-panel neo-logo-panel neo-shadow-small p-3">
+                <picture class="neo-logo-mat block p-3">
+                  <source
+                    type="image/avif"
+                    srcset="/logo-560.avif 560w, /logo-1115.avif 1115w"
+                    sizes="(min-width: 1024px) 22rem, calc(100vw - 4rem)"
+                  />
+                  <source
+                    type="image/webp"
+                    srcset="/logo-560.webp 560w, /logo-1115.webp 1115w"
+                    sizes="(min-width: 1024px) 22rem, calc(100vw - 4rem)"
+                  />
+                  <img
+                    src="/logo-560.png"
+                    srcset="/logo-560.png 560w, /logo-1115.png 1115w"
+                    sizes="(min-width: 1024px) 22rem, calc(100vw - 4rem)"
+                    alt="rfc3339.date logo"
+                    width="1115"
+                    height="370"
+                    fetchpriority="high"
+                    decoding="async"
+                    class="mx-auto block h-auto w-full"
+                  />
+                </picture>
+              </div>
+            </aside>
+          </div>
+        </header>
+        <ul class="fx-enter fx-delay-1 mb-8 grid gap-3 lg:grid-cols-4">
+          <li
+            class="neo-chip fx-hover-lift flex items-center justify-center px-4 py-3 text-center text-sm"
+          >
+            FREE
+          </li>
+          <li
+            class="neo-chip fx-hover-lift flex items-center justify-center px-4 py-3 text-center text-sm"
+          >
+            No auth
+          </li>
+          <li
+            class="neo-chip fx-hover-lift flex items-center justify-center px-4 py-3 text-center text-sm"
+          >
+            No tracking
+          </li>
+          <li class="neo-chip fx-hover-lift">
+            <button
+              id="reset-my-timezone"
+              type="button"
+              class="w-full px-4 py-3 text-center text-sm"
+            >
+              Reset to my timezone: <var id="browser-tz">detecting…</var>
+            </button>
+          </li>
+        </ul>
+        <section class="neo-panel neo-shadow fx-enter fx-delay-1 mb-10 p-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p class="neo-label">Output Mode</p>
+              <p class="neo-muted mt-1 text-sm">
+                Examples default to plain text so you see the one-line API result first.
+              </p>
+            </div>
+            <label class="neo-theme-toggle relative inline-flex items-center gap-1">
+              <span>Plain text</span>
+              <input id="json-toggle" type="checkbox" />
+              <span class="mode-track"><span class="mode-thumb"></span></span>
+              <span>JSON output</span>
+            </label>
+          </div>
+        </section>
+        <section class="neo-section fx-enter fx-delay-2">
+          <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p class="neo-label">Event Times</p>
+              <h2 class="mt-2 text-2xl">Convert human-style event text into your timezone.</h2>
+            </div>
+            <p class="neo-muted max-w-xl text-sm leading-relaxed">
+              These two cards focus on the new <code>/tz/convert</code> endpoint and start with your
+              browser timezone as the target.
+            </p>
+          </div>
+          <div class="grid gap-4 lg:grid-cols-2">
+            <article
+              class="neo-panel neo-shadow fx-enter example-card p-4 md:p-5"
+              data-card="tz-convert"
+              data-example="west-coast"
+            >
+              <form data-example-form>
+                <div class="mb-4 flex items-start justify-between gap-4">
+                  <div>
+                    <p class="neo-label">Event Time</p>
+                    <h3 class="mt-2 text-xl leading-snug"><kbd>tomorrow 10am PST</kbd></h3>
+                    <p class="mt-2 max-w-xl text-sm leading-relaxed">
+                      Turn announcement-style event text into your own timezone or any other target
+                      zone.
+                    </p>
+                  </div>
+                  <span class="neo-stamp">Live</span>
+                </div>
+                <fieldset class="example-fields grid gap-3 border-0 p-0" data-field-count="2">
+                  <legend class="sr-only">Event Time parameters</legend>
+                  <label class="neo-field space-y-2 text-xs">
+                    <span class="neo-label block"><var>value</var></span>
+                    <input
+                      id="west-coast-value"
+                      data-field="value"
+                      value="tomorrow 10am PST"
+                      placeholder="tomorrow 10am PST"
+                      class="w-full px-3 py-2 font-mono text-sm outline-none transition"
+                    />
+                  </label>
+                  <label class="neo-field space-y-2 text-xs">
+                    <span class="neo-label block"><var>to</var></span>
+                    <input
+                      id="west-coast-to"
+                      data-field="to"
+                      data-browser-zone-field="1"
+                      value=""
+                      placeholder="my timezone"
+                      class="w-full px-3 py-2 font-mono text-sm outline-none transition"
+                    />
+                  </label>
+                  <label class="neo-field space-y-2 text-xs">
+                    <span class="neo-label block"><var>from</var></span>
+                    <input
+                      id="west-coast-from"
+                      data-field="from"
+                      value=""
+                      placeholder="Europe/Berlin"
+                      class="w-full px-3 py-2 font-mono text-sm outline-none transition"
+                    />
+                  </label>
+                  <label class="neo-field space-y-2 text-xs">
+                    <span class="neo-label block"><var>base</var></span>
+                    <input
+                      id="west-coast-base"
+                      data-field="base"
+                      value=""
+                      placeholder="2026-06-01T12:00:00Z"
+                      class="w-full px-3 py-2 font-mono text-sm outline-none transition"
+                    />
+                  </label>
+                </fieldset>
+                <section class="neo-code-panel mt-4 overflow-hidden">
+                  <header class="flex items-center justify-between gap-3 px-4 py-3">
+                    <p class="neo-label">Copyable Curl</p>
+                    <button
+                      type="button"
+                      data-copy
+                      class="neo-copy-button"
+                      aria-label="Copy example command"
+                    >
+                      Copy
+                    </button>
+                  </header>
+                  <pre
+                    class="overflow-x-auto px-4 py-4 text-sm leading-7"
+                  ><code data-command class="code-shell language-bash"></code></pre>
+                </section>
+                <section class="neo-output-panel mt-4 overflow-hidden">
+                  <header class="flex items-center justify-between gap-3 px-4 py-3">
+                    <p class="neo-label">Live Output</p>
+                    <samp data-status class="neo-status text-xs tabular-nums">loading</samp>
+                  </header>
+                  <pre
+                    class="min-h-32 overflow-x-auto px-4 py-4"
+                  ><output data-output-wrapper for="west-coast-value west-coast-to west-coast-from west-coast-base" aria-live="polite" aria-busy="true"><samp data-output class="font-mono text-sm">waiting for response…</samp></output></pre>
+                </section>
+              </form>
+            </article>
+            <article
+              class="neo-panel neo-shadow fx-enter example-card p-4 md:p-5"
+              data-card="tz-convert"
+              data-example="dst-hint"
+            >
+              <form data-example-form>
+                <div class="mb-4 flex items-start justify-between gap-4">
+                  <div>
+                    <p class="neo-label"><abbr title="Standard Time">STD</abbr> Hint</p>
+                    <h3 class="mt-2 text-xl leading-snug"><kbd>5pm STD</kbd></h3>
+                    <p class="mt-2 max-w-xl text-sm leading-relaxed">
+                      <abbr title="Standard Time">STD</abbr> needs a winter base date in the source
+                      region. Switch back to <abbr title="Daylight Saving Time">DST</abbr> when you
+                      move the base into summer. Base
+                      <time datetime="2026-01-15T12:00:00Z">2026-01-15T12:00:00Z</time>.
+                    </p>
+                  </div>
+                  <span class="neo-stamp">Live</span>
+                </div>
+                <fieldset class="example-fields grid gap-3 border-0 p-0" data-field-count="2">
+                  <legend class="sr-only">STD Hint parameters</legend>
+                  <label class="neo-field space-y-2 text-xs">
+                    <span class="neo-label block"><var>value</var></span>
+                    <input
+                      id="dst-hint-value"
+                      data-field="value"
+                      value="5pm STD"
+                      placeholder="tomorrow 10am PST"
+                      class="w-full px-3 py-2 font-mono text-sm outline-none transition"
+                    />
+                  </label>
+                  <label class="neo-field space-y-2 text-xs">
+                    <span class="neo-label block"><var>to</var></span>
+                    <input
+                      id="dst-hint-to"
+                      data-field="to"
+                      data-browser-zone-field="1"
+                      value=""
+                      placeholder="my timezone"
+                      class="w-full px-3 py-2 font-mono text-sm outline-none transition"
+                    />
+                  </label>
+                  <label class="neo-field space-y-2 text-xs">
+                    <span class="neo-label block"><var>from</var></span>
+                    <input
+                      id="dst-hint-from"
+                      data-field="from"
+                      value="Europe/Berlin"
+                      placeholder="Europe/Berlin"
+                      class="w-full px-3 py-2 font-mono text-sm outline-none transition"
+                    />
+                  </label>
+                  <label class="neo-field space-y-2 text-xs">
+                    <span class="neo-label block"><var>base</var></span>
+                    <input
+                      id="dst-hint-base"
+                      data-field="base"
+                      value="2026-01-15T12:00:00Z"
+                      placeholder="2026-06-01T12:00:00Z"
+                      class="w-full px-3 py-2 font-mono text-sm outline-none transition"
+                    />
+                  </label>
+                </fieldset>
+                <section class="neo-code-panel mt-4 overflow-hidden">
+                  <header class="flex items-center justify-between gap-3 px-4 py-3">
+                    <p class="neo-label">Copyable Curl</p>
+                    <button
+                      type="button"
+                      data-copy
+                      class="neo-copy-button"
+                      aria-label="Copy example command"
+                    >
+                      Copy
+                    </button>
+                  </header>
+                  <pre
+                    class="overflow-x-auto px-4 py-4 text-sm leading-7"
+                  ><code data-command class="code-shell language-bash"></code></pre>
+                </section>
+                <section class="neo-output-panel mt-4 overflow-hidden">
+                  <header class="flex items-center justify-between gap-3 px-4 py-3">
+                    <p class="neo-label">Live Output</p>
+                    <samp data-status class="neo-status text-xs tabular-nums">loading</samp>
+                  </header>
+                  <pre
+                    class="min-h-32 overflow-x-auto px-4 py-4"
+                  ><output data-output-wrapper for="dst-hint-value dst-hint-to dst-hint-from dst-hint-base" aria-live="polite" aria-busy="true"><samp data-output class="font-mono text-sm">waiting for response…</samp></output></pre>
+                </section>
+              </form>
+            </article>
+          </div>
+        </section>
+        <section class="neo-section fx-enter fx-delay-3">
+          <div class="mb-4">
+            <p class="neo-label">Other Endpoints</p>
+            <h2 class="mt-2 text-2xl">A couple more live API examples.</h2>
+            <p class="neo-muted mt-3 max-w-3xl text-sm leading-relaxed">
+              One example renders <code>/now/<var>tz</var></code
+              >. The other shows a plain <code>/convert</code> request.
+            </p>
+          </div>
+          <div class="grid gap-4 lg:grid-cols-2">
+            <article
+              class="neo-panel neo-shadow fx-enter example-card p-4 md:p-5"
+              data-card="now-zone"
+              data-example="now-zone"
+            >
+              <form data-example-form>
+                <div class="mb-4 flex items-start justify-between gap-4">
+                  <div>
+                    <p class="neo-label">Current Time In Zone</p>
+                    <p class="mt-2 max-w-xl text-sm leading-relaxed">
+                      Use <code>/now/<var>tz</var></code> to render the current instant directly in
+                      a named timezone.
+                    </p>
+                  </div>
+                  <span class="neo-stamp">Live</span>
+                </div>
+                <fieldset class="example-fields grid gap-3 border-0 p-0" data-field-count="1">
+                  <legend class="sr-only">Current Time In Zone parameters</legend>
+                  <label class="neo-field space-y-2 text-xs">
+                    <span class="neo-label block"><var>tz</var></span>
+                    <input
+                      id="now-zone-tz"
+                      data-field="tz"
+                      data-browser-zone-field="1"
+                      value=""
+                      placeholder="my timezone"
+                      class="w-full px-3 py-2 font-mono text-sm outline-none transition"
+                    />
+                  </label>
+                </fieldset>
+                <section class="neo-code-panel mt-4 overflow-hidden">
+                  <header class="flex items-center justify-between gap-3 px-4 py-3">
+                    <p class="neo-label">Copyable Curl</p>
+                    <button
+                      type="button"
+                      data-copy
+                      class="neo-copy-button"
+                      aria-label="Copy example command"
+                    >
+                      Copy
+                    </button>
+                  </header>
+                  <pre
+                    class="overflow-x-auto px-4 py-4 text-sm leading-7"
+                  ><code data-command class="code-shell language-bash"></code></pre>
+                </section>
+                <section class="neo-output-panel mt-4 overflow-hidden">
+                  <header class="flex items-center justify-between gap-3 px-4 py-3">
+                    <p class="neo-label">Live Output</p>
+                    <samp data-status class="neo-status text-xs tabular-nums">loading</samp>
+                  </header>
+                  <pre
+                    class="min-h-32 overflow-x-auto px-4 py-4"
+                  ><output data-output-wrapper for="now-zone-tz" aria-live="polite" aria-busy="true"><samp data-output class="font-mono text-sm">waiting for response…</samp></output></pre>
+                </section>
+              </form>
+            </article>
+            <article
+              class="neo-panel neo-shadow fx-enter example-card p-4 md:p-5"
+              data-card="convert"
+              data-example="convert-unix"
+            >
+              <form data-example-form>
+                <div class="mb-4 flex items-start justify-between gap-4">
+                  <div>
+                    <p class="neo-label">Format Conversion</p>
+                    <p class="mt-2 max-w-xl text-sm leading-relaxed">
+                      Use <code>/convert</code> for exact format changes such as Unix seconds to
+                      <abbr title="Request for Comments 3339">RFC3339</abbr>.
+                    </p>
+                  </div>
+                  <span class="neo-stamp">Live</span>
+                </div>
+                <fieldset class="example-fields grid gap-3 border-0 p-0" data-field-count="3">
+                  <legend class="sr-only">Format Conversion parameters</legend>
+                  <label class="neo-field space-y-2 text-xs">
+                    <span class="neo-label block"><var>value</var></span>
+                    <input
+                      id="convert-unix-value"
+                      data-field="value"
+                      value="1700000000"
+                      placeholder="1700000000"
+                      class="w-full px-3 py-2 font-mono text-sm outline-none transition"
+                    /> </label
+                  ><label class="neo-field space-y-2 text-xs">
+                    <span class="neo-label block"><var>in</var></span>
+                    <select
+                      id="convert-unix-in"
+                      data-field="in"
+                      class="w-full px-3 py-2 font-mono text-sm outline-none transition"
+                    >
+                      <option value="rfc3339">rfc3339</option>
+                      <option value="iso8601">iso8601</option>
+                      <option value="unix" selected>unix</option>
+                      <option value="unixms">unixms</option>
+                      <option value="ntp">ntp</option>
+                      <option value="httpdate">httpdate</option>
+                      <option value="emaildate">emaildate</option>
+                      <option value="gps">gps</option>
+                      <option value="tai">tai</option>
+                      <option value="jd">jd</option>
+                      <option value="mjd">mjd</option>
+                      <option value="excel1900">excel1900</option>
+                      <option value="excel1904">excel1904</option>
+                      <option value="weekdate">weekdate</option>
+                      <option value="ordinal">ordinal</option>
+                      <option value="doy">doy</option>
+                    </select> </label
+                  ><label class="neo-field space-y-2 text-xs">
+                    <span class="neo-label block"><var>out</var></span>
+                    <select
+                      id="convert-unix-out"
+                      data-field="out"
+                      class="w-full px-3 py-2 font-mono text-sm outline-none transition"
+                    >
+                      <option value="rfc3339" selected>rfc3339</option>
+                      <option value="iso8601">iso8601</option>
+                      <option value="unix">unix</option>
+                      <option value="unixms">unixms</option>
+                      <option value="ntp">ntp</option>
+                      <option value="httpdate">httpdate</option>
+                      <option value="emaildate">emaildate</option>
+                      <option value="gps">gps</option>
+                      <option value="tai">tai</option>
+                      <option value="jd">jd</option>
+                      <option value="mjd">mjd</option>
+                      <option value="excel1900">excel1900</option>
+                      <option value="excel1904">excel1904</option>
+                      <option value="weekdate">weekdate</option>
+                      <option value="ordinal">ordinal</option>
+                      <option value="doy">doy</option>
+                    </select>
+                  </label>
+                </fieldset>
+                <section class="neo-code-panel mt-4 overflow-hidden">
+                  <header class="flex items-center justify-between gap-3 px-4 py-3">
+                    <p class="neo-label">Copyable Curl</p>
+                    <button
+                      type="button"
+                      data-copy
+                      class="neo-copy-button"
+                      aria-label="Copy example command"
+                    >
+                      Copy
+                    </button>
+                  </header>
+                  <pre
+                    class="overflow-x-auto px-4 py-4 text-sm leading-7"
+                  ><code data-command class="code-shell language-bash"></code></pre>
+                </section>
+                <section class="neo-output-panel mt-4 overflow-hidden">
+                  <header class="flex items-center justify-between gap-3 px-4 py-3">
+                    <p class="neo-label">Live Output</p>
+                    <samp data-status class="neo-status text-xs tabular-nums">loading</samp>
+                  </header>
+                  <pre
+                    class="min-h-32 overflow-x-auto px-4 py-4"
+                  ><output data-output-wrapper for="convert-unix-value convert-unix-in convert-unix-out" aria-live="polite" aria-busy="true"><samp data-output class="font-mono text-sm">waiting for response…</samp></output></pre>
+                </section>
+              </form>
+            </article>
+          </div>
+        </section>
+        <section class="neo-section fx-enter fx-delay-3">
+          <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p class="neo-label">Shell Helper</p>
+              <h2 class="mt-2 text-2xl">Copy a local helper for event conversions.</h2>
+            </div>
+          </div>
+          <article class="neo-panel neo-shadow example-card p-4 md:p-5">
+            <p class="neo-muted max-w-3xl text-sm leading-relaxed">
+              This bash helper sends free-form event text to <code>/tz/convert</code> and defaults
+              the target zone to your browser timezone.
+            </p>
+            <section class="neo-code-panel mt-4 overflow-hidden">
+              <header class="flex items-center justify-between gap-3 px-4 py-3">
+                <p class="neo-label">Copyable Bash Function</p>
+                <button
+                  type="button"
+                  data-copy
+                  class="neo-copy-button"
+                  aria-label="Copy example command"
+                >
+                  Copy
+                </button>
+              </header>
+              <pre
+                class="overflow-x-auto px-4 py-4 text-sm leading-7"
+              ><code id="helper-code" class="code-shell language-bash"></code></pre>
+            </section>
+          </article>
+        </section>
+        <section class="neo-section fx-enter fx-delay-3">
+          <div class="mb-4">
+            <p class="neo-label">Agent Discovery</p>
+            <h2 class="mt-2 text-2xl">Machine-readable entry points for agents.</h2>
+          </div>
+          <div class="grid gap-4 lg:grid-cols-1">
+            <article class="neo-agent-panel neo-panel neo-shadow fx-hover-lift min-w-0 p-4 md:p-5">
+              <p class="neo-label">Remote MCP</p>
+              <h3 class="mt-2 text-lg">Install MCP</h3>
+              <p class="mt-3 break-all text-sm leading-relaxed">
+                Use <code>https://rfc3339.date/mcp</code> in clients that support remote HTTP MCP
+                servers.
+              </p>
+              <section class="neo-code-panel mt-4 min-w-0 max-w-full overflow-hidden">
+                <header class="flex items-center justify-between gap-3 px-4 py-3">
+                  <div>
+                    <p class="neo-label">Codex</p>
+                    <p class="mt-1 text-sm">Add it with the Codex CLI</p>
+                  </div>
+                  <button
+                    type="button"
+                    data-copy-target="codex-mcp-install"
+                    class="neo-copy-button"
+                  >
+                    Copy
+                  </button>
+                </header>
+                <pre
+                  class="overflow-x-auto px-4 py-4 text-sm leading-7"
+                ><code id="codex-mcp-install">codex mcp add rfc3339 --url https://rfc3339.date/mcp</code></pre>
+              </section>
+              <section class="neo-code-panel mt-4 min-w-0 max-w-full overflow-hidden">
+                <header class="flex items-center justify-between gap-3 px-4 py-3">
+                  <div>
+                    <p class="neo-label">Opencode</p>
+                    <p class="mt-1 text-sm">Add it to your Opencode config</p>
+                  </div>
+                  <button
+                    type="button"
+                    data-copy-target="opencode-mcp-install"
+                    class="neo-copy-button"
+                  >
+                    Copy
+                  </button>
+                </header>
+                <pre
+                  class="overflow-x-auto px-4 py-4 text-sm leading-7"
+                ><code id="opencode-mcp-install">{
+  &quot;$schema&quot;: &quot;https://opencode.ai/config.json&quot;,
+  &quot;mcp&quot;: {
+    &quot;rfc3339&quot;: {
+      &quot;type&quot;: &quot;remote&quot;,
+      &quot;url&quot;: &quot;https://rfc3339.date/mcp&quot;
+    }
+  }
+}</code></pre>
+              </section>
+            </article>
+          </div>
+        </section>
+        <nav class="neo-footer-nav fx-enter fx-delay-3 flex flex-wrap gap-3 text-sm">
+          <a
+            class="fx-hover-lift"
+            href="https://registry.scalar.com/@iq42/apis/rfc3339date-time-api@latest"
+            >Scalar Registry</a
+          >
+          <a class="fx-hover-lift" href="/openapi.yaml">OpenAPI YAML</a>
+          <a class="fx-hover-lift" href="/openapi.json">OpenAPI JSON</a>
+          <a class="fx-hover-lift" href="/openapi.scalar.json">Scalar-compatible JSON</a>
+          <a class="fx-hover-lift" href="/.well-known/agent-skills/rfc3339-date/SKILL.md"
+            >SKILL.md</a
+          >
+          <a class="fx-hover-lift" href="/imprint">Imprint</a>
+        </nav>
+      </div>
+      <script src="/landing.js"></script>
+    </main>
+  </body>
+</html>

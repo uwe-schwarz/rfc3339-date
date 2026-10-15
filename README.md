@@ -2,26 +2,86 @@
 
 Cloudflare Worker API for RFC3339 validation, encoding conversion, human-friendly timezone conversion, timezone offsets/transitions, and leap second dataset access.
 
-## Run
+## Architecture
 
-```bash
-pnpm install
-pnpm dev
-```
+The two pages are plain HTML, CSS and browser JavaScript in `public/`. Fonts are
+local WOFF2 files with their upstream license and provenance in `public/fonts/`.
+There is no frontend framework, CSS compiler, font generator or hydration.
+`styles.css` contains the existing reset and layout utilities as ordinary CSS;
+`design.css` contains the shared visual design. Edit these files directly.
 
-## Quality Checks
+The TypeScript Worker keeps Hono as its only runtime dependency. Existing date
+algorithms, APIs, HTTP MCP, WebMCP, GitHub contribution proxy, agent discovery and
+Markdown negotiation remain available. Only `/` and `/imprint` need the Worker to
+choose HTML or Markdown; HTML is read from assets, and Markdown keeps a fresh
+server timestamp. Other assets bypass the Worker. HTML URL normalization is
+disabled so unknown URLs keep the existing 404 behavior.
 
-```bash
+## Run and verify
+
+Use Node.js 24 or newer and the pnpm version in `package.json`.
+
+```sh
+pnpm install --frozen-lockfile
+pnpm run dev
 pnpm run checks
 ```
 
-`pnpm run checks` runs all quality gates in sequence: `lint`, `typecheck`, `test`, and `build`.
+Checks consist of TypeScript checking, a small native Node behavioral suite and a
+Wrangler dry run. There are no test, lint or screenshot frameworks to maintain.
+After changing asset routing, also run the contracts against local workerd:
 
-## Deploy
-
-```bash
-pnpm deploy
+```sh
+RFC3339_TEST_URL=http://127.0.0.1:8787 pnpm run test
 ```
+
+For page changes, inspect desktop/mobile, both themes, copy buttons, live examples,
+JSON mode and keyboard behavior in a browser. The migration was accepted with the
+old suite and eight identical before/after screenshots; routine tool updates do
+not require a visual regression harness.
+
+## Local deployment
+
+```sh
+pnpm run deploy
+```
+
+Use `pnpm run deploy` explicitly: `pnpm deploy` is also a pnpm workspace command.
+The script updates the three development tools within their declared compatible
+major ranges, respecting the one-day release-age policy, runs all checks, then
+calls Wrangler. Update or check failures prevent uploading. To exercise the same
+flow without publishing, use `pnpm run deploy -- --dry-run`.
+
+Dependency changes stay in the local `package.json` and lockfile for normal Git
+review; the deploy script never commits or pushes. Hono is deliberately updated
+only for an applicable fix or API change. No scheduled dependency upgrades are
+needed. Obsolete security overrides have been removed in favor of upstream
+resolution.
+
+Deploy from the owning local host. GitHub Actions only checks the committed
+lockfile; it does not update dependencies, publish documentation or deploy.
+Disable the existing Cloudflare Workers Builds Git trigger before switching
+production to this local workflow. The deployment script rejects CI invocations
+so an old hosted build cannot silently bypass local preparation.
+
+## API documentation
+
+`public/openapi.json` is the canonical contract. The existing YAML and Scalar
+compatible downloads are checked-in static files. After a contract change:
+
+```sh
+pnpm run docs:update
+pnpm run docs:check
+pnpm run scalar:publish
+```
+
+`docs:update` uses a small native transformation. The YAML download uses JSON
+syntax, which is valid YAML 1.2. Scalar's explicitly versioned CLI is downloaded
+only for documentation commands (`config.scalarCliVersion` in `package.json`),
+not normal installs, builds or deployments. Validation uses that one tool.
+`scalar:publish` retains Registry publication and optional docs-project publication
+(`SCALAR_PUBLISH_PROJECT=1`), with the existing `.env.local` credentials.
+`pnpm run scalar:preview` previews the docs without publishing.
 
 ## Example Calls
 

@@ -1,5 +1,3 @@
-import { toJson, validate } from "@scalar/openapi-parser";
-
 function convertNullableTypes(value) {
   if (Array.isArray(value)) {
     return value.map(convertNullableTypes);
@@ -25,7 +23,7 @@ function convertNullableTypes(value) {
   return next;
 }
 
-function createScalarCompatSpec(schema) {
+export function createScalarCompatSpec(schema) {
   const compat = convertNullableTypes(schema);
 
   compat.openapi = "3.0.3";
@@ -43,35 +41,4 @@ function createScalarCompatSpec(schema) {
   }
 
   return compat;
-}
-
-export async function buildOpenApiArtifacts(openapiYaml) {
-  const validated = await validate(openapiYaml);
-
-  if (!validated.valid) {
-    return {
-      valid: false,
-      stage: "yaml",
-      errors: validated.errors,
-    };
-  }
-
-  const openapiJson = toJson(validated.schema);
-  const scalarCompatSpec = createScalarCompatSpec(validated.schema);
-  const scalarCompatJson = JSON.stringify(scalarCompatSpec, null, 2);
-  const scalarCompatValidated = await validate(scalarCompatJson);
-
-  if (!scalarCompatValidated.valid) {
-    return {
-      valid: false,
-      stage: "scalar-compat",
-      errors: scalarCompatValidated.errors,
-    };
-  }
-
-  return {
-    valid: true,
-    openapiJson,
-    scalarCompatJson,
-  };
 }
