@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test tests/*.test.ts tests/*.test.mjs",
     "docs:update": "node scripts/update-openapi.mjs",
-    "docs:check": "node scripts/scalar.mjs document validate public/openapi.json && node scripts/scalar.mjs document validate public/openapi.scalar.json && node scripts/scalar.mjs project check-config scalar.config.json",
+    "docs:check": "node scripts/update-openapi.mjs --check && node scripts/scalar.mjs document validate public/openapi.json && node scripts/scalar.mjs document validate public/openapi.scalar.json && node scripts/scalar.mjs project check-config scalar.config.json",
     "scalar:publish": "pnpm run docs:check && node scripts/publish-scalar.mjs",
     "scalar:preview": "node scripts/scalar.mjs project preview scalar.config.json --no-open"
   },

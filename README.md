@@ -78,7 +78,7 @@ pnpm run scalar:publish
 `docs:update` uses a small native transformation. The YAML download uses JSON
 syntax, which is valid YAML 1.2. Scalar's explicitly versioned CLI is downloaded
 only for documentation commands (`config.scalarCliVersion` in `package.json`),
-not normal installs, builds or deployments. Validation uses that one tool.
+not normal installs, builds or deployments. Validation first rejects stale derived downloads, then uses that one tool.
 `scalar:publish` retains Registry publication and optional docs-project publication
 (`SCALAR_PUBLISH_PROJECT=1`), with the existing `.env.local` credentials.
 `pnpm run scalar:preview` previews the docs without publishing.
