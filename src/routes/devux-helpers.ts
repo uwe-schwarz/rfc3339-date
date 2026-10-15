@@ -1,9 +1,9 @@
 import type { Context, Hono } from "hono";
-import { parseInputToInstant, toOutput } from "../lib/convert";
-import { formatRfc3339Utc, isoWeek, pad2 } from "../lib/date";
-import { errorResponse, textOrJson } from "../lib/http";
-import { validateValue } from "../lib/validation";
-import { ensureIanaZone } from "../lib/zone";
+import { parseInputToInstant, toOutput } from "../lib/convert.ts";
+import { formatRfc3339Utc, isoWeek, pad2 } from "../lib/date.ts";
+import { errorResponse, textOrJson } from "../lib/http.ts";
+import { validateValue } from "../lib/validation.ts";
+import { ensureIanaZone } from "../lib/zone.ts";
 import {
   maxIsoWeekForYear,
   mondayOfIsoWeek,
@@ -11,7 +11,7 @@ import {
   parseLocalClock,
   resolveLocalCandidates,
   WINDOWS_TZ_MAP,
-} from "../lib/devux";
+} from "../lib/devux.ts";
 
 function resolveExcelSystem(c: Context) {
   const systemParam = c.req.query("system") ?? "1900";

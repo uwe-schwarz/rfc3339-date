@@ -1,10 +1,10 @@
 import type { Hono } from "hono";
-import type { ConversionResult, Encoding, ValidationProfile } from "../types";
-import { parseInputToInstant, toOutput } from "../lib/convert";
-import { formatRfc3339Utc } from "../lib/date";
-import { errorResponse, getPrecision, textOrJson } from "../lib/http";
-import { ensureIanaZone } from "../lib/zone";
-import { validateValue } from "../lib/validation";
+import type { ConversionResult, Encoding, ValidationProfile } from "../types.ts";
+import { parseInputToInstant, toOutput } from "../lib/convert.ts";
+import { formatRfc3339Utc } from "../lib/date.ts";
+import { errorResponse, getPrecision, textOrJson } from "../lib/http.ts";
+import { ensureIanaZone } from "../lib/zone.ts";
+import { validateValue } from "../lib/validation.ts";
 
 export function registerConvertRoutes(app: Hono<{ Bindings: Env }>) {
   app.get("/canonical", (c) => {

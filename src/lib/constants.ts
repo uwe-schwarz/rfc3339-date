@@ -1,4 +1,4 @@
-import type { LeapSecondEntry } from "../types";
+import type { LeapSecondEntry } from "../types.ts";
 
 export const LEAP_SECONDS_VERSION = "IERS-UTC-2026.01";
 export const LEAP_SECONDS_SOURCE =

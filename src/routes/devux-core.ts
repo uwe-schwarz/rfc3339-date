@@ -1,9 +1,9 @@
 import type { Hono } from "hono";
-import { toOutput } from "../lib/convert";
-import { formatRfc3339Utc, pad2 } from "../lib/date";
-import { errorResponse, textOrJson } from "../lib/http";
-import { parseHumanTime } from "../lib/human-time";
-import { ensureIanaZone, getZoneParts } from "../lib/zone";
+import { toOutput } from "../lib/convert.ts";
+import { formatRfc3339Utc, pad2 } from "../lib/date.ts";
+import { errorResponse, textOrJson } from "../lib/http.ts";
+import { parseHumanTime } from "../lib/human-time.ts";
+import { ensureIanaZone, getZoneParts } from "../lib/zone.ts";
 import {
   parseTimestamp,
   parseDurationIso,
@@ -12,7 +12,7 @@ import {
   shiftWallClockTime,
   formatIsoDurationFromMs,
   resolveLocalCandidates,
-} from "../lib/devux";
+} from "../lib/devux.ts";
 
 export function registerDevUxRoutes(app: Hono<{ Bindings: Env }>) {
   app.get("/parse", (c) => {

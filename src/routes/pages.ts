@@ -1,11 +1,6 @@
 import type { Hono } from "hono";
-import { formatRfc3339Utc } from "../lib/date";
-import {
-  GEIST_MONO_REGULAR_WOFF2_BASE64,
-  GEIST_PIXEL_LINE_WOFF2_BASE64,
-  GEIST_PIXEL_SQUARE_WOFF2_BASE64,
-} from "../lib/fonts.generated";
-import { addCommonHeaders } from "../lib/http";
+import { formatRfc3339Utc } from "../lib/date.ts";
+import { addCommonHeaders } from "../lib/http.ts";
 import {
   buildApiCatalog,
   buildAgentDiscoveryLinkHeader,
@@ -14,24 +9,13 @@ import {
   estimateMarkdownTokens,
   getApiCatalogContentType,
   shouldReturnMarkdown,
-} from "../lib/agent-discovery";
+} from "../lib/agent-discovery.ts";
 import {
   buildAgentSkillsIndex,
   buildSiteSkillMarkdown,
   getSiteSkillPath,
-} from "../lib/agent-skills";
-import {
-  renderImprint,
-  renderImprintMarkdown,
-  renderLanding,
-  renderLandingMarkdown,
-} from "../lib/html";
-import { OPENAPI_JSON, OPENAPI_SCALAR_COMPAT_JSON, OPENAPI_YAML } from "../lib/openapi.generated";
-import { TAILWIND_CSS } from "../lib/tailwind.generated";
-
-function decodeBase64(base64: string): Uint8Array {
-  return Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
-}
+} from "../lib/agent-skills.ts";
+import { renderImprintMarkdown, renderLandingMarkdown } from "../lib/page-markdown.ts";
 
 function stripTags(value: string): string {
   return value
@@ -85,14 +69,14 @@ const AGENT_SKILLS_INDEX_BODY = JSON.stringify(buildAgentSkillsIndex());
 const SITE_SKILL_PATH = getSiteSkillPath();
 const SITE_SKILL_BODY = buildSiteSkillMarkdown();
 
-function respondPage(
+async function respondPage(
   request: Request,
-  html: string,
+  assets: Fetcher,
+  assetPath: string,
   markdown: string,
   cacheControl: string,
-): Response {
+): Promise<Response> {
   const wantsMarkdown = shouldReturnMarkdown(request);
-  const body = wantsMarkdown ? markdown : html;
   const headers = addCommonHeaders({
     "cache-control": cacheControl,
     "content-type": wantsMarkdown ? "text/markdown; charset=utf-8" : "text/html; charset=utf-8",
@@ -102,21 +86,35 @@ function respondPage(
 
   if (wantsMarkdown) {
     headers.set("x-markdown-tokens", String(estimateMarkdownTokens(markdown)));
+    return new Response(markdown, { headers });
   }
 
-  return new Response(body, { headers });
+  const url = new URL(request.url);
+  url.pathname = assetPath;
+  url.search = "";
+  // Fetch an unconditional representation: negotiation/cache headers belong to this route.
+  const asset = await assets.fetch(new Request(url));
+  if (!asset.ok) return asset;
+  return new Response(asset.body, { headers });
 }
 
 export function registerPageRoutes(app: Hono<{ Bindings: Env }>) {
   app.get("/", (c) => {
     const now = formatRfc3339Utc({ unixMs: Date.now(), nsRemainder: 0 }, 3);
-    return respondPage(c.req.raw, renderLanding(now), renderLandingMarkdown(now), "public, max-age=60");
+    return respondPage(
+      c.req.raw,
+      c.env.ASSETS,
+      "/index.html",
+      renderLandingMarkdown(now),
+      "public, max-age=60",
+    );
   });
 
   app.get("/imprint", (c) => {
     return respondPage(
       c.req.raw,
-      renderImprint(),
+      c.env.ASSETS,
+      "/imprint.html",
       renderImprintMarkdown(),
       "public, max-age=3600",
     );
@@ -219,69 +217,6 @@ export function registerPageRoutes(app: Hono<{ Bindings: Env }>) {
       headers: addCommonHeaders({
         "content-type": "text/markdown; charset=utf-8",
         "cache-control": "public, max-age=3600",
-      }),
-    });
-  });
-
-  app.get("/openapi.yaml", () => {
-    return new Response(OPENAPI_YAML, {
-      headers: addCommonHeaders({
-        "content-type": "application/yaml; charset=utf-8",
-        "cache-control": "public, max-age=3600",
-      }),
-    });
-  });
-
-  app.get("/openapi.json", () => {
-    return new Response(OPENAPI_JSON, {
-      headers: addCommonHeaders({
-        "content-type": "application/json; charset=utf-8",
-        "cache-control": "public, max-age=3600",
-      }),
-    });
-  });
-
-  app.get("/openapi.scalar.json", () => {
-    return new Response(OPENAPI_SCALAR_COMPAT_JSON, {
-      headers: addCommonHeaders({
-        "content-type": "application/json; charset=utf-8",
-        "cache-control": "public, max-age=3600",
-      }),
-    });
-  });
-
-  app.get("/styles.css", () => {
-    return new Response(TAILWIND_CSS, {
-      headers: addCommonHeaders({
-        "content-type": "text/css; charset=utf-8",
-        "cache-control": "public, max-age=86400",
-      }),
-    });
-  });
-
-  app.get("/fonts/geist-pixel-line.woff2", () => {
-    return new Response(decodeBase64(GEIST_PIXEL_LINE_WOFF2_BASE64), {
-      headers: addCommonHeaders({
-        "content-type": "font/woff2",
-        "cache-control": "public, max-age=31536000, immutable",
-      }),
-    });
-  });
-
-  app.get("/fonts/geist-pixel-square.woff2", () => {
-    return new Response(decodeBase64(GEIST_PIXEL_SQUARE_WOFF2_BASE64), {
-      headers: addCommonHeaders({
-        "content-type": "font/woff2",
-        "cache-control": "public, max-age=31536000, immutable",
-      }),
-    });
-  });
-
-  app.get("/fonts/geist-mono-regular.woff2", () => {
-    return new Response(decodeBase64(GEIST_MONO_REGULAR_WOFF2_BASE64), {
-      headers: addCommonHeaders({
-        "content-type": "font/woff2",
-        "cache-control": "public, max-age=31536000, immutable",
       }),
     });
   });

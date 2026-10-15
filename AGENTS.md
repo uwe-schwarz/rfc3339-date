@@ -13,12 +13,12 @@ For all limits and quotas, retrieve from the product's `/platform/limits/` page.
 
 | Command | Purpose |
 |---------|---------|
-| `bunx wrangler dev` | Local development |
-| `bunx wrangler deploy` | Deploy to Cloudflare |
-| `bunx wrangler types` | Generate TypeScript types |
-| `pnpm run checks` | Run all quality gates (`lint`, `typecheck`, `test`, `build`) |
+| `pnpm run dev` | Local development |
+| `pnpm run deploy` | Deploy to Cloudflare |
+| `pnpm run cf-typegen` | Generate TypeScript types |
+| `pnpm run checks` | Run all quality gates (`typecheck`, native `test`, Worker `build`) |
 
-Run `wrangler types` after changing bindings in wrangler.jsonc.
+Run `pnpm run cf-typegen` after changing bindings in wrangler.jsonc.
 
 ## Required Checks Workflow
 
@@ -27,8 +27,16 @@ Run `wrangler types` after changing bindings in wrangler.jsonc.
 
 ## Test Requirements
 
-- Cover new runtime behavior with automated tests when existing behavioral tests do not establish the result. Lint and typecheck validate syntax and types; they do not prove runtime behavior.
+- Cover new runtime behavior with automated tests when existing behavioral tests do not establish the result. Typecheck validates syntax and types; they do not prove runtime behavior.
 - Do not rely on manual-only verification for new feature behavior. Avoid tests that merely mirror implementation details.
+
+## Static Site and Maintenance
+
+- Edit `public/` assets directly. Do not restore frontend generators, bundled fonts, styling frameworks, or test frameworks.
+- Hono remains the only runtime dependency. Preserve all date, API, MCP/WebMCP, Markdown negotiation and GitHub proxy behavior.
+- `pnpm run deploy` updates compatible development tools locally, validates, then uploads. Do not update dependencies or deploy from hosted CI, and do not schedule routine dependency maintenance.
+- `public/openapi.json` is canonical. Run `docs:update` and `docs:check` only after contract changes; publish Scalar explicitly when documentation changes. Its pinned CLI is a separate on-demand tool.
+- Use the small native contract suite for Worker changes and browser acceptance for UI changes. Asset-routing changes also require the contracts against local workerd using `RFC3339_TEST_URL`.
 
 ## Technology Usage
 

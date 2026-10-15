@@ -1,6 +1,6 @@
 import type { Hono } from "hono";
-import { addCommonHeaders } from "../lib/http";
-import { buildMcpServerCard, getMcpProtocolVersion, handleMcpJsonRpc, mcpCorsHeaders } from "../lib/mcp";
+import { addCommonHeaders } from "../lib/http.ts";
+import { buildMcpServerCard, getMcpProtocolVersion, handleMcpJsonRpc, mcpCorsHeaders } from "../lib/mcp.ts";
 
 function baseHeaders(origin: string | null, headers?: HeadersInit) {
   return addCommonHeaders({ "cache-control": "no-store", ...mcpCorsHeaders(origin), ...headers });

@@ -1,6 +1,6 @@
 import type { Hono } from "hono";
-import { LEAP_SECONDS, LEAP_SECONDS_SOURCE, LEAP_SECONDS_VERSION } from "../lib/constants";
-import { errorResponse } from "../lib/http";
+import { LEAP_SECONDS, LEAP_SECONDS_SOURCE, LEAP_SECONDS_VERSION } from "../lib/constants.ts";
+import { errorResponse } from "../lib/http.ts";
 
 export function registerDatasetRoutes(app: Hono<{ Bindings: Env }>) {
   app.get("/leapseconds", (c) => {

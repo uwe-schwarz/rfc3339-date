@@ -1,6 +1,6 @@
-import type { Instant } from "../types";
-import { formatOffset, pad2, pad3 } from "./date";
-import { getZoneParts } from "./zone";
+import type { Instant } from "../types.ts";
+import { formatOffset, pad2, pad3 } from "./date.ts";
+import { getZoneParts } from "./zone.ts";
 
 export type RelativeDateKeyword = "today" | "tomorrow" | "yesterday";
 export type DateSourceKind = "explicit" | "relative" | "base";

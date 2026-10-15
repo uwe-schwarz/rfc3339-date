@@ -1,5 +1,5 @@
-import type { Instant } from "../types";
-import { formatOffset, pad2, pad3 } from "./date";
+import type { Instant } from "../types.ts";
+import { formatOffset, pad2, pad3 } from "./date.ts";
 
 const zoneFormatterCache = new Map<string, Intl.DateTimeFormat>();
 const zoneNameFormatterCache = new Map<string, Intl.DateTimeFormat>();

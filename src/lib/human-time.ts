@@ -1,6 +1,6 @@
-import type { Instant } from "../types";
-import { formatOffset, formatRfc3339Utc } from "./date";
-import { parseDateAndTime, resolveSourceSpec, splitZoneToken } from "./human-time-parse";
+import type { Instant } from "../types.ts";
+import { formatOffset, formatRfc3339Utc } from "./date.ts";
+import { parseDateAndTime, resolveSourceSpec, splitZoneToken } from "./human-time-parse.ts";
 import {
   type ErrorResult,
   formatDateParts,
@@ -12,8 +12,8 @@ import {
   type IanaSourceSpec,
   type LocalDateTimeParts,
   type SourceSpec,
-} from "./human-time.types";
-import { formatRfc3339InZone, getZoneParts } from "./zone";
+} from "./human-time.types.ts";
+import { formatRfc3339InZone, getZoneParts } from "./zone.ts";
 
 function localMatches(parts: LocalDateTimeParts, instant: Instant, zone: string): boolean {
   const zoned = getZoneParts(instant, zone);
@@ -269,4 +269,4 @@ export function parseHumanTime(
   };
 }
 
-export type { HumanTimeParseResult } from "./human-time.types";
+export type { HumanTimeParseResult } from "./human-time.types.ts";

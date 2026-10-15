@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { SITE_URL } from "./page-constants";
+import { SITE_URL } from "./page-constants.ts";
 
 const AGENT_SKILLS_SCHEMA_URL = "https://schemas.agentskills.io/discovery/0.2.0/schema.json";
 const SITE_SKILL_NAME = "rfc3339-date";

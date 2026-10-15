@@ -1,10 +1,10 @@
-import packageJson from "../../package.json";
-import { parseInputToInstant, toOutput } from "./convert";
-import { formatRfc3339Utc } from "./date";
-import { parseHumanTime, convertInstantToTargetDetails, resolveZoneSpec } from "./human-time";
-import { validateValue } from "./validation";
-import { ensureIanaZone } from "./zone";
-import { SITE_URL } from "./page-constants";
+import packageJson from "../../package.json" with { type: "json" };
+import { parseInputToInstant, toOutput } from "./convert.ts";
+import { formatRfc3339Utc } from "./date.ts";
+import { parseHumanTime, convertInstantToTargetDetails, resolveZoneSpec } from "./human-time.ts";
+import { validateValue } from "./validation.ts";
+import { ensureIanaZone } from "./zone.ts";
+import { SITE_URL } from "./page-constants.ts";
 
 const JSON_RPC_VERSION = "2.0";
 const MCP_ENDPOINT = "/mcp";

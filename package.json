@@ -2,54 +2,34 @@
   "name": "rfc3339-date",
   "version": "1.2.0",
   "private": true,
-  "packageManager": "pnpm@11.10.0",
-  "engines": {
-    "node": ">=22.12.0"
-  },
+  "type": "module",
   "scripts": {
-    "build:fonts": "node scripts/build-fonts.mjs",
-    "build:openapi": "node scripts/build-openapi.mjs",
-    "build:styles": "pnpm run build:fonts && pnpm run build:openapi && node scripts/build-tailwind.mjs",
-    "check:component-lines": "node scripts/check-component-lines.mjs",
-    "deps:visual": "node ./scripts/deps-visual-check.mjs",
-    "deps:visual:install-browser": "playwright install chromium",
-    "deps:visual:preview": "pnpm run build:styles && node scripts/run-deps-visual-preview.mjs",
-    "dev": "pnpm run build:styles && wrangler dev",
-    "start": "pnpm run build:styles && wrangler dev",
-    "deploy": "pnpm run build:styles && wrangler deploy",
-    "build": "pnpm run build:styles && wrangler deploy --dry-run",
-    "checks": "pnpm run check:component-lines && pnpm run lint && pnpm run lint:openapi && pnpm run lint:openapi:scalar && pnpm run lint:scalar:project && pnpm run typecheck && pnpm run test && pnpm run build",
+    "dev": "wrangler dev",
+    "start": "wrangler dev",
+    "deploy": "node scripts/deploy.mjs",
+    "build": "wrangler deploy --dry-run",
+    "checks": "node scripts/update-openapi.mjs --check && pnpm run typecheck && pnpm run test && pnpm run build",
     "cf-typegen": "wrangler types",
-    "format": "oxfmt src tests package.json tsconfig.json wrangler.jsonc",
-    "lint": "oxlint .",
-    "lint:openapi": "redocly lint docs/openapi.yaml",
-    "lint:openapi:scalar": "node scripts/validate-openapi-scalar.mjs",
-    "lint:scalar:project": "pnpm --config.ignore-scripts=true dlx @scalar/cli project check-config scalar.config.json",
-    "scalar:publish": "node scripts/publish-scalar.mjs",
-    "scalar:preview": "pnpm dlx --allow-build=esbuild --allow-build=vue-demi @scalar/cli project preview scalar.config.json --no-open",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --pool=threads"
+    "test": "node --test tests/*.test.ts tests/*.test.mjs",
+    "docs:update": "node scripts/update-openapi.mjs",
+    "docs:check": "node scripts/update-openapi.mjs --check && node scripts/scalar.mjs document validate public/openapi.json && node scripts/scalar.mjs document validate public/openapi.scalar.json && node scripts/scalar.mjs project check-config scalar.config.json",
+    "scalar:publish": "pnpm run docs:check && node scripts/publish-scalar.mjs",
+    "scalar:preview": "node scripts/scalar.mjs project preview scalar.config.json --no-open"
   },
   "dependencies": {
-    "geist": "^1.7.2",
     "hono": "^4.13.13"
   },
   "devDependencies": {
-    "@redocly/cli": "^2.57.0",
-    "@scalar/openapi-parser": "^0.29.10",
-    "@tailwindcss/cli": "^4.3.3",
-    "@types/node": "^26.6.4",
-    "next": "^16.3.8",
-    "oxfmt": "^0.71.0",
-    "oxlint": "^1.86.0",
-    "pixelmatch": "^7.2.0",
-    "playwright": "^1.63.0",
-    "pngjs": "^7.0.0",
-    "tailwindcss": "^4.3.3",
+    "@types/node": "^24.19.2",
     "typescript": "^7.0.2",
-    "vite": "^8.3.2",
-    "vitest": "^5.0.3",
-    "wrangler": "^4.147.0",
-    "yaml": "^2.9.1"
-  }
+    "wrangler": "^4.151.0"
+  },
+  "config": {
+    "scalarCliVersion": "2.11.0"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "packageManager": "pnpm@11.10.0"
 }

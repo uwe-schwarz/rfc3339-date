@@ -65,7 +65,7 @@
         "type": "openapi",
         "title": "API Reference",
         "description": "OpenAPI reference for rfc3339.date.",
-        "filepath": "docs/openapi.scalar.json",
+        "filepath": "public/openapi.scalar.json",
         "config": {
           "theme": "deepSpace",
           "showOperationId": true,
