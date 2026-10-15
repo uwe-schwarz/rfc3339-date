@@ -27,8 +27,9 @@ pnpm run dev
 pnpm run checks
 ```
 
-Checks consist of TypeScript checking, a small native Node behavioral suite and a
-Wrangler dry run. There are no test, lint or screenshot frameworks to maintain.
+Checks first compare the static OpenAPI downloads with the canonical contract,
+then run TypeScript checking, a small native Node behavioral suite and a Wrangler
+dry run. There are no test, lint or screenshot frameworks to maintain.
 After changing asset routing, also run the contracts against local workerd:
 
 ```sh
