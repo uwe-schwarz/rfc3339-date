@@ -12,7 +12,7 @@ export function runScalar(args, options = {}) {
       `@scalar/cli@${packageJson.config.scalarCliVersion}`,
       ...args,
     ],
-    { encoding: "utf8", env: process.env },
+    { encoding: "utf8", env: process.env, stdio: options.stdio ?? "pipe" },
   );
   if (result.stdout) process.stdout.write(result.stdout);
   if (result.stderr) process.stderr.write(result.stderr);
@@ -24,5 +24,5 @@ export function runScalar(args, options = {}) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  runScalar(process.argv.slice(2));
+  runScalar(process.argv.slice(2), { stdio: "inherit" });
 }
