@@ -1,4 +1,0 @@
-interface:
-  display_name: "Upgrade Dependencies PR"
-  short_description: "Review local tool updates and open a PR"
-  default_prompt: "Use $upgrade-dependencies-pr to prepare compatible local development tool updates, validate the final state, and open a PR."
