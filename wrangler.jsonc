@@ -6,7 +6,7 @@
   "compatibility_date": "2025-09-27",
   "routes": [{ "pattern": "rfc3339.date", "custom_domain": true }],
   "preview_urls": true,
-  "observability": { "enabled": true },
+  "observability": { "enabled": false },
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": "./public",
