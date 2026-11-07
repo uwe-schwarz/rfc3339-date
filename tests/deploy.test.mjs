@@ -8,7 +8,7 @@ test("deployment updates tools locally, validates, then uploads", () => {
   assert.deepEqual(calls, [
     ["pnpm", ["update", "--dev"]],
     ["pnpm", ["run", "checks"]],
-    ["pnpm", ["exec", "wrangler", "deploy", "--dry-run"]],
+    ["pnpm", ["exec", "cf", "deploy", "--dry-run"]],
   ]);
 });
 

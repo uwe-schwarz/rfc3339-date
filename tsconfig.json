@@ -16,9 +16,9 @@
     "module": "preserve",
     "noEmit": true,
     "lib": ["es2024"],
-    "types": ["./worker-configuration.d.ts", "@types/node", "node"],
+    "types": ["@types/node", "node"],
     "allowImportingTsExtensions": true
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["src", "tests", "worker-configuration.d.ts"]
+  "include": ["src", "tests", "cloudflare.config.ts", "wrangler.config.ts", ".cloudflare/types/**/*.d.ts"]
 }

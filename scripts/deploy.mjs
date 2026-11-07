@@ -20,7 +20,7 @@ export function deploy({ run = runCommand, env = process.env, args = [] } = {}) 
   // Keep compatible major versions and the release-age policy in pnpm-workspace.yaml.
   run("pnpm", ["update", "--dev"]);
   run("pnpm", ["run", "checks"]);
-  run("pnpm", ["exec", "wrangler", "deploy", ...args.filter((arg) => arg !== "--")]);
+  run("pnpm", ["exec", "cf", "deploy", ...args.filter((arg) => arg !== "--")]);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

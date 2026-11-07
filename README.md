@@ -28,8 +28,8 @@ pnpm run checks
 ```
 
 Checks first compare the static OpenAPI downloads with the canonical contract,
-then run TypeScript checking, a small native Node behavioral suite and a Wrangler
-dry run. There are no test, lint or screenshot frameworks to maintain.
+then run TypeScript checking, a small native Node behavioral suite and a local
+`cf build`. There are no test, lint or screenshot frameworks to maintain.
 After changing asset routing, also run the contracts against local workerd:
 
 ```sh
@@ -48,9 +48,9 @@ pnpm run deploy
 ```
 
 Use `pnpm run deploy` explicitly: `pnpm deploy` is also a pnpm workspace command.
-The script updates the three development tools within their declared compatible
+The script updates the four development tools within their declared compatible
 major ranges, respecting the one-day release-age policy, runs all checks, then
-calls Wrangler. Update or check failures prevent uploading. To exercise the same
+calls `cf deploy`. Update or check failures prevent uploading. To exercise the same
 flow without publishing, use `pnpm run deploy -- --dry-run`.
 
 Dependency changes stay in the local `package.json` and lockfile for normal Git

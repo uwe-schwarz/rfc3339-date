@@ -4,13 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "start": "wrangler dev",
+    "dev": "cf dev",
+    "start": "cf dev",
     "deploy": "node scripts/deploy.mjs",
-    "build": "wrangler deploy --dry-run",
+    "build": "cf build",
     "checks": "node scripts/update-openapi.mjs --check && pnpm run typecheck && pnpm run test && pnpm run build",
-    "cf-typegen": "wrangler types",
-    "typecheck": "tsc --noEmit",
+    "cf-typegen": "cf workers types",
+    "typecheck": "cf workers types && tsc --noEmit",
     "test": "node --test tests/*.test.ts tests/*.test.mjs",
     "docs:update": "node scripts/update-openapi.mjs",
     "docs:check": "node scripts/update-openapi.mjs --check && node scripts/scalar.mjs document validate public/openapi.json && node scripts/scalar.mjs document validate public/openapi.scalar.json && node scripts/scalar.mjs project check-config scalar.config.json",
@@ -22,8 +22,9 @@
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
+    "cf": "^1.0.0-beta.28",
     "typescript": "^7.0.2",
-    "wrangler": "^4.151.0"
+    "wrangler": "^4.156.0"
   },
   "config": {
     "scalarCliVersion": "2.11.0"

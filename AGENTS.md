@@ -15,10 +15,10 @@ For all limits and quotas, retrieve from the product's `/platform/limits/` page.
 |---------|---------|
 | `pnpm run dev` | Local development |
 | `pnpm run deploy` | Deploy to Cloudflare |
-| `pnpm run cf-typegen` | Generate TypeScript types |
+| `pnpm run cf-typegen` | Generate TypeScript types (`cf workers types`) |
 | `pnpm run checks` | Run all quality gates (`typecheck`, native `test`, Worker `build`) |
 
-Run `pnpm run cf-typegen` after changing bindings in wrangler.jsonc.
+Worker configuration lives in `cloudflare.config.ts` (with Wrangler bundler settings in `wrangler.config.ts`); the project uses the `cf` CLI. Run `pnpm run cf-typegen` after changing bindings; generated types go to the ignored `.cloudflare/types/`.
 
 ## Required Checks Workflow
 
