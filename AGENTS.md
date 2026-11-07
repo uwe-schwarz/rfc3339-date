@@ -34,7 +34,7 @@ Worker configuration lives in `cloudflare.config.ts` (with Wrangler bundler sett
 
 - Edit `public/` assets directly. Do not restore frontend generators, bundled fonts, styling frameworks, or test frameworks.
 - Hono remains the only runtime dependency. Preserve all date, API, MCP/WebMCP, Markdown negotiation and GitHub proxy behavior.
-- `pnpm run deploy` updates compatible development tools locally, validates, then uploads. Do not update dependencies or deploy from hosted CI, and do not schedule routine dependency maintenance.
+- `pnpm run deploy` updates development tools to their latest releases (including majors) locally, validates, then uploads. Do not update dependencies or deploy from hosted CI, and do not schedule routine dependency maintenance.
 - `public/openapi.json` is canonical. Run `docs:update` and `docs:check` only after contract changes; publish Scalar explicitly when documentation changes. Its pinned CLI is a separate on-demand tool.
 - Use the small native contract suite for Worker changes and browser acceptance for UI changes. Asset-routing changes also require the contracts against local workerd using `RFC3339_TEST_URL`.
 

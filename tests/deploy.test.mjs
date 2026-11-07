@@ -6,7 +6,7 @@ test("deployment updates tools locally, validates, then uploads", () => {
   const calls = [];
   deploy({ env: {}, args: ["--", "--dry-run"], run: (...call) => calls.push(call) });
   assert.deepEqual(calls, [
-    ["pnpm", ["update", "--dev"]],
+    ["pnpm", ["update", "--dev", "--latest"]],
     ["pnpm", ["run", "checks"]],
     ["pnpm", ["exec", "cf", "deploy", "--dry-run"]],
   ]);

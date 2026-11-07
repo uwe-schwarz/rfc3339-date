@@ -48,8 +48,8 @@ pnpm run deploy
 ```
 
 Use `pnpm run deploy` explicitly: `pnpm deploy` is also a pnpm workspace command.
-The script updates the four development tools within their declared compatible
-major ranges, respecting the one-day release-age policy, runs all checks, then
+The script updates the four development tools to their latest releases, including
+major versions, respecting the one-day release-age policy, runs all checks, then
 calls `cf deploy`. Update or check failures prevent uploading. To exercise the same
 flow without publishing, use `pnpm run deploy -- --dry-run`. `cf` does not read
 `.env.local`: unless `CLOUDFLARE_API_TOKEN` is set, the script uses the private
