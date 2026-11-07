@@ -54,6 +54,20 @@ test("negotiated pages retain headers, HEAD and fresh Markdown time", async () =
   }
 });
 
+test("robots.txt permits crawling and AI use across all paths", async () => {
+  const response = await request("/robots.txt");
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type")!, /text\/plain/);
+  const policy = await response.text();
+  assert.match(policy, /^User-agent: \*\s+Allow: \/$/m);
+  assert.match(policy, /^User-agent: __usage_ai-training\s+Allow: \/$/m);
+  for (const purpose of ["search", "ai-input", "ai-train"]) {
+    assert.match(policy, new RegExp(`\\b${purpose}=yes\\b`));
+  }
+  assert.doesNotMatch(policy, /^Disallow:|=no\b/im);
+  assert.match(policy, /^Sitemap: https:\/\/rfc3339\.date\/sitemap\.xml$/m);
+});
+
 test("known API answers, invalid input and DST gaps/folds", async () => {
   const converted = await request("/convert?value=1700000000&in=unix&out=rfc3339&precision=0");
   assert.equal(await converted.text(), "2023-11-14T22:13:20Z");

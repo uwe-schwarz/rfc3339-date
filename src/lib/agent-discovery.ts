@@ -1,18 +1,6 @@
 import { PUBLIC_PAGE_PATHS, SCALAR_REGISTRY_URL, SITE_URL } from "./page-constants.ts";
 
-const AI_CONTENT_SIGNAL = "ai-train=no, search=yes, ai-input=no";
 const API_CATALOG_PROFILE_URL = "https://www.rfc-editor.org/info/rfc9727";
-const AI_USER_AGENTS = [
-  "GPTBot",
-  "OAI-SearchBot",
-  "Claude-Web",
-  "Google-Extended",
-  "Amazonbot",
-  "anthropic-ai",
-  "Bytespider",
-  "CCBot",
-  "Applebot-Extended",
-] as const;
 
 type LinkDescriptor = {
   href: string;
@@ -54,15 +42,6 @@ const DISCOVERY_LINKS: readonly LinkDescriptor[] = [
   },
 ];
 
-function renderRobotsBlock(userAgent: string): string {
-  return [
-    `User-agent: ${userAgent}`,
-    "Allow: /",
-    "Disallow: /github/",
-    `Content-Signal: ${AI_CONTENT_SIGNAL}`,
-  ].join("\n");
-}
-
 function escapeXml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -98,8 +77,11 @@ export function buildApiCatalog(): ApiCatalogDocument {
 export function buildRobotsTxt(): string {
   return [
     "# rfc3339.date crawl policy",
-    renderRobotsBlock("*"),
-    ...AI_USER_AGENTS.map((userAgent) => `\n${renderRobotsBlock(userAgent)}`),
+    "User-agent: *",
+    "Allow: /",
+    "Content-Signal: search=yes, ai-input=yes, ai-train=yes",
+    "\nUser-agent: __usage_ai-training",
+    "Allow: /",
     `\nSitemap: ${SITE_URL}/sitemap.xml`,
   ].join("\n");
 }
