@@ -20,8 +20,8 @@ export function deploy({ run = runCommand, env = process.env, args = [] } = {}) 
       "Deploy locally: dependency updates and validation must finish before uploading.",
     );
   }
-  // Move to the latest releases, including majors; pnpm-workspace.yaml keeps the release-age policy.
-  run("pnpm", ["update", "--dev", "--latest"]);
+  // Move every dependency to its latest release, including majors; pnpm-workspace.yaml keeps the release-age policy.
+  run("pnpm", ["update", "--latest"]);
   run("pnpm", ["run", "checks"]);
   run("pnpm", ["exec", "cf", "deploy", ...args.filter((arg) => arg !== "--")]);
 }

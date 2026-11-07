@@ -48,18 +48,17 @@ pnpm run deploy
 ```
 
 Use `pnpm run deploy` explicitly: `pnpm deploy` is also a pnpm workspace command.
-The script updates the four development tools to their latest releases, including
-major versions, respecting the one-day release-age policy, runs all checks, then
-calls `cf deploy`. Update or check failures prevent uploading. To exercise the same
+The script updates every dependency, Hono and the development tools alike, to its
+latest release, including major versions, respecting the one-day release-age
+policy, runs all checks, then calls `cf deploy`. Update or check failures prevent uploading. To exercise the same
 flow without publishing, use `pnpm run deploy -- --dry-run`. `cf` does not read
 `.env.local`: unless `CLOUDFLARE_API_TOKEN` is set, the script uses the private
 automation token in `~/private/vps/cloudflare/automation-api-token` (Workers
 Scripts edit access) and otherwise falls back to the `cf auth` login.
 
 Dependency changes stay in the local `package.json` and lockfile for normal Git
-review; the deploy script never commits or pushes. Hono is deliberately updated
-only for an applicable fix or API change. No scheduled dependency upgrades are
-needed. Obsolete security overrides have been removed in favor of upstream
+review; the deploy script never commits or pushes. No scheduled dependency
+upgrades are needed. Obsolete security overrides have been removed in favor of upstream
 resolution.
 
 Deploy from the owning local host. GitHub Actions only checks the committed
